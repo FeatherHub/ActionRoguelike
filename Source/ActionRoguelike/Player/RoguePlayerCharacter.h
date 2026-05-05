@@ -5,9 +5,6 @@
 #include "RoguePlayerCharacter.generated.h"
 
 class URogueActionSystemComponent;
-class ARogueProjectileBase;
-class UNiagaraSystem;
-class ARogueProjectileMagic;
 struct FInputActionInstance;
 struct FInputActionValue;
 class UInputAction;
@@ -49,40 +46,13 @@ protected:
 	
 	UPROPERTY(EditDefaultsOnly, Category=Input)
 	TObjectPtr<UInputAction> IA_Teleport;
-	
-	UPROPERTY(EditDefaultsOnly, Category=Attack)
-	TSubclassOf<ARogueProjectileBase> ProjectileMagicClass;
-
-	UPROPERTY(EditDefaultsOnly, Category=Attack)
-	TSubclassOf<ARogueProjectileBase> ProjectileBlackholeClass;
-	
-	UPROPERTY(EditDefaultsOnly, Category=Attack)
-	TSubclassOf<ARogueProjectileBase> ProjectileTeleportClass;
-	
-	UPROPERTY(EditDefaultsOnly, Category=Attack)
-	FName MuzzleSocketName;
-	
-	UPROPERTY(EditDefaultsOnly, Category=Attack)
-	TObjectPtr<UAnimMontage> AnimMontage_Attack;
 
 	UPROPERTY(EditDefaultsOnly, Category=Death)
 	TObjectPtr<UAnimMontage> AnimMontage_Death;
-
-	UPROPERTY(EditDefaultsOnly, Category=Attack)
-	TObjectPtr<UNiagaraSystem> CastingEffect;
-	
-	UPROPERTY(EditDefaultsOnly, Category=Attack)
-	TObjectPtr<USoundBase> CastingSound;	
-
-	UPROPERTY(EditDefaultsOnly, Category=Attack)
-	float AttackDelay;
 	
 protected:
 	void Move(const FInputActionValue& InValue);
 	void Look(const FInputActionInstance& InInstance);
-	virtual void Jump() override;
-	void StartSpawn(TSubclassOf<ARogueProjectileBase> ProjectileClass);
-	void SpawnProjectile(TSubclassOf<ARogueProjectileBase> ProjectileClass);
 	
 	void StartAction(FName ActionName);
 	

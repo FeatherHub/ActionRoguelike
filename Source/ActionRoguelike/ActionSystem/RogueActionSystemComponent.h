@@ -5,7 +5,7 @@
 #include "RogueActionSystemComponent.generated.h"
 
 
-class URogueAction;
+class URogueActionBase;
 class URogueActionSystemComponent;
 
 USTRUCT(Blueprintable)
@@ -42,12 +42,16 @@ protected:
 	FAttributeSet AttributeSet;
 	
 	UPROPERTY(EditDefaultsOnly, Category=Action)
-	TArray<TObjectPtr<URogueAction>> Actions;
-	
+	TArray<TSubclassOf<URogueActionBase>> DefaultGrantActions;
+
+	UPROPERTY(EditAnywhere, Category=Action)
+	TArray<TObjectPtr<URogueActionBase>> GrantedActions;
+
 public:
 	URogueActionSystemComponent();
 	virtual void InitializeComponent() override;
 	void StartAction(FName ActionName);
+	void GrantAction(URogueActionBase* Action);
 	
 	bool ApplyHealthChange(float InHealthDelta);
 	float GetCurrentHealth() { return AttributeSet.Health; }

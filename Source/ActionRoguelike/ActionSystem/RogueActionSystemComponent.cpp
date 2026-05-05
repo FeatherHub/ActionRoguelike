@@ -1,6 +1,6 @@
 ﻿#include "RogueActionSystemComponent.h"
 
-#include "URogueAction.h"
+#include "RogueActionBase.h"
 
 
 URogueActionSystemComponent::URogueActionSystemComponent()
@@ -11,15 +11,25 @@ URogueActionSystemComponent::URogueActionSystemComponent()
 void URogueActionSystemComponent::InitializeComponent()
 {
 	Super::InitializeComponent();
-	
-	URogueAction* Action = NewObject<URogueAction>(this, URogueAction::StaticClass());
-	
-	Actions.Add(Action);
+
+	for (TSubclassOf<URogueActionBase> ActionClass : DefaultGrantActions)
+	{
+		if (ActionClass)
+		{
+			URogueActionBase* NewAction = NewObject<URogueActionBase>(this, ActionClass);
+			GrantAction(NewAction);
+		}
+	}
+}
+
+void URogueActionSystemComponent::GrantAction(URogueActionBase* Action)
+{
+	GrantedActions.Add(Action);
 }
 
 void URogueActionSystemComponent::StartAction(FName ActionName)
 {
-	for (URogueAction* Action : Actions)
+	for (URogueActionBase* Action : GrantedActions)
 	{
 		if (ActionName == Action->GetActionName())
 		{
