@@ -15,6 +15,12 @@ class ACTIONROGUELIKE_API URogueActionBase : public UObject
 	
 protected:
 	UPROPERTY(EditDefaultsOnly, Category=Action)
+	FGameplayTagContainer ActivationBlockedTags;
+
+	UPROPERTY(EditDefaultsOnly, Category=Action)
+	FGameplayTagContainer ActivationGrantTags;
+	
+	UPROPERTY(EditDefaultsOnly, Category=Action)
 	FGameplayTag ActionName;
 	
 	UPROPERTY(EditDefaultsOnly, Category=Action)

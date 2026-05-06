@@ -9,13 +9,19 @@ void URogueActionBase::StartAction_Implementation()
 	
 	float CurrentTime = GetWorld()->TimeSeconds;
 	CooldownEndTime = CurrentTime + CooldownTime;
-	
+
+	URogueActionSystemComponent* ASC = GetOwningComponent();
+	ASC->ActiveTags.AppendTags(ActivationGrantTags);
+
 	UE_LOGFMT(LogTemp, Log, "Start Action '{ActionName}' at {GameTime}", ActionName.GetTagName(), CurrentTime);
 }
 
 void URogueActionBase::StopAction_Implementation()
 {
 	bIsRunning = false;
+	
+	URogueActionSystemComponent* ASC = GetOwningComponent();
+	ASC->ActiveTags.RemoveTags(ActivationGrantTags);
 	
 	float GameTime = GetWorld()->TimeSeconds;
 	UE_LOGFMT(LogTemp, Log, "Stop Action '{ActionName}' at {GameTime}", ActionName.GetTagName(), GameTime);
@@ -34,6 +40,14 @@ bool URogueActionBase::CanStart() const
 	{
 		UE_LOGFMT(LogTemp, Warning, "Cannot Start Action {ActionName}. Because Cooldown remains: {CooldownRemaining}"
 			, ActionName.GetTagName(), CooldownRemaining);
+		return false;
+	}
+
+	URogueActionSystemComponent* ASC = GetOwningComponent();
+	if (ASC->ActiveTags.HasAny(ActivationBlockedTags))
+	{
+		UE_LOGFMT(LogTemp, Warning, "Cannot Start Action {ActionName}. Because it blocks {BlockedTags}"
+			, ActionName.GetTagName(), ActivationBlockedTags.ToString());
 		return false;
 	}
 

@@ -1,6 +1,7 @@
 ﻿#pragma once
 
 #include "CoreMinimal.h"
+#include "GameplayTagContainer.h"
 #include "Components/ActorComponent.h"
 #include "RogueActionSystemComponent.generated.h"
 
@@ -38,6 +39,9 @@ public:
 	UPROPERTY(BlueprintAssignable, Category=Attribute)
 	FOnHealthChanged OnHealthChanged;
 	
+	UPROPERTY(VisibleAnywhere, Category=Action)
+	FGameplayTagContainer ActiveTags;
+
 protected:
 	UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category=Attribute)
 	FAttributeSet AttributeSet;
