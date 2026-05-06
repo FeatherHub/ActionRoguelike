@@ -38,6 +38,8 @@ void ARoguePlayerCharacter::SetupPlayerInputComponent(UInputComponent* PlayerInp
 	EIC->BindAction(IA_Move, ETriggerEvent::Triggered, this, &ThisClass::Move);
 	EIC->BindAction(IA_Look, ETriggerEvent::Triggered, this, &ThisClass::Look);
 	EIC->BindAction(IA_Jump, ETriggerEvent::Triggered, this, &ThisClass::Jump);
+	EIC->BindAction(IA_Sprint, ETriggerEvent::Started, this, &ThisClass::StartAction, FName(TEXT("Sprint")));
+	EIC->BindAction(IA_Sprint, ETriggerEvent::Completed, this, &ThisClass::StopAction, FName(TEXT("Sprint")));
 	EIC->BindAction(IA_PrimaryAttack, ETriggerEvent::Triggered, this, &ThisClass::StartAction, FName(TEXT("MagicProjectile")));
 	EIC->BindAction(IA_BlackholeAttack, ETriggerEvent::Triggered, this, &ThisClass::StartAction, FName(TEXT("BlackholeProjectile")));
 	EIC->BindAction(IA_Teleport, ETriggerEvent::Triggered, this, &ThisClass::StartAction, FName(TEXT("TeleportProjectile")));
@@ -69,6 +71,11 @@ void ARoguePlayerCharacter::Look(const FInputActionInstance& InInstance)
 void ARoguePlayerCharacter::StartAction(FName ActionName)
 {
 	ActionSystemComp->StartAction(ActionName);
+}
+
+void ARoguePlayerCharacter::StopAction(FName ActionName)
+{
+	ActionSystemComp->StopAction(ActionName);
 }
 
 void ARoguePlayerCharacter::OnHealthChanged(float NewHealth, float OldHealth)

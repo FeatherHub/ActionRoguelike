@@ -41,6 +41,20 @@ void URogueActionSystemComponent::StartAction(FName ActionName)
 	UE_LOGFMT(LogTemp, Warning, "Failed to Start Action '{ActionName}'", ActionName);
 }
 
+void URogueActionSystemComponent::StopAction(FName ActionName)
+{
+	for (URogueActionBase* Action : GrantedActions)
+	{
+		if (ActionName == Action->GetActionName())
+		{
+			Action->StopAction();
+			return;
+		}
+	}
+	
+	UE_LOGFMT(LogTemp, Warning, "Failed to Stop Action '{ActionName}'", ActionName);
+}
+
 bool URogueActionSystemComponent::ApplyHealthChange(float InHealthDelta)
 {
 	float OldHealth = AttributeSet.Health; 

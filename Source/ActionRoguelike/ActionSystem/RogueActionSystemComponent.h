@@ -50,7 +50,10 @@ protected:
 public:
 	URogueActionSystemComponent();
 	virtual void InitializeComponent() override;
+	
 	void StartAction(FName ActionName);
+	void StopAction(FName ActionName);
+	
 	void GrantAction(URogueActionBase* Action);
 	
 	bool ApplyHealthChange(float InHealthDelta);

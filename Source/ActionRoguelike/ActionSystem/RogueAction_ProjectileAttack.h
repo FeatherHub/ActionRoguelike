@@ -38,5 +38,5 @@ protected:
 	
 public:
 	URogueAction_ProjectileAttack();
-	virtual void StartAction() override;
+	virtual void StartAction_Implementation() override;
 };

@@ -37,7 +37,10 @@ protected:
 
 	UPROPERTY(EditDefaultsOnly, Category=Input)
 	TObjectPtr<UInputAction> IA_Jump;
-	
+
+	UPROPERTY(EditDefaultsOnly, Category=Input)
+	TObjectPtr<UInputAction> IA_Sprint;
+
 	UPROPERTY(EditDefaultsOnly, Category=Input)
 	TObjectPtr<UInputAction> IA_PrimaryAttack;
 	
@@ -55,6 +58,7 @@ protected:
 	void Look(const FInputActionInstance& InInstance);
 	
 	void StartAction(FName ActionName);
+	void StopAction(FName ActionName);
 	
 	UFUNCTION()
 	void OnHealthChanged(float NewHealth, float OldHealth);
