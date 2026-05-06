@@ -6,29 +6,21 @@
 #include "RogueActionSystemComponent.generated.h"
 
 
+struct FRogueAttribute;
+class URogueAttributeSet;
 class URogueActionBase;
 class URogueActionSystemComponent;
 struct FGameplayTag;
 
-USTRUCT(Blueprintable)
-struct FAttributeSet
+UENUM()
+enum EAttributeChangeType
 {
-	GENERATED_BODY()
-	
-	FAttributeSet()
-	{
-		MaxHealth = 100.f;
-		Health = MaxHealth;
-	}
-	
-	UPROPERTY(EditDefaultsOnly, BlueprintReadOnly)
-	float Health;
-	
-	UPROPERTY(EditDefaultsOnly, BlueprintReadOnly)
-	float MaxHealth;
+	BaseDelta,
+	ModifierDelta,
+	BaseOverride,
 };
 
-DECLARE_DYNAMIC_MULTICAST_DELEGATE_TwoParams(FOnHealthChanged, float, NewHealth, float, OldHealth);
+DECLARE_MULTICAST_DELEGATE_TwoParams(FOnAttributeChanged, float /*NewValue*/, float /*OldValue*/);
 
 UCLASS(ClassGroup=(Custom), meta=(BlueprintSpawnableComponent))
 class ACTIONROGUELIKE_API URogueActionSystemComponent : public UActorComponent
@@ -36,21 +28,25 @@ class ACTIONROGUELIKE_API URogueActionSystemComponent : public UActorComponent
 	GENERATED_BODY()
 
 public:
-	UPROPERTY(BlueprintAssignable, Category=Attribute)
-	FOnHealthChanged OnHealthChanged;
-	
 	UPROPERTY(VisibleAnywhere, Category=Action)
 	FGameplayTagContainer ActiveTags;
-
-protected:
-	UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category=Attribute)
-	FAttributeSet AttributeSet;
 	
+protected:
 	UPROPERTY(EditDefaultsOnly, Category=Action)
 	TArray<TSubclassOf<URogueActionBase>> DefaultGrantActions;
 
 	UPROPERTY(EditAnywhere, Category=Action)
 	TArray<TObjectPtr<URogueActionBase>> GrantedActions;
+
+	UPROPERTY()
+	TObjectPtr<URogueAttributeSet> AttributeSet;
+
+	UPROPERTY(EditDefaultsOnly, Category=Attribute)
+	TSubclassOf<URogueAttributeSet> AttributeSetClass;
+	
+	TMap<FGameplayTag, FRogueAttribute*> CachedAttributeMap;
+	
+	TMap<FGameplayTag, FOnAttributeChanged> OnAttributeChangedListenerMap;
 
 public:
 	URogueActionSystemComponent();
@@ -58,11 +54,9 @@ public:
 	
 	void StartAction(FGameplayTag ActionName);
 	void StopAction(FGameplayTag ActionName);
-	
 	void GrantAction(URogueActionBase* Action);
 	
-	bool ApplyHealthChange(float InHealthDelta);
-	float GetCurrentHealth() { return AttributeSet.Health; }
-	float GetMaxHealth() { return AttributeSet.MaxHealth; }
-	bool IsHealthFull() { return FMath::IsNearlyEqual(AttributeSet.Health, AttributeSet.MaxHealth); }
+	FOnAttributeChanged& GetOnAttributeChangedListener(FGameplayTag AttributeTag);
+	FRogueAttribute* GetAttribute(FGameplayTag AttributeTag);
+	bool ApplyAttributeChange(FGameplayTag AttributeTag, float InValue, EAttributeChangeType ChangeType);
 };

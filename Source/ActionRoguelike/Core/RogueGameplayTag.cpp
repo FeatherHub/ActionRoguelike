@@ -7,4 +7,7 @@ namespace RogueGameplayTag
 	UE_DEFINE_GAMEPLAY_TAG(Action_Projectile_Blackhole, TEXT("Action.Projectile.Blackhole"));	
 	UE_DEFINE_GAMEPLAY_TAG(Action_Projectile_Teleport, TEXT("Action.Projectile.Teleport"));	
 	UE_DEFINE_GAMEPLAY_TAG(Action_Sprint, TEXT("Action.Sprint"));	
+	
+	UE_DEFINE_GAMEPLAY_TAG(Attribute_Health, TEXT("Attribute.Health"));	
+	UE_DEFINE_GAMEPLAY_TAG(Attribute_HealthMax, TEXT("Attribute.HealthMax"));	
 }

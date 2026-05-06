@@ -8,4 +8,8 @@ namespace RogueGameplayTag
 	UE_DECLARE_GAMEPLAY_TAG_EXTERN(Action_Projectile_Blackhole);
 	UE_DECLARE_GAMEPLAY_TAG_EXTERN(Action_Projectile_Teleport);
 	UE_DECLARE_GAMEPLAY_TAG_EXTERN(Action_Sprint);
+	
+	UE_DECLARE_GAMEPLAY_TAG_EXTERN(Attribute_Health);
+	UE_DECLARE_GAMEPLAY_TAG_EXTERN(Attribute_HealthMax);
+	
 }

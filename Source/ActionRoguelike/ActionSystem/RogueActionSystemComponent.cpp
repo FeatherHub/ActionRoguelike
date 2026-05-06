@@ -2,10 +2,13 @@
 
 #include "RogueActionBase.h"
 #include "GameplayTagContainer.h"
+#include "RogueAttributeSet.h"
 
 URogueActionSystemComponent::URogueActionSystemComponent()
 {
 	bWantsInitializeComponent = true;
+	
+	AttributeSetClass = URogueAttributeSet::StaticClass();
 }
 
 void URogueActionSystemComponent::InitializeComponent()
@@ -19,6 +22,21 @@ void URogueActionSystemComponent::InitializeComponent()
 			URogueActionBase* NewAction = NewObject<URogueActionBase>(this, ActionClass);
 			GrantAction(NewAction);
 		}
+	}
+	
+	
+	AttributeSet = NewObject<URogueAttributeSet>(this, AttributeSetClass);
+	
+	for (TFieldIterator<FProperty> PropertyIt(AttributeSetClass); PropertyIt; ++PropertyIt)
+	{
+		FProperty* Property = *PropertyIt;
+		
+		FName AttributeTagName = FName("Attribute." + Property->GetName());
+		FGameplayTag AttributeTag = FGameplayTag::RequestGameplayTag(AttributeTagName);
+		
+		FRogueAttribute* Attribute = Property->ContainerPtrToValuePtr<FRogueAttribute>(AttributeSet);
+		
+		CachedAttributeMap.Add(AttributeTag, Attribute);
 	}
 }
 
@@ -61,20 +79,50 @@ void URogueActionSystemComponent::StopAction(FGameplayTag ActionName)
 	UE_LOGFMT(LogTemp, Warning, "Failed to Stop Action '{ActionName}'", ActionName.GetTagName());
 }
 
-bool URogueActionSystemComponent::ApplyHealthChange(float InHealthDelta)
+FOnAttributeChanged& URogueActionSystemComponent::GetOnAttributeChangedListener(FGameplayTag AttributeTag)
 {
-	float OldHealth = AttributeSet.Health; 
-	float NewHealth = FMath::Clamp(AttributeSet.Health + InHealthDelta, 0.f, AttributeSet.MaxHealth);
+	return OnAttributeChangedListenerMap.FindOrAdd(AttributeTag);
+}
+
+FRogueAttribute* URogueActionSystemComponent::GetAttribute(FGameplayTag AttributeTag)
+{
+	return *CachedAttributeMap.Find(AttributeTag);
+}
+
+bool URogueActionSystemComponent::ApplyAttributeChange(FGameplayTag AttributeTag, float InValue, EAttributeChangeType ChangeType)
+{
+	FRogueAttribute* Attribute = GetAttribute(AttributeTag);
+
+	float OldValue = Attribute->Base;
 	
-	bool bHasChanged = false;
-	if (!FMath::IsNearlyEqual(OldHealth, NewHealth))
-	{
-		AttributeSet.Health = NewHealth;
-		bHasChanged = true;
-		OnHealthChanged.Broadcast(NewHealth, OldHealth);
+	switch (ChangeType) {
+	case BaseDelta:
+		Attribute->Base += InValue;
+		break;
+	case ModifierDelta:
+		Attribute->Modifier += InValue;
+		break;
+	case BaseOverride:
+		Attribute->Base = InValue;
+		break;
+	default:
+		check(false)
+		break;
 	}
 	
-	UE_LOG(LogTemp, Log, TEXT("[HEALTH] Max: %-6.1f, New: %-6.1f, Delta: %-6.1f"), AttributeSet.MaxHealth, NewHealth, InHealthDelta);
+	AttributeSet->PostApplyChange();
+
+	float NewValue = Attribute->Base;
 	
+	bool bHasChanged = false;
+	if (!FMath::IsNearlyEqual(NewValue, OldValue))
+	{
+		bHasChanged = true;
+		GetOnAttributeChangedListener(AttributeTag).Broadcast(NewValue, OldValue);
+	}
+	
+	UE_LOG(LogTemp, Log, TEXT("[%s] New: %-6.1f, In: %-6.1f Type: %d")
+		, *AttributeTag.ToString(), NewValue, InValue, ChangeType);
+
 	return bHasChanged;
 }

@@ -1,6 +1,7 @@
 ﻿#include "RoguePotionHealth.h"
 
 #include "ActionSystem/RogueActionSystemComponent.h"
+#include "Core/RogueGameplayTag.h"
 
 
 ARoguePotionHealth::ARoguePotionHealth()
@@ -20,7 +21,7 @@ void ARoguePotionHealth::OnBeginOverlap(UPrimitiveComponent* OverlappedComp, AAc
 
 
 	
-	if (ASC->ApplyHealthChange(HealthIncreaseAmount))
+	if (ASC->ApplyAttributeChange(RogueGameplayTag::Attribute_Health, HealthIncreaseAmount, BaseDelta))
 	{
 		PlayPickupEffect();
 		Destroy();		

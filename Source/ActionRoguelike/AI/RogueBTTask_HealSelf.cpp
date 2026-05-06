@@ -2,6 +2,7 @@
 
 #include "AIController.h"
 #include "ActionSystem/RogueActionSystemComponent.h"
+#include "Core/RogueGameplayTag.h"
 
 EBTNodeResult::Type URogueBTTask_HealSelf::ExecuteTask(UBehaviorTreeComponent& OwnerComp, uint8* NodeMemory)
 {
@@ -9,7 +10,7 @@ EBTNodeResult::Type URogueBTTask_HealSelf::ExecuteTask(UBehaviorTreeComponent& O
 
 	URogueActionSystemComponent* ASC = AIPawn->GetComponentByClass<URogueActionSystemComponent>();
 
-	ASC->ApplyHealthChange(HealAmount);
+	ASC->ApplyAttributeChange(RogueGameplayTag::Attribute_Health, HealAmount, BaseDelta);
 
 	return EBTNodeResult::Succeeded;
 }

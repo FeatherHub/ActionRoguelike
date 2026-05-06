@@ -28,7 +28,7 @@ void ARoguePlayerCharacter::PostInitializeComponents()
 {
 	Super::PostInitializeComponents();
 
-	ActionSystemComp->OnHealthChanged.AddDynamic(this, &ThisClass::OnHealthChanged);
+	ActionSystemComp->GetOnAttributeChangedListener(RogueGameplayTag::Attribute_Health).AddUObject(this, &ThisClass::OnHealthChanged);
 }
 
 void ARoguePlayerCharacter::SetupPlayerInputComponent(UInputComponent* PlayerInputComponent)
@@ -97,7 +97,7 @@ float ARoguePlayerCharacter::TakeDamage(float DamageAmount, struct FDamageEvent 
 {
 	float ActualDamage =  Super::TakeDamage(DamageAmount, DamageEvent, EventInstigator, DamageCauser);
 
-	ActionSystemComp->ApplyHealthChange(-ActualDamage);
+	ActionSystemComp->ApplyAttributeChange(RogueGameplayTag::Attribute_Health, -ActualDamage, BaseDelta);
 	
 	return ActualDamage;
 }
