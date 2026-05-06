@@ -64,6 +64,8 @@ void URogueAction_ProjectileAttack::SpawnProjectile()
 	AActor* SpawnedProjectile = GetWorld()->SpawnActor<AActor>(ProjectileClass, SpawnLocation, SpawnRotation, SpawnParams);
 	Character->MoveIgnoreActorAdd(SpawnedProjectile);
 	
+	StopAction();
+	
 #if !UE_BUILD_SHIPPING
 	const float DebugDrawTime = CVarProjectileDrawDebug.GetValueOnGameThread();
 	if (DebugDrawTime > 0.0f)

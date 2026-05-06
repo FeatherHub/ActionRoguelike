@@ -33,7 +33,10 @@ void URogueActionSystemComponent::StartAction(FName ActionName)
 	{
 		if (ActionName == Action->GetActionName())
 		{
-			Action->StartAction();
+			if (Action->CanStart())
+			{
+				Action->StartAction();
+			}
 			return;
 		}
 	}
@@ -47,7 +50,10 @@ void URogueActionSystemComponent::StopAction(FName ActionName)
 	{
 		if (ActionName == Action->GetActionName())
 		{
-			Action->StopAction();
+			if (Action->CanStop())
+			{
+				Action->StopAction();
+			}
 			return;
 		}
 	}

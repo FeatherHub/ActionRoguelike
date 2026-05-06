@@ -16,6 +16,15 @@ protected:
 	UPROPERTY(EditDefaultsOnly, Category=Action)
 	FName ActionName;
 	
+	UPROPERTY(EditDefaultsOnly, Category=Action)
+	float CooldownTime = 0.f;
+	
+	UPROPERTY(Transient)
+	float CooldownEndTime = 0.f;
+	
+	UPROPERTY(Transient)
+	bool bIsRunning = false;
+	
 protected:
 	UFUNCTION(BlueprintCallable)
 	URogueActionSystemComponent* GetOwningComponent() const;
@@ -30,5 +39,9 @@ public:
 	UFUNCTION(BlueprintNativeEvent, Category=Action)
 	void StopAction();
 	
+	bool CanStart() const;
+	bool CanStop() const;
+	bool IsRunning() const { return bIsRunning; }
+	float GetCooldownRemaining() const;
 	FName GetActionName() const { return ActionName; }
 };
