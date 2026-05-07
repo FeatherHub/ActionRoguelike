@@ -15,10 +15,10 @@ class ACTIONROGUELIKE_API ARogueProjectileBlackhole : public ARogueProjectileBas
 	GENERATED_BODY()
 
 protected:
-	UPROPERTY(EditDefaultsOnly, Category="Attack")
+	UPROPERTY(EditDefaultsOnly, Category=Attack)
 	TObjectPtr<URadialForceComponent> BlackholeRadialForceComp;
 	
-	UPROPERTY(EditDefaultsOnly, Category="Attack")
+	UPROPERTY(EditDefaultsOnly, Category=Attack)
 	float BlackholeLifeTime;
 	
 protected:

@@ -21,6 +21,7 @@ enum EAttributeChangeType
 };
 
 DECLARE_MULTICAST_DELEGATE_TwoParams(FOnAttributeChanged, float /*NewValue*/, float /*OldValue*/);
+DECLARE_DYNAMIC_DELEGATE_TwoParams(FOnAttributeChanged_Dynamic, float, NewValue, float, OldValue);
 
 UCLASS(ClassGroup=(Custom), meta=(BlueprintSpawnableComponent))
 class ACTIONROGUELIKE_API URogueActionSystemComponent : public UActorComponent
@@ -46,17 +47,32 @@ protected:
 	
 	TMap<FGameplayTag, FRogueAttribute*> CachedAttributeMap;
 	
-	TMap<FGameplayTag, FOnAttributeChanged> OnAttributeChangedListenerMap;
+	TMap<FGameplayTag, FOnAttributeChanged> OnAttributeChangedListeners;
+
+	TMap<FGameplayTag, TArray<FOnAttributeChanged_Dynamic>> OnAttributeChangedListeners_Dynamic;
 
 public:
 	URogueActionSystemComponent();
 	virtual void InitializeComponent() override;
+	virtual void BeginPlay() override;
 	
 	void StartAction(FGameplayTag ActionName);
 	void StopAction(FGameplayTag ActionName);
 	void GrantAction(URogueActionBase* Action);
 	
 	FOnAttributeChanged& GetOnAttributeChangedListener(FGameplayTag AttributeTag);
-	FRogueAttribute* GetAttribute(FGameplayTag AttributeTag);
+	
+	FRogueAttribute* GetAttribute(FGameplayTag AttributeTag) const;
+
+	UFUNCTION(BlueprintCallable)
+	float GetAttributeValue(FGameplayTag AttributeTag) const;
+	
+	UFUNCTION(BlueprintCallable)
 	bool ApplyAttributeChange(FGameplayTag AttributeTag, float InValue, EAttributeChangeType ChangeType);
+	
+	UFUNCTION(BlueprintCallable, DisplayName="Add Attribute Changed Listener", meta=(Keywords="Event, Delegate"))
+	void AddOnAttributeChangedListener_Dynamic(FGameplayTag AttributeTag, FOnAttributeChanged_Dynamic OnAttributeChanged);
+	
+	UFUNCTION(BlueprintCallable, DisplayName="Remove Attribute Changed Listener", meta=(Keywords="Event, Delegate"))
+	void RemoveOnAttributeChangedListener_Dynamic(FOnAttributeChanged_Dynamic ListenerToRemove);
 };

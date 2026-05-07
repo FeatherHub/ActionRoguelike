@@ -24,7 +24,6 @@ void URogueActionSystemComponent::InitializeComponent()
 		}
 	}
 	
-	
 	AttributeSet = NewObject<URogueAttributeSet>(this, AttributeSetClass);
 	
 	for (TFieldIterator<FProperty> PropertyIt(AttributeSetClass); PropertyIt; ++PropertyIt)
@@ -38,6 +37,13 @@ void URogueActionSystemComponent::InitializeComponent()
 		
 		CachedAttributeMap.Add(AttributeTag, Attribute);
 	}
+}
+
+void URogueActionSystemComponent::BeginPlay()
+{
+	Super::BeginPlay();
+	
+	AttributeSet->PostInitializeComponents();
 }
 
 void URogueActionSystemComponent::GrantAction(URogueActionBase* Action)
@@ -79,21 +85,11 @@ void URogueActionSystemComponent::StopAction(FGameplayTag ActionName)
 	UE_LOGFMT(LogTemp, Warning, "Failed to Stop Action '{ActionName}'", ActionName.GetTagName());
 }
 
-FOnAttributeChanged& URogueActionSystemComponent::GetOnAttributeChangedListener(FGameplayTag AttributeTag)
-{
-	return OnAttributeChangedListenerMap.FindOrAdd(AttributeTag);
-}
-
-FRogueAttribute* URogueActionSystemComponent::GetAttribute(FGameplayTag AttributeTag)
-{
-	return *CachedAttributeMap.Find(AttributeTag);
-}
-
 bool URogueActionSystemComponent::ApplyAttributeChange(FGameplayTag AttributeTag, float InValue, EAttributeChangeType ChangeType)
 {
 	FRogueAttribute* Attribute = GetAttribute(AttributeTag);
 
-	float OldValue = Attribute->Base;
+	float OldValue = Attribute->GetValue();
 	
 	switch (ChangeType) {
 	case BaseDelta:
@@ -112,17 +108,76 @@ bool URogueActionSystemComponent::ApplyAttributeChange(FGameplayTag AttributeTag
 	
 	AttributeSet->PostApplyChange();
 
-	float NewValue = Attribute->Base;
+	float NewValue = Attribute->GetValue();
 	
 	bool bHasChanged = false;
 	if (!FMath::IsNearlyEqual(NewValue, OldValue))
 	{
 		bHasChanged = true;
-		GetOnAttributeChangedListener(AttributeTag).Broadcast(NewValue, OldValue);
+		
+		// Native C++ Listeners
+		if (FOnAttributeChanged* NativeListener = OnAttributeChangedListeners.Find(AttributeTag))
+		{
+			NativeListener->Broadcast(NewValue, OldValue);
+		}
+
+		// Dynamic Blueprint Listeners
+		if (TArray<FOnAttributeChanged_Dynamic>* DynamicListeners = OnAttributeChangedListeners_Dynamic.Find(AttributeTag))
+		{
+			for (int i = DynamicListeners->Num() - 1; i >= 0; --i)
+			{
+				FOnAttributeChanged_Dynamic& Listener = (*DynamicListeners)[i];
+				
+				bool bIsBound = Listener.ExecuteIfBound(NewValue, OldValue);
+				if (!bIsBound)
+				{
+					DynamicListeners->RemoveAt(i);
+					
+					UE_LOG(LogTemp, Log, TEXT("Successfully removed unbound OnAttributeChanged_Dynamic for %s")
+						, *AttributeTag.ToString());
+				}
+			}			
+		}
 	}
 	
-	UE_LOG(LogTemp, Log, TEXT("[%s] New: %-6.1f, In: %-6.1f Type: %d")
-		, *AttributeTag.ToString(), NewValue, InValue, ChangeType);
+	UE_LOG(LogTemp, Log, TEXT("[%s] New: %-6.1f, Old: %-6.1f Type: %s")
+		, *AttributeTag.ToString(), NewValue, OldValue, *UEnum::GetValueAsString(ChangeType));
 
 	return bHasChanged;
+}
+
+FOnAttributeChanged& URogueActionSystemComponent::GetOnAttributeChangedListener(FGameplayTag AttributeTag)
+{
+	return OnAttributeChangedListeners.FindOrAdd(AttributeTag);
+}
+
+FRogueAttribute* URogueActionSystemComponent::GetAttribute(FGameplayTag AttributeTag) const
+{
+	return *CachedAttributeMap.Find(AttributeTag);
+}
+
+float URogueActionSystemComponent::GetAttributeValue(FGameplayTag AttributeTag) const
+{
+	FRogueAttribute* Attribute = GetAttribute(AttributeTag);
+	return Attribute->GetValue();
+}
+
+void URogueActionSystemComponent::AddOnAttributeChangedListener_Dynamic(FGameplayTag AttributeTag, FOnAttributeChanged_Dynamic OnAttributeChanged)
+{
+	TArray<FOnAttributeChanged_Dynamic>& Listeners = OnAttributeChangedListeners_Dynamic.FindOrAdd(AttributeTag);
+	Listeners.Add(OnAttributeChanged);
+}
+
+void URogueActionSystemComponent::RemoveOnAttributeChangedListener_Dynamic(FOnAttributeChanged_Dynamic ListenerToRemove)
+{
+	for (TPair<FGameplayTag, TArray<FOnAttributeChanged_Dynamic>>& ListenersEntry : OnAttributeChangedListeners_Dynamic)
+	{
+		if (ListenersEntry.Value.RemoveSingle(ListenerToRemove) > 0)
+		{
+			UE_LOG(LogTemp, Log, TEXT("Successfully removed OnAttributeChanged_Dynamic for %s")
+				, *ListenersEntry.Key.ToString())
+
+			return;
+		}
+	}
 }
