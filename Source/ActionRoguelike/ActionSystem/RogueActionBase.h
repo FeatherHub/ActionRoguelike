@@ -27,7 +27,7 @@ protected:
 	float CooldownTime = 0.f;
 	
 	UPROPERTY(EditDefaultsOnly, Category=Action)
-	float RageCost = 0.f;
+	TMap<FGameplayTag, float> ActivationCostMap;
 	
 	UPROPERTY(Transient)
 	float CooldownEndTime = 0.f;

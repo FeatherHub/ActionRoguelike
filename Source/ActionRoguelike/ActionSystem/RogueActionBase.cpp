@@ -2,7 +2,6 @@
 
 #include "RogueActionSystemComponent.h"
 #include "RogueAttributeSet.h"
-#include "Core/RogueGameplayTag.h"
 #include "GameFramework/Character.h"
 
 void URogueActionBase::StartAction_Implementation()
@@ -16,12 +15,10 @@ void URogueActionBase::StartAction_Implementation()
 	ASC->ActiveTags.AppendTags(ActivationGrantTags);
 
 	UE_LOGFMT(LogTemp, Log, "Start Action '{ActionName}' at {GameTime}", ActionName.GetTagName(), CurrentTime);
-	
-	if (FRogueAttribute* RageAttribute = GetOwningComponent()->GetAttribute(RogueGameplayTag::Attribute_RageAmount))
+
+	for (const TPair<FGameplayTag, float>& CostEntry : ActivationCostMap)
 	{
-		ASC->ApplyAttributeChange(RogueGameplayTag::Attribute_RageAmount, -RageCost, BaseDelta);
-		
-		UE_LOGFMT(LogTemp, Log, "Used {0} Rage. Remaining Rage: {1}", RageCost, RageAttribute->GetValue());
+		ASC->ApplyAttributeChange(CostEntry.Key, -CostEntry.Value, BaseDelta);
 	}
 }
 
@@ -44,17 +41,6 @@ bool URogueActionBase::CanStart() const
 		return false;
 	}
 	
-	if (FRogueAttribute* RageAttribute = GetOwningComponent()->GetAttribute(RogueGameplayTag::Attribute_RageAmount))
-	{
-		float CurrentRage = RageAttribute->GetValue(); 
-		if (CurrentRage < RageCost)
-		{
-			UE_LOGFMT(LogTemp, Warning, "Cannot Start Action {0}. Because Rage is not enough. Needs: {1} Has: {2}"
-			, ActionName.GetTagName(), RageCost, CurrentRage);
-			return false;
-		}
-	}
-	
 	float CooldownRemaining = GetCooldownRemaining();
 	if (CooldownRemaining > 0.f)
 	{
@@ -71,6 +57,22 @@ bool URogueActionBase::CanStart() const
 		return false;
 	}
 
+	for (const TPair<FGameplayTag, float>& CostEntry : ActivationCostMap)
+	{
+		if (FRogueAttribute* Attribute = GetOwningComponent()->GetAttribute(CostEntry.Key))
+		{
+			float CurrentAmount = Attribute->GetValue();
+			if (CurrentAmount < CostEntry.Value)
+			{
+				UE_LOGFMT(LogTemp, Warning
+				, "Cannot Start Action {ActionName}. Because {CostName} is not enough. Needs: {NeedsAmount} Has: {HasAmount}"
+				, ActionName.GetTagName(), *CostEntry.Key.ToString(), CostEntry.Value, CurrentAmount);
+				
+				return false;
+			}
+		}
+	}
+	
 	return true;
 }
 
