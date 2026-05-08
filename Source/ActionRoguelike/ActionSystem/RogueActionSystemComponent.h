@@ -18,6 +18,8 @@ enum EAttributeChangeType
 	BaseDelta,
 	ModifierDelta,
 	BaseOverride,
+	MultiplierDelta,
+	MultiplierOverride,
 };
 
 DECLARE_MULTICAST_DELEGATE_TwoParams(FOnAttributeChanged, float /*NewValue*/, float /*OldValue*/);

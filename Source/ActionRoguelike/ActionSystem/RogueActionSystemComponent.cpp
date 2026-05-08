@@ -106,6 +106,12 @@ bool URogueActionSystemComponent::ApplyAttributeChange(FGameplayTag AttributeTag
 	case BaseOverride:
 		Attribute->Base = InValue;
 		break;
+	case MultiplierDelta:
+		Attribute->Multiplier += InValue;
+		break;
+	case MultiplierOverride:
+		Attribute->Multiplier = InValue;
+		break;
 	default:
 		check(false)
 		break;

@@ -13,12 +13,12 @@ URogueHealthAttributeSet::URogueHealthAttributeSet()
 
 URoguePlayerAttribute::URoguePlayerAttribute()
 {
-	MoveSpeed = FRogueAttribute(550.f);
+	MoveSpeed = FRogueAttribute(550.f, 0.f, 1.f);
 }
 
 URogueMonsterAttribute::URogueMonsterAttribute()
 {
-	MoveSpeed = FRogueAttribute(450.f);
+	MoveSpeed = FRogueAttribute(450.f, 0.f, 1.f);
 }
 
 void URogueCharacterAttribute::PostInitializeComponents()

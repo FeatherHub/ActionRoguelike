@@ -14,10 +14,11 @@ struct FRogueAttribute
 	
 	float Base;
 	float Modifier;
+	float Multiplier;
 	
 	float GetValue() const
 	{
-		return Base + Modifier;
+		return (Base + Modifier) * Multiplier;
 	}
 };
 
