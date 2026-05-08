@@ -11,17 +11,17 @@ URogueHealthAttributeSet::URogueHealthAttributeSet()
 	HealthMax = Health;
 }
 
-URoguePlayerAttribute::URoguePlayerAttribute()
+URoguePlayerAttributeSet::URoguePlayerAttributeSet()
 {
 	MoveSpeed = FRogueAttribute(550.f, 0.f, 1.f);
 }
 
-URogueMonsterAttribute::URogueMonsterAttribute()
+URogueMonsterAttributeSet::URogueMonsterAttributeSet()
 {
 	MoveSpeed = FRogueAttribute(450.f, 0.f, 1.f);
 }
 
-void URogueCharacterAttribute::PostInitializeComponents()
+void URogueCharacterAttributeSet::PostInitializeComponents()
 {
 	Super::PostInitializeComponents();
 	
@@ -35,14 +35,14 @@ void URogueHealthAttributeSet::PostApplyChange()
 	Health.Base = FMath::Clamp(Health.Base, 0.f, HealthMax.Base);  
 }
 
-void URogueCharacterAttribute::PostApplyChange()
+void URogueCharacterAttributeSet::PostApplyChange()
 {
 	Super::PostApplyChange();
 
 	ApplyMoveSpeed();
 }
 
-void URogueCharacterAttribute::ApplyMoveSpeed()
+void URogueCharacterAttributeSet::ApplyMoveSpeed()
 {
 	UCharacterMovementComponent* CMC= Cast<UCharacterMovementComponent>(GetOwningCharacter()->GetMovementComponent());
 	if (CMC)
@@ -56,7 +56,7 @@ URogueActionSystemComponent* URogueAttributeSet::GetOwningComponent() const
 	return Cast<URogueActionSystemComponent>(GetOuter());
 }
 
-ACharacter* URogueCharacterAttribute::GetOwningCharacter() const
+ACharacter* URogueCharacterAttributeSet::GetOwningCharacter() const
 {
 	URogueActionSystemComponent* ASC = GetOwningComponent();
 	

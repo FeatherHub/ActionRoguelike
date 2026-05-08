@@ -55,7 +55,7 @@ public:
 };
 
 UCLASS()
-class URogueCharacterAttribute : public URogueHealthAttributeSet
+class URogueCharacterAttributeSet : public URogueHealthAttributeSet
 {
 	GENERATED_BODY()
 
@@ -73,19 +73,19 @@ protected:
 };
 
 UCLASS()
-class URoguePlayerAttribute : public URogueCharacterAttribute
+class URoguePlayerAttributeSet : public URogueCharacterAttributeSet
 {
 	GENERATED_BODY()
 
 public:
-	URoguePlayerAttribute();
+	URoguePlayerAttributeSet();
 };
 
 UCLASS()
-class URogueMonsterAttribute : public URogueCharacterAttribute
+class URogueMonsterAttributeSet : public URogueCharacterAttributeSet
 {
 	GENERATED_BODY()
 
 public:
-	URogueMonsterAttribute();
+	URogueMonsterAttributeSet();
 };
