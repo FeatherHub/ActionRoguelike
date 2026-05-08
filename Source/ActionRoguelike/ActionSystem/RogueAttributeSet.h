@@ -12,9 +12,9 @@ struct FRogueAttribute
 {
 	GENERATED_BODY()
 	
-	float Base;
-	float Modifier;
-	float Multiplier;
+	float Base = 0.f;
+	float Modifier = 0.f;
+	float Multiplier = 1.f;
 	
 	float GetValue() const
 	{
@@ -77,6 +77,10 @@ class URoguePlayerAttributeSet : public URogueCharacterAttributeSet
 {
 	GENERATED_BODY()
 
+protected:
+	UPROPERTY()
+	FRogueAttribute RageAmount;
+	
 public:
 	URoguePlayerAttributeSet();
 };

@@ -1,6 +1,8 @@
 ﻿#include "RogueActionBase.h"
 
 #include "RogueActionSystemComponent.h"
+#include "RogueAttributeSet.h"
+#include "Core/RogueGameplayTag.h"
 #include "GameFramework/Character.h"
 
 void URogueActionBase::StartAction_Implementation()
@@ -14,6 +16,13 @@ void URogueActionBase::StartAction_Implementation()
 	ASC->ActiveTags.AppendTags(ActivationGrantTags);
 
 	UE_LOGFMT(LogTemp, Log, "Start Action '{ActionName}' at {GameTime}", ActionName.GetTagName(), CurrentTime);
+	
+	if (FRogueAttribute* RageAttribute = GetOwningComponent()->GetAttribute(RogueGameplayTag::Attribute_RageAmount))
+	{
+		ASC->ApplyAttributeChange(RogueGameplayTag::Attribute_RageAmount, -RageCost, BaseDelta);
+		
+		UE_LOGFMT(LogTemp, Log, "Used {0} Rage. Remaining Rage: {1}", RageCost, RageAttribute->GetValue());
+	}
 }
 
 void URogueActionBase::StopAction_Implementation()
@@ -33,6 +42,17 @@ bool URogueActionBase::CanStart() const
 	{
 		UE_LOGFMT(LogTemp, Warning, "Cannot Start Action {ActionName}. Because it is in running", ActionName.GetTagName());
 		return false;
+	}
+	
+	if (FRogueAttribute* RageAttribute = GetOwningComponent()->GetAttribute(RogueGameplayTag::Attribute_RageAmount))
+	{
+		float CurrentRage = RageAttribute->GetValue(); 
+		if (CurrentRage < RageCost)
+		{
+			UE_LOGFMT(LogTemp, Warning, "Cannot Start Action {0}. Because Rage is not enough. Needs: {1} Has: {2}"
+			, ActionName.GetTagName(), RageCost, CurrentRage);
+			return false;
+		}
 	}
 	
 	float CooldownRemaining = GetCooldownRemaining();

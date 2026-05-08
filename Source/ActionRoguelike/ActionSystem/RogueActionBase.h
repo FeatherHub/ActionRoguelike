@@ -26,6 +26,9 @@ protected:
 	UPROPERTY(EditDefaultsOnly, Category=Action)
 	float CooldownTime = 0.f;
 	
+	UPROPERTY(EditDefaultsOnly, Category=Action)
+	float RageCost = 0.f;
+	
 	UPROPERTY(Transient)
 	float CooldownEndTime = 0.f;
 	

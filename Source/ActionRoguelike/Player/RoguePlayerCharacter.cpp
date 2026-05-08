@@ -21,6 +21,8 @@ ARoguePlayerCharacter::ARoguePlayerCharacter()
 	CameraComp->SetupAttachment(SpringArmComp);
 	
 	JumpMaxCount = 2;
+	
+	DamagePerRageRatio = 5.f;
 }
 
 
@@ -98,6 +100,9 @@ float ARoguePlayerCharacter::TakeDamage(float DamageAmount, struct FDamageEvent 
 	float ActualDamage =  Super::TakeDamage(DamageAmount, DamageEvent, EventInstigator, DamageCauser);
 
 	ActionSystemComp->ApplyAttributeChange(RogueGameplayTag::Attribute_Health, -ActualDamage, BaseDelta);
+	
+	float RageAmount = ActualDamage * DamagePerRageRatio;
+	ActionSystemComp->ApplyAttributeChange(RogueGameplayTag::Attribute_RageAmount, RageAmount, BaseDelta);
 	
 	return ActualDamage;
 }

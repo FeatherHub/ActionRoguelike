@@ -54,6 +54,10 @@ protected:
 	UPROPERTY(EditDefaultsOnly, Category=Death)
 	TObjectPtr<UAnimMontage> AnimMontage_Death;
 	
+	UPROPERTY(EditDefaultsOnly, Category=Action)
+	/* 1 Damanage => 5 Rage */
+	float DamagePerRageRatio;
+	
 protected:
 	void Move(const FInputActionValue& InValue);
 	void Look(const FInputActionInstance& InInstance);

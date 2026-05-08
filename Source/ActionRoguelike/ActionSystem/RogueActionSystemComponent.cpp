@@ -92,8 +92,6 @@ bool URogueActionSystemComponent::ApplyAttributeChange(FGameplayTag AttributeTag
 	{
 		return false;
 	}
-	
-	
 	float OldValue = Attribute->GetValue();
 	
 	switch (ChangeType) {
@@ -151,8 +149,8 @@ bool URogueActionSystemComponent::ApplyAttributeChange(FGameplayTag AttributeTag
 		}
 	}
 	
-	UE_LOG(LogTemp, Log, TEXT("[%s] New: %-6.1f, Old: %-6.1f Type: %s")
-		, *AttributeTag.ToString(), NewValue, OldValue, *UEnum::GetValueAsString(ChangeType));
+	UE_LOG(LogTemp, Log, TEXT("[%s]-[%s] New: %-6.1f, Old: %-6.1f Type: %s")
+		, *GetFNameSafe(GetOuter()).ToString().LeftPad(20), *AttributeTag.ToString(), NewValue, OldValue, *UEnum::GetValueAsString(ChangeType));
 
 	return bHasChanged;
 }
