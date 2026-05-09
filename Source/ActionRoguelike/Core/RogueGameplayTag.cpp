@@ -11,4 +11,6 @@ namespace RogueGameplayTag
 	UE_DEFINE_GAMEPLAY_TAG(Attribute_Health, TEXT("Attribute.Health"));	
 	UE_DEFINE_GAMEPLAY_TAG(Attribute_HealthMax, TEXT("Attribute.HealthMax"));
 	UE_DEFINE_GAMEPLAY_TAG(Attribute_RageAmount, TEXT("Attribute.RageAmount"));
+	
+	UE_DEFINE_GAMEPLAY_TAG(Status_Sprinting, TEXT("Status.Sprinting"));
 }
