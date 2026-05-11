@@ -3,29 +3,45 @@
 #include "ActionRoguelike.h"
 #include "EngineUtils.h"
 #include "NavigationSystem.h"
+#include "Components/AudioComponent.h"
 #include "Components/InstancedStaticMeshComponent.h"
-#include "Core/RogueDeveloperSetting.h"
+#include "Core/RoguePickupSystemSetting.h"
 #include "Player/RoguePlayerCharacter.h"
+
 
 void URogueCoinPickupSubsystem::OnWorldBeginPlay(UWorld& InWorld)
 {
 	Super::OnWorldBeginPlay(InWorld);
 	
-	CoinISMComp = NewObject<UInstancedStaticMeshComponent>(GetWorld(), NAME_None, RF_Transient);
-	CoinISMComp->RegisterComponentWithWorld(GetWorld());
+	UWorld* World = GetWorld();
+	
+	CoinISMComp = NewObject<UInstancedStaticMeshComponent>(World, NAME_None, RF_Transient);
+	CoinISMComp->RegisterComponentWithWorld(World);
 	CoinISMComp->SetCollisionEnabled(ECollisionEnabled::Type::NoCollision);
 
-	FLoadSoftObjectPathAsyncDelegate OnLoadCompleteDelegate;
-	OnLoadCompleteDelegate.BindLambda([this](const FSoftObjectPath& SoftObjectPath, UObject* LoadedAsset)
-	{
-		if (IsValid(this))
-		{
-			UStaticMesh* CoinMesh = Cast<UStaticMesh>(LoadedAsset);		
-			CoinISMComp->SetStaticMesh(CoinMesh);
-		}
-	});
+	CoinPickupAudioComp = NewObject<UAudioComponent>(World, NAME_None, RF_Transient);
+	CoinPickupAudioComp->SetAutoActivate(false);
+	CoinPickupAudioComp->RegisterComponentWithWorld(World);
 
-	GetDefault<URogueDeveloperSetting>()->CoinMeshSoftAsset.LoadAsync(OnLoadCompleteDelegate);
+	const URoguePickupSystemSetting* PickupSystemSetting = GetDefault<URoguePickupSystemSetting>();
+	
+	CoinPickupTriggerName = PickupSystemSetting->CoinPickupTriggerParameterName;
+	
+	PickupSystemSetting->CoinMeshSoftAsset.LoadAsync(FLoadSoftObjectPathAsyncDelegate::CreateUObject(
+		this, &ThisClass::OnCoinMeshLoadComplete));
+	
+	PickupSystemSetting->CoinPickupSoundSoftAsset.LoadAsync(FLoadSoftObjectPathAsyncDelegate::CreateUObject(
+		this, &ThisClass::OnCoinPickupSoundLoadComplete));
+}
+
+void URogueCoinPickupSubsystem::OnCoinMeshLoadComplete(const FSoftObjectPath& SoftObjectPath, UObject* LoadedAsset)
+{
+	CoinISMComp->SetStaticMesh(Cast<UStaticMesh>(LoadedAsset));
+}
+
+void URogueCoinPickupSubsystem::OnCoinPickupSoundLoadComplete(const FSoftObjectPath& SoftObjectPath, UObject* LoadedAsset)
+{
+	CoinPickupAudioComp->SetSound(Cast<USoundBase>(LoadedAsset));
 }
 
 void URogueCoinPickupSubsystem::Tick(float DeltaTime)
@@ -60,6 +76,16 @@ void URogueCoinPickupSubsystem::Tick(float DeltaTime)
 		TotalCoinCreditToGrant += CoinCredits[PickedCoinIndex];
 
 		RemoveCoin(PickedCoinIndex);
+	}
+
+	
+	if (TotalCoinCreditToGrant > 0)
+	{
+		if (!CoinPickupAudioComp->IsPlaying())
+		{
+			CoinPickupAudioComp->Play();
+		}
+		CoinPickupAudioComp->SetTriggerParameter(CoinPickupTriggerName);
 	}
 	
 	UE_CLOG(TotalCoinCreditToGrant > 0, LogGame, Log, TEXT("Picked up Coin Total Credit: %d"), TotalCoinCreditToGrant)
