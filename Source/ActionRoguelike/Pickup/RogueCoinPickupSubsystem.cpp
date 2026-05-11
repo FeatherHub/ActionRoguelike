@@ -4,20 +4,28 @@
 #include "EngineUtils.h"
 #include "NavigationSystem.h"
 #include "Components/InstancedStaticMeshComponent.h"
+#include "Core/RogueDeveloperSetting.h"
 #include "Player/RoguePlayerCharacter.h"
 
 void URogueCoinPickupSubsystem::OnWorldBeginPlay(UWorld& InWorld)
 {
 	Super::OnWorldBeginPlay(InWorld);
 	
-	// Temporary Hack
-	FSoftObjectPath CoinMeshAssetPath = FSoftObjectPath("/Game/ExampleContent/Meshes/SM_Pickup_Coin.SM_Pickup_Coin");
-	UStaticMesh* CoinMesh = Cast<UStaticMesh>(CoinMeshAssetPath.TryLoad());
-	
 	CoinISMComp = NewObject<UInstancedStaticMeshComponent>(GetWorld(), NAME_None, RF_Transient);
 	CoinISMComp->RegisterComponentWithWorld(GetWorld());
-	CoinISMComp->SetStaticMesh(CoinMesh);
 	CoinISMComp->SetCollisionEnabled(ECollisionEnabled::Type::NoCollision);
+
+	FLoadSoftObjectPathAsyncDelegate OnLoadCompleteDelegate;
+	OnLoadCompleteDelegate.BindLambda([this](const FSoftObjectPath& SoftObjectPath, UObject* LoadedAsset)
+	{
+		if (IsValid(this))
+		{
+			UStaticMesh* CoinMesh = Cast<UStaticMesh>(LoadedAsset);		
+			CoinISMComp->SetStaticMesh(CoinMesh);
+		}
+	});
+
+	GetDefault<URogueDeveloperSetting>()->CoinMeshSoftAsset.LoadAsync(OnLoadCompleteDelegate);
 }
 
 void URogueCoinPickupSubsystem::Tick(float DeltaTime)
