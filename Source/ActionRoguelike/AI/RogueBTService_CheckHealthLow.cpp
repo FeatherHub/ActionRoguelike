@@ -3,6 +3,7 @@
 #include "AIController.h"
 #include "ActionSystem/RogueActionSystemComponent.h"
 #include "BehaviorTree/BlackboardComponent.h"
+#include "Core/RogueGameplayTag.h"
 
 URogueBTService_CheckHealthLow::URogueBTService_CheckHealthLow()
 {
@@ -11,16 +12,16 @@ URogueBTService_CheckHealthLow::URogueBTService_CheckHealthLow()
 
 void URogueBTService_CheckHealthLow::TickNode(UBehaviorTreeComponent& OwnerComp, uint8* NodeMemory, float DeltaSeconds)
 {
-	// Super::TickNode(OwnerComp, NodeMemory, DeltaSeconds);
-	//
-	// AAIController* AIController = OwnerComp.GetAIOwner();
-	// UBlackboardComponent* BBComp = AIController->GetBlackboardComponent();
-	// URogueActionSystemComponent* ActionSystemComp = AIController->GetPawn()->GetComponentByClass<URogueActionSystemComponent>();
-	//
-	// float CurrentHealth = ActionSystemComp->GetCurrentHealth();
-	// float MaxHealth = ActionSystemComp->GetMaxHealth();
-	//
-	// bool bIsHealthLow = CurrentHealth < MaxHealth * HealthLowRatio;
-	//
-	// BBComp->SetValueAsBool(IsHealthLowKey.SelectedKeyName, bIsHealthLow);
+	Super::TickNode(OwnerComp, NodeMemory, DeltaSeconds);
+	
+	AAIController* AIController = OwnerComp.GetAIOwner();
+	UBlackboardComponent* BBComp = AIController->GetBlackboardComponent();
+	URogueActionSystemComponent* ASC = AIController->GetPawn()->GetComponentByClass<URogueActionSystemComponent>();
+	
+	float CurrentHealth = ASC->GetAttributeValue(RogueGameplayTag::Attribute_Health);
+	float MaxHealth = ASC->GetAttributeValue(RogueGameplayTag::Attribute_HealthMax);
+	
+	bool bIsHealthLow = CurrentHealth < MaxHealth * HealthLowRatio;
+	
+	BBComp->SetValueAsBool(IsHealthLowKey.SelectedKeyName, bIsHealthLow);
 }
