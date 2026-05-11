@@ -17,5 +17,9 @@ protected:
 	
 public:
 	ARogueAICharacter();
+	virtual void PostInitializeComponents() override;
 	virtual float TakeDamage(float DamageAmount, struct FDamageEvent const& DamageEvent, class AController* EventInstigator, AActor* DamageCauser) override;
+	
+protected:
+	FTimerHandle TimerHandle_FitFlashOverlay;
 };

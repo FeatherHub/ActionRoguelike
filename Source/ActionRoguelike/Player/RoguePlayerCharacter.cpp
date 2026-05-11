@@ -33,6 +33,8 @@ void ARoguePlayerCharacter::PostInitializeComponents()
 	Super::PostInitializeComponents();
 
 	ActionSystemComp->GetOnAttributeChangedListener(RogueGameplayTag::Attribute_Health).AddUObject(this, &ThisClass::OnHealthChanged);
+	
+	GetMesh()->SetOverlayMaterialMaxDrawDistance(1.f);
 }
 
 void ARoguePlayerCharacter::SetupPlayerInputComponent(UInputComponent* PlayerInputComponent)
@@ -105,6 +107,16 @@ float ARoguePlayerCharacter::TakeDamage(float DamageAmount, struct FDamageEvent 
 	
 	float RageAmount = ActualDamage * DamagePerRageRatio;
 	ActionSystemComp->ApplyAttributeChange(RogueGameplayTag::Attribute_RageAmount, RageAmount, BaseDelta);
+	
+	// Hit Flash
+	GetMesh()->SetOverlayMaterialMaxDrawDistance(0.f);
+	GetMesh()->SetCustomPrimitiveDataFloat(0, GetWorld()->TimeSeconds);
+	GetWorldTimerManager().SetTimer(TimerHandle_HitFlashOverlay, [this](){
+		if (IsValid(this))
+		{
+			GetMesh()->SetOverlayMaterialMaxDrawDistance(1.f);
+		}
+	}, 1.f, false);
 	
 	return ActualDamage;
 }

@@ -55,8 +55,7 @@ protected:
 	TObjectPtr<UAnimMontage> AnimMontage_Death;
 	
 	UPROPERTY(EditDefaultsOnly, Category=Action)
-	/* 1 Damanage => 5 Rage */
-	float DamagePerRageRatio;
+	float DamagePerRageRatio; /* e.g. 1 Damanage => 5 Rage */
 	
 protected:
 	void Move(const FInputActionValue& InValue);
@@ -72,4 +71,7 @@ public:
 	virtual void PostInitializeComponents() override;
 	virtual void SetupPlayerInputComponent(class UInputComponent* PlayerInputComponent) override;
 	virtual float TakeDamage(float DamageAmount, struct FDamageEvent const& DamageEvent, class AController* EventInstigator, AActor* DamageCauser) override;
+	
+protected:
+	FTimerHandle TimerHandle_HitFlashOverlay;
 };
