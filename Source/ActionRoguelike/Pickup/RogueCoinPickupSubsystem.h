@@ -12,12 +12,17 @@ class ACTIONROGUELIKE_API URogueCoinPickupSubsystem : public UTickableWorldSubsy
 protected:
 	TArray<FVector> CoinLocations;
 	TArray<int32> CoinCredits;
+	TArray<FPrimitiveInstanceId> CoinMeshInstanceIds;
+	
+	UPROPERTY()
+	TObjectPtr<UInstancedStaticMeshComponent> CoinISMComp;
 	
 public:
+	virtual void OnWorldBeginPlay(UWorld& InWorld) override;
 	virtual void Tick(float DeltaTime) override;
 	
 	void SpawnCoins(int32 CoinCount, const FVector& Location, int32 Radius);
-	void AddCoins(const TArray<FVector>& NewCoinLocations, const TArray<int32>& NewCoinCredits);
+	void AddCoins(const TArray<FVector>& NewCoinLocations, const TArray<int32>& NewCoinCredits, const TArray<FPrimitiveInstanceId>& NewCoinInstanceIds);
 	void RemoveCoin(int32 CoinIndex);
 	virtual TStatId GetStatId() const override
 	{
