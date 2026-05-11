@@ -1,5 +1,6 @@
 ﻿#include "RogueActionSystemComponent.h"
 
+#include "ActionRoguelike.h"
 #include "RogueActionBase.h"
 #include "GameplayTagContainer.h"
 #include "RogueAttributeSet.h"
@@ -73,7 +74,7 @@ void URogueActionSystemComponent::StartAction(FGameplayTag ActionName)
 		}
 	}
 	
-	UE_LOGFMT(LogTemp, Warning, "Failed to Start Action '{ActionName}'", ActionName.GetTagName());
+	UE_LOGFMT(LogGame, Warning, "Failed to Start Action '{ActionName}'", ActionName.GetTagName());
 }
 
 void URogueActionSystemComponent::StopAction(FGameplayTag ActionName)
@@ -90,7 +91,7 @@ void URogueActionSystemComponent::StopAction(FGameplayTag ActionName)
 		}
 	}
 	
-	UE_LOGFMT(LogTemp, Warning, "Failed to Stop Action '{ActionName}'", ActionName.GetTagName());
+	UE_LOGFMT(LogGame, Warning, "Failed to Stop Action '{ActionName}'", ActionName.GetTagName());
 }
 
 bool URogueActionSystemComponent::ApplyAttributeChange(FGameplayTag AttributeTag, float InValue, EAttributeChangeType ChangeType)
@@ -150,14 +151,14 @@ bool URogueActionSystemComponent::ApplyAttributeChange(FGameplayTag AttributeTag
 				{
 					DynamicListeners->RemoveAt(i);
 					
-					UE_LOG(LogTemp, Log, TEXT("Successfully removed unbound OnAttributeChanged_Dynamic for %s")
+					UE_LOG(LogGame, Log, TEXT("Successfully removed unbound OnAttributeChanged_Dynamic for %s")
 						, *AttributeTag.ToString());
 				}
 			}			
 		}
 	}
 	
-	UE_LOG(LogTemp, Log, TEXT("[%s]-[%s] New: %-6.1f, Old: %-6.1f Type: %s")
+	UE_LOG(LogGame, Log, TEXT("[%s]-[%s] New: %-6.1f, Old: %-6.1f Type: %s")
 		, *GetFNameSafe(GetOuter()).ToString().Left(25), *AttributeTag.ToString(), NewValue, OldValue, *UEnum::GetValueAsString(ChangeType));
 
 	return bHasChanged;
@@ -177,7 +178,7 @@ FRogueAttribute* URogueActionSystemComponent::GetAttribute(FGameplayTag Attribut
 		return *FoundAttribute;
 	}
 	
-	UE_LOG(LogTemp, Warning, TEXT("Attribute %s not found on %s's ActionSystemComponent")
+	UE_LOG(LogGame, Warning, TEXT("Attribute %s not found on %s's ActionSystemComponent")
 		, *AttributeTag.ToString(), *GetNameSafe(GetOuter()));
 	
 	return nullptr;
@@ -207,7 +208,7 @@ void URogueActionSystemComponent::RemoveOnAttributeChangedListener_Dynamic(FOnAt
 	{
 		if (ListenersEntry.Value.RemoveSingle(ListenerToRemove) > 0)
 		{
-			UE_LOG(LogTemp, Log, TEXT("Successfully removed OnAttributeChanged_Dynamic for %s")
+			UE_LOG(LogGame, Log, TEXT("Successfully removed OnAttributeChanged_Dynamic for %s")
 				, *ListenersEntry.Key.ToString())
 
 			return;
