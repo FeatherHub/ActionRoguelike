@@ -3,6 +3,11 @@
 #include "Components/SphereComponent.h"
 #include "Kismet/GameplayStatics.h"
 
+ARogueProjectileMagic::ARogueProjectileMagic()
+{
+	InitialLifeSpan = 8.f;
+}
+
 void ARogueProjectileMagic::PostInitializeComponents()
 {
 	Super::PostInitializeComponents();
@@ -23,3 +28,4 @@ void ARogueProjectileMagic::OnHit(UPrimitiveComponent* HitComponent, AActor* Oth
 	
 	Destroy();
 }
+

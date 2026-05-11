@@ -25,6 +25,8 @@ ARogueProjectileBase::ARogueProjectileBase()
 	InFlightNiagaraComp->SetupAttachment(SphereComp);
 	
 	MovementComp->ProjectileGravityScale = 0.f;
+	
+	InitialLifeSpan = 30.f;
 }
 
 void ARogueProjectileBase::PostInitializeComponents()
