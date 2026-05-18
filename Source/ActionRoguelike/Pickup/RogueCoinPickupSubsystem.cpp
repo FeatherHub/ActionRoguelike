@@ -22,7 +22,8 @@ void URogueCoinPickupSubsystem::OnWorldBeginPlay(UWorld& InWorld)
 	CoinISMComp = NewObject<UInstancedStaticMeshComponent>(World, NAME_None, RF_Transient);
 	CoinISMComp->RegisterComponentWithWorld(World);
 	CoinISMComp->SetCollisionEnabled(ECollisionEnabled::Type::NoCollision);
-
+	CoinISMComp->SetAffectDistanceFieldLighting(false);
+	
 	CoinPickupAudioComp = NewObject<UAudioComponent>(World, NAME_None, RF_Transient);
 	CoinPickupAudioComp->SetAutoActivate(false);
 	CoinPickupAudioComp->bAllowSpatialization = false;
@@ -112,29 +113,36 @@ void URogueCoinPickupSubsystem::SpawnCoins(int32 CoinCount, const FVector& Locat
 	NewCoinLocations.Reserve(CoinCount);
 	TArray<int32> NewCoinCredits;
 	NewCoinCredits.Reserve(CoinCount);
-	
-	for (int i = 0; i < CoinCount; ++i)
+
 	{
-		FNavLocation NavLocation;
-		NavSystem->GetRandomPointInNavigableRadius(Location, Radius, NavLocation);
+		TRACE_CPUPROFILER_EVENT_SCOPE(URogueCoinPickupSubsystem::SpawnCoins::GetNavRandLocations);
 		
-		NewCoinLocations.Add(NavLocation.Location);
-		NewCoinCredits.Add(10);
+		for (int i = 0; i < CoinCount; ++i)
+		{
+			FNavLocation NavLocation;
+			NavSystem->GetRandomPointInNavigableRadius(Location, Radius, NavLocation);
+			
+			NewCoinLocations.Add(NavLocation.Location);
+			NewCoinCredits.Add(10);
+		}
 	}
-	
 
 	TArray<FTransform> NewCoinTransforms;
 	NewCoinTransforms.Reserve(CoinCount);
-	
-	for (int i = 0; i < CoinCount; ++i)
-	{
-		FTransform NewCoinTransform = FTransform(NewCoinLocations[i] + FVector{0.f, 0.f, 50.f} ); 
-		NewCoinTransforms.Add(NewCoinTransform);
-	}
 
-	TArray<FPrimitiveInstanceId> NewCoinInstanceIds = CoinISMComp->AddInstancesById(NewCoinTransforms, true, false);
-	
-	AddCoins(NewCoinLocations, NewCoinCredits, NewCoinInstanceIds);
+	{
+		TRACE_CPUPROFILER_EVENT_SCOPE(URogueCoinPickupSubsystem::SpawnCoins::AddISMInstance);
+		
+		for (int i = 0; i < CoinCount; ++i)
+		{
+			FTransform NewCoinTransform = FTransform(NewCoinLocations[i] + FVector{0.f, 0.f, 50.f} ); 
+			NewCoinTransforms.Add(NewCoinTransform);
+		}
+
+		TArray<FPrimitiveInstanceId> NewCoinInstanceIds = CoinISMComp->AddInstancesById(NewCoinTransforms, true, false);
+		
+		AddCoins(NewCoinLocations, NewCoinCredits, NewCoinInstanceIds);
+	}
 }
 
 void URogueCoinPickupSubsystem::AddCoins(const TArray<FVector>& NewCoinLocations, const TArray<int32>& NewCoinCredits, const TArray<FPrimitiveInstanceId>& NewCoinInstanceIds)
