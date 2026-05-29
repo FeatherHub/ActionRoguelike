@@ -19,6 +19,7 @@ void UURogueCharacterAnimInstance::NativeUpdateAnimation(float DeltaSeconds)
 	
 	if (ActionSystemComp)
 	{
-		 bIsSprinting = ActionSystemComp->ActiveTags.HasTag(RogueGameplayTag::Status_Sprinting);
+		bIsSprinting = ActionSystemComp->ActiveTags.HasTag(RogueGameplayTag::Status_Sprinting);
+		bIsStunned = ActionSystemComp->ActiveTags.HasTag(RogueGameplayTag::Status_Stunned);
 	}
 }

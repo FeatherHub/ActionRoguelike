@@ -14,4 +14,5 @@ namespace RogueGameplayTag
 	UE_DECLARE_GAMEPLAY_TAG_EXTERN(Attribute_RageAmount);
 	
 	UE_DECLARE_GAMEPLAY_TAG_EXTERN(Status_Sprinting);
+	UE_DECLARE_GAMEPLAY_TAG_EXTERN(Status_Stunned);
 }

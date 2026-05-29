@@ -12,11 +12,14 @@ class ACTIONROGUELIKE_API UURogueCharacterAnimInstance : public UAnimInstance
 	GENERATED_BODY()
 	
 protected:
+	UPROPERTY(Transient, BlueprintReadOnly)
+	TObjectPtr<URogueActionSystemComponent> ActionSystemComp;
+
 	UPROPERTY(Transient, BlueprintReadonly)
 	bool bIsSprinting;
 	
-	UPROPERTY(Transient, BlueprintReadOnly)
-	TObjectPtr<URogueActionSystemComponent> ActionSystemComp;
+	UPROPERTY(Transient, BlueprintReadonly)
+	bool bIsStunned;
 	
 public:
 	virtual void NativeInitializeAnimation() override;

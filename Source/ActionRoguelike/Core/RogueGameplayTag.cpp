@@ -13,4 +13,5 @@ namespace RogueGameplayTag
 	UE_DEFINE_GAMEPLAY_TAG(Attribute_RageAmount, TEXT("Attribute.RageAmount"));
 	
 	UE_DEFINE_GAMEPLAY_TAG(Status_Sprinting, TEXT("Status.Sprinting"));
+	UE_DEFINE_GAMEPLAY_TAG(Status_Stunned, TEXT("Status.Stunned"));
 }
