@@ -42,6 +42,8 @@ protected:
 	UFUNCTION(BlueprintCallable)
 	ACharacter* GetOwningCharacter() const;
 	
+	virtual bool ImplementsGetWorld() const override { return true; }
+	
 public:
 	UFUNCTION(BlueprintNativeEvent, Category=Action)
 	void StartAction();
