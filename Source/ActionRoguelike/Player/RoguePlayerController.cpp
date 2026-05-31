@@ -32,18 +32,26 @@ void ARoguePlayerController::ToggleInGameMenu()
 {
 	if (InGameMenuWidget)
 	{
+		SetShowMouseCursor(false);
+
 		InGameMenuWidget->RemoveFromParent();
 		InGameMenuWidget = nullptr;
-		
-		SetShowMouseCursor(false);
-		SetInputMode(FInputModeGameOnly{});
+
+		if (GetPawn())
+		{
+			GetPawn()->EnableInput(this);
+		}
 	}
 	else
 	{
+		if (GetPawn())
+		{
+			GetPawn()->DisableInput(this);
+		}
+
 		InGameMenuWidget = CreateWidget<UUserWidget>(this, InGameMenuWidgetClass);
 		InGameMenuWidget->AddToViewport();
-
+		
 		SetShowMouseCursor(true);
-		SetInputMode(FInputModeUIOnly{});
 	}
 }
