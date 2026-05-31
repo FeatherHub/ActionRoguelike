@@ -3,7 +3,8 @@
 #include "Core/RogueGameType.h"
 #include "Core/RogueInteractionInterface.h"
 #include "Engine/OverlapResult.h"
-
+#include "Widget/RogueWorldWidget.h"
+#include "Components/PanelWidget.h"
 
 TAutoConsoleVariable<bool> CVarInteractionDebugDraw{
 	TEXT("rogue.interaction.Debugdraw"), true,
@@ -23,9 +24,9 @@ URogueInteractionComponent::URogueInteractionComponent()
 
 void URogueInteractionComponent::Interact()
 {
-	if (SelectedActor)
+	if (InteractableActor)
 	{
-		IRogueInteractionInterface::Execute_Interact(SelectedActor);
+		IRogueInteractionInterface::Execute_Interact(InteractableActor);
 	}
 }
 
@@ -33,11 +34,59 @@ void URogueInteractionComponent::TickComponent(float DeltaTime, ELevelTick TickT
 {
 	Super::TickComponent(DeltaTime, TickType, ThisTickFunction);
 
+	InteractableActor = FindInteractableActor();
+	
+	if (InteractableActor)
+	{
+		if (!IsValid(InteractionPromptWidget) && ensure(InteractionPromptWidgetClass))
+		{
+			InteractionPromptWidget = CreateWidget<URogueWorldWidget>(GetWorld(), InteractionPromptWidgetClass);
+			InteractionPromptWidget->AttachedActor = InteractableActor;
+			InteractionPromptWidget->AddToViewport();
+		}
+		else
+		{
+			InteractionPromptWidget->AttachedActor = InteractableActor;
+		}
+	}
+	else
+	{
+		if (IsValid(InteractionPromptWidget))
+		{
+			InteractionPromptWidget->RemoveFromParent();
+			InteractionPromptWidget = nullptr;
+		}
+	}
+	
+#if !UE_BUILD_SHIPPING
+	if (CVarInteractionDebugDraw.GetValueOnGameThread())
+	{
+		FColor DebugColor = InteractableActor ? FColor::Green : FColor::Red;
+		FString InteractableActorInfo = InteractableActor ? FString::Printf(TEXT("Interactable Actor: %s"), *GetNameSafe(InteractableActor)) : "No Interactable Actor";
+		GEngine->AddOnScreenDebugMessage(0, 0.f, DebugColor, InteractableActorInfo);
+
+		FString PromptWidgetInfo = "[PromptWidget] No Prompt Widget";
+		if (InteractionPromptWidget)
+		{
+			UPanelWidget* Parent = InteractionPromptWidget->GetParent();
+			UPanelWidget* GrandParent = Parent ? Parent->GetParent() : nullptr;
+			
+			PromptWidgetInfo = FString::Format(TEXT("[PromptWidget] In Viewport? {0} Enabled? {1} Parent: {2} GrandParent: {3} "),
+				{InteractionPromptWidget->IsInViewport(), InteractionPromptWidget->GetIsEnabled(), 
+			GetNameSafe(Parent), GetNameSafe(GrandParent) }); 
+		}
+		GEngine->AddOnScreenDebugMessage(1, 0.f, DebugColor, PromptWidgetInfo);
+	}
+#endif
+}
+
+AActor* URogueInteractionComponent::FindInteractableActor()
+{
 	APlayerController* PC = CastChecked<APlayerController>(GetOwner());
 	APawn* PlayerPawn = PC->GetPawn();
 	if (!IsValid(PlayerPawn))
 	{
-		return;
+		return nullptr;
 	}
 
 	const bool bDebugEnabled = CVarInteractionDebugDraw.GetValueOnGameThread();
@@ -91,20 +140,20 @@ void URogueInteractionComponent::TickComponent(float DeltaTime, ELevelTick TickT
 #endif
 	}
 
-	SelectedActor = BestCandidate;
-	
 #if !UE_BUILD_SHIPPING
 	if (bDebugEnabled)
 	{
-		if (SelectedActor)
+		if (InteractableActor)
 		{
 			FVector Origin;
 			FVector Extent;
-			SelectedActor->GetActorBounds(true, Origin, Extent);
+			InteractableActor->GetActorBounds(true, Origin, Extent);
 			DrawDebugBox(GetWorld(), Origin, FVector{DEBUG_BOX_EXTENT + 10.f}, FColor::Green, false);
 		}
 
 		DrawDebugSphere(GetWorld(), EyeLocation, InteractionRadius, 16.f, FColor::White, false);
 	}
 #endif
+	
+	return BestCandidate;
 }

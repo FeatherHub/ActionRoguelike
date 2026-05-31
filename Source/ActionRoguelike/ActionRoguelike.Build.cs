@@ -15,7 +15,7 @@ public class ActionRoguelike : ModuleRules
 		PrivateDependencyModuleNames.AddRange(new string[]
 		{
 			"EnhancedInput", "Niagara", "AIModule", "NavigationSystem", 
-			"DeveloperSettings", "UMG"
+			"DeveloperSettings", "UMG", "SlateCore"
 		});
 
 		// Uncomment if you are using Slate UI

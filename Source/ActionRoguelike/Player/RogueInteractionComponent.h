@@ -5,6 +5,8 @@
 #include "RogueInteractionComponent.generated.h"
 
 
+class URogueWorldWidget;
+
 UCLASS(ClassGroup=(Custom), meta=(BlueprintSpawnableComponent))
 class ACTIONROGUELIKE_API URogueInteractionComponent : public UActorComponent
 {
@@ -19,9 +21,17 @@ protected:
 
 	UPROPERTY(EditDefaultsOnly, Category=Interaction)
 	float DirectionWeightScale;
+
+	UPROPERTY(EditDefaultsOnly, Category=Interaction)
+	TSubclassOf<URogueWorldWidget> InteractionPromptWidgetClass;
+
+	UPROPERTY(VisibleInstanceOnly, Category=Interaction)
+	URogueWorldWidget* InteractionPromptWidget;
 	
-	UPROPERTY()
-	TObjectPtr<AActor> SelectedActor;
+	UPROPERTY(VisibleInstanceOnly, Category=Interaction)
+	AActor* InteractableActor;
+	
+	AActor* FindInteractableActor();
 	
 public:
 	URogueInteractionComponent();
