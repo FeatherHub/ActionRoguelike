@@ -2,14 +2,15 @@
 
 #include "Kismet/GameplayStatics.h"
 
-inline TAutoConsoleVariable<bool> CVarWorldWidgetDrawDebug{TEXT("rogue.worldwidget.DebugDraw"), true, 
+inline TAutoConsoleVariable<bool> CVarWorldWidgetDrawDebug{TEXT("rogue.worldwidget.DebugDraw"), false, 
 	TEXT("Draw World Widget info. (0=off. 1=on)"), ECVF_Cheat};
+
 
 void URogueWorldWidget::NativeConstruct()
 {
 	Super::NativeConstruct();
 	
-	UpdateScreenPosition();
+	SetAlignmentInViewport({0.5f, 0.5f});
 }
 
 void URogueWorldWidget::TickWorldWidget()
@@ -18,10 +19,10 @@ void URogueWorldWidget::TickWorldWidget()
 	if (CVarWorldWidgetDrawDebug.GetValueOnGameThread())
 	{
 		FColor DebugColor = AttachedActor ? FColor::Green : FColor::Red;
-		FString DebugMessage = AttachedActor ? FString::Printf(TEXT("Attached Actor: %s"), *GetNameSafe(AttachedActor)) : "No Attached Actor";
+		FString AttachedActorMsg = AttachedActor ? FString::Printf(TEXT("[World Widget] Attached Actor: %s"), *GetNameSafe(AttachedActor)) : "[World Widget] No Attached Actor";
 
 		DrawDebugSphere(GetWorld(), AttachedActor->GetActorLocation(), 32.f, 24, FColor::Blue);
-		GEngine->AddOnScreenDebugMessage(20, 0.f, DebugColor, DebugMessage);
+		GEngine->AddOnScreenDebugMessage(20, 0.f, DebugColor, AttachedActorMsg);
 	}
 #endif
 	
@@ -32,13 +33,16 @@ void URogueWorldWidget::TickWorldWidget()
 		return;
 	}
 	
-	UpdateScreenPosition();
+	SyncToAttachedActorPosition();
 }
 
-void URogueWorldWidget::UpdateScreenPosition()
+void URogueWorldWidget::SyncToAttachedActorPosition()
 {
 	FVector2D ScreenPosition;
-	if (UGameplayStatics::ProjectWorldToScreen(GetOwningPlayer(), AttachedActor->GetActorLocation(), ScreenPosition))
+	FVector WorldPosition = AttachedActor->GetActorLocation() + ActorOffSet;
+	
+	bool bIsInFrontOfCamera = UGameplayStatics::ProjectWorldToScreen(GetOwningPlayer(), WorldPosition, ScreenPosition); 
+	if (bIsInFrontOfCamera)
 	{
 		SetPositionInViewport(ScreenPosition, true);
 	}
@@ -46,12 +50,15 @@ void URogueWorldWidget::UpdateScreenPosition()
 #if !UE_BUILD_SHIPPING
 	if (CVarWorldWidgetDrawDebug.GetValueOnGameThread())
 	{
-		FString ProjectionMsg = FString::Printf(TEXT("Projected From World %s to Screen %s"), \
-			*AttachedActor->GetActorLocation().ToString(),  *ScreenPosition.ToString()
-		);
+		FColor DebugColor = bIsInFrontOfCamera ? FColor::Blue : FColor::Red;
+		FString ProjectionMsg = TEXT("[WorldWiget] Is not in front of camera");
+		if (bIsInFrontOfCamera)
+		{
+			ProjectionMsg = FString::Printf(TEXT("[WorldWiget] Is in front of camera. Projected From World %s to Screen %s"),
+				*AttachedActor->GetActorLocation().ToString(),  *ScreenPosition.ToString()); 
+		}
 		
-		GEngine->AddOnScreenDebugMessage(21, 0.f, FColor::Blue, ProjectionMsg);
+		GEngine->AddOnScreenDebugMessage(21, 0.f, DebugColor, ProjectionMsg);
 	}
 #endif
 }
-

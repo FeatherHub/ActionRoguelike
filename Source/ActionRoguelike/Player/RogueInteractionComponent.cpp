@@ -7,7 +7,7 @@
 #include "Components/PanelWidget.h"
 
 TAutoConsoleVariable<bool> CVarInteractionDebugDraw{
-	TEXT("rogue.interaction.Debugdraw"), true,
+	TEXT("rogue.interaction.Debugdraw"), false,
 	TEXT("Enable interation debug draw. (0 = Off, 1 = On)"), ECVF_Cheat
 };
 
@@ -40,11 +40,12 @@ void URogueInteractionComponent::TickComponent(float DeltaTime, ELevelTick TickT
 	{
 		if (!IsValid(InteractionPromptWidget) && ensure(InteractionPromptWidgetClass))
 		{
-			InteractionPromptWidget = CreateWidget<URogueWorldWidget>(GetWorld(), InteractionPromptWidgetClass);
-			InteractionPromptWidget->AttachedActor = InteractableActor;
+			InteractionPromptWidget = CreateWidget<URogueWorldWidget>(Cast<APlayerController>(GetOwner()), InteractionPromptWidgetClass);
+			InteractionPromptWidget->InitializeWorldWidget();
 			InteractionPromptWidget->AddToViewport();
 		}
-		else
+		
+		if (IsValid(InteractionPromptWidget))
 		{
 			InteractionPromptWidget->AttachedActor = InteractableActor;
 			InteractionPromptWidget->TickWorldWidget();

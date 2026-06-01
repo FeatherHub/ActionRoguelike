@@ -12,14 +12,18 @@ class ACTIONROGUELIKE_API URogueWorldWidget : public UUserWidget
 	
 protected:
 	virtual void NativeConstruct() override;
-	void UpdateScreenPosition();
+	void SyncToAttachedActorPosition();
 	
 public:
+	
+	UFUNCTION(BlueprintImplementableEvent)
+	void InitializeWorldWidget();
+	
 	UFUNCTION(BlueprintCallable, Category=WorldWidget)
 	void TickWorldWidget();
 	
 	UPROPERTY(EditDefaultsOnly, Category=WorldWidget)
-	FVector WorldOffset;
+	FVector ActorOffSet;
 	
 	UPROPERTY(BlueprintReadWrite, Category=WorldWidget, meta=(ExposeOnSpawn=true))
 	AActor* AttachedActor;
