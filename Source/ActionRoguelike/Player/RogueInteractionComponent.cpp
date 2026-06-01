@@ -5,9 +5,11 @@
 #include "Engine/OverlapResult.h"
 #include "Widget/RogueWorldWidget.h"
 #include "Components/PanelWidget.h"
+#include "Development/DebugUtil.h"
+#include "Development/NetDevelopmentUtil.h"
 
 TAutoConsoleVariable<bool> CVarInteractionDebugDraw{
-	TEXT("rogue.interaction.Debugdraw"), false,
+	TEXT("rogue.interaction.Debugdraw"), true,
 	TEXT("Enable interation debug draw. (0 = Off, 1 = On)"), ECVF_Cheat
 };
 
@@ -24,16 +26,34 @@ URogueInteractionComponent::URogueInteractionComponent()
 
 void URogueInteractionComponent::Interact()
 {
-	if (InteractableActor)
+	ROGUE_SCREEN_DEBUG_NET(FString::Format(TEXT("[Interact] InteractableActor: {0}"), {GetNameSafe(InteractableActor)}));	
+	
+	Interact_Server(InteractableActor);
+}
+
+void URogueInteractionComponent::Interact_Server_Implementation(AActor* ActorToInteract)
+{
+	ROGUE_SCREEN_DEBUG_NET(FString::Format(TEXT("[InteractServer] InteractableActor: {0}"), {GetNameSafe(InteractableActor)}));	
+	
+	if (ActorToInteract)
 	{
-		IRogueInteractionInterface::Execute_Interact(InteractableActor);
+		IRogueInteractionInterface::Execute_Interact(ActorToInteract);
 	}
 }
+
 
 void URogueInteractionComponent::TickComponent(float DeltaTime, ELevelTick TickType, FActorComponentTickFunction* ThisTickFunction)
 {
 	Super::TickComponent(DeltaTime, TickType, ThisTickFunction);
 
+	APlayerController* OwningPC = Cast<APlayerController>(GetOwner());
+	if (!OwningPC->IsLocalController())
+	{
+		ROGUE_SCREEN_DEBUG_NET(FString::Format(TEXT("[InteractionComp] {0} is not local controller"), {GetNameSafe(OwningPC)}));	
+		
+		return;
+	}
+	
 	InteractableActor = FindInteractableActor();
 	
 	if (InteractableActor)

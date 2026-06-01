@@ -32,6 +32,10 @@ protected:
 	AActor* InteractableActor;
 	
 	AActor* FindInteractableActor();
+
+protected:
+	UFUNCTION(Server, Reliable)
+	void Interact_Server(AActor* ActorToInteract);
 	
 public:
 	URogueInteractionComponent();
