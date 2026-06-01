@@ -47,6 +47,7 @@ void URogueInteractionComponent::TickComponent(float DeltaTime, ELevelTick TickT
 		else
 		{
 			InteractionPromptWidget->AttachedActor = InteractableActor;
+			InteractionPromptWidget->TickWorldWidget();
 		}
 	}
 	else

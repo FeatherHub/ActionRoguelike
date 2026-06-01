@@ -1,6 +1,5 @@
 ﻿#include "RogueWorldWidget.h"
 
-#include "Blueprint/WidgetLayoutLibrary.h"
 #include "Kismet/GameplayStatics.h"
 
 inline TAutoConsoleVariable<bool> CVarWorldWidgetDrawDebug{TEXT("rogue.worldwidget.DebugDraw"), true, 
@@ -10,20 +9,21 @@ void URogueWorldWidget::NativeConstruct()
 {
 	Super::NativeConstruct();
 	
-	SetLocation();
+	UpdateScreenPosition();
 }
 
-void URogueWorldWidget::NativeTick(const FGeometry& MyGeometry, float InDeltaTime)
+void URogueWorldWidget::TickWorldWidget()
 {
-	Super::NativeTick(MyGeometry, InDeltaTime);
-	
+#if !UE_BUILD_SHIPPING
 	if (CVarWorldWidgetDrawDebug.GetValueOnGameThread())
 	{
 		FColor DebugColor = AttachedActor ? FColor::Green : FColor::Red;
 		FString DebugMessage = AttachedActor ? FString::Printf(TEXT("Attached Actor: %s"), *GetNameSafe(AttachedActor)) : "No Attached Actor";
+
 		DrawDebugSphere(GetWorld(), AttachedActor->GetActorLocation(), 32.f, 24, FColor::Blue);
 		GEngine->AddOnScreenDebugMessage(20, 0.f, DebugColor, DebugMessage);
 	}
+#endif
 	
 	if (!IsValid(AttachedActor))
 	{
@@ -32,22 +32,26 @@ void URogueWorldWidget::NativeTick(const FGeometry& MyGeometry, float InDeltaTim
 		return;
 	}
 	
-	SetLocation();
+	UpdateScreenPosition();
 }
 
-void URogueWorldWidget::SetLocation()
+void URogueWorldWidget::UpdateScreenPosition()
 {
 	FVector2D ScreenPosition;
 	if (UGameplayStatics::ProjectWorldToScreen(GetOwningPlayer(), AttachedActor->GetActorLocation(), ScreenPosition))
 	{
 		SetPositionInViewport(ScreenPosition, true);
 	}
+	
+#if !UE_BUILD_SHIPPING
 	if (CVarWorldWidgetDrawDebug.GetValueOnGameThread())
 	{
-		FString ProjectionInfo = FString::Printf(TEXT("Projected From World %s to Screen %s"), \
+		FString ProjectionMsg = FString::Printf(TEXT("Projected From World %s to Screen %s"), \
 			*AttachedActor->GetActorLocation().ToString(),  *ScreenPosition.ToString()
 		);
 		
-		GEngine->AddOnScreenDebugMessage(21, 0.f, FColor::Blue, ProjectionInfo);
+		GEngine->AddOnScreenDebugMessage(21, 0.f, FColor::Blue, ProjectionMsg);
 	}
+#endif
 }
+

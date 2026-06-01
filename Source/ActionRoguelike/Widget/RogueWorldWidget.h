@@ -12,14 +12,15 @@ class ACTIONROGUELIKE_API URogueWorldWidget : public UUserWidget
 	
 protected:
 	virtual void NativeConstruct() override;
-	virtual void NativeTick(const FGeometry& MyGeometry, float InDeltaTime) override;
-	
-	void SetLocation();
+	void UpdateScreenPosition();
 	
 public:
-	UPROPERTY(EditDefaultsOnly, Category=WorldUI)
+	UFUNCTION(BlueprintCallable, Category=WorldWidget)
+	void TickWorldWidget();
+	
+	UPROPERTY(EditDefaultsOnly, Category=WorldWidget)
 	FVector WorldOffset;
 	
-	UPROPERTY(BlueprintReadWrite, Category=WorldUI, meta=(ExposeOnSpawn=true))
+	UPROPERTY(BlueprintReadWrite, Category=WorldWidget, meta=(ExposeOnSpawn=true))
 	AActor* AttachedActor;
 };
