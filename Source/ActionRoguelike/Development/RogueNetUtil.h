@@ -1,99 +1,56 @@
 ﻿#pragma once
 
+#include "CoreMinimal.h"
 #include "RogueNetUtil.generated.h"
 
-static bool IsServer(ENetMode NetMode)
-{
-	return (NetMode == NM_ListenServer) || (NetMode == NM_DedicatedServer);
-}
-
-static FString GetNetModeName(ENetMode NetMode)
-{
-	return IsServer(NetMode) ? "Server" : "Client";
-}
-
 UENUM()
-enum class ENetConrolStatus
+enum class ENetControlStatus: uint8
 {
 	NA, Local, NotLocal
 };
 
 struct FNetContext
 {
-	int32 PIEIndex;
-	ENetMode NetMode;
 	ENetRole NetLocalRole;
 	bool bHasAuthority;
-	ENetConrolStatus ControlStatus;
+	ENetControlStatus ControlStatus;
 	
-	FString ToString();
+	FString ToString() const;
+	
+	static FNetContext Make(const AActor* Actor);
 };
-
-inline ENetConrolStatus GetNetControlStatus(AActor* Actor)
-{
-	if (APlayerController* PC = Cast<APlayerController>(Actor))
-	{
-		return PC->IsLocalController() ? ENetConrolStatus::Local : ENetConrolStatus::NotLocal;
-	}
-	if (APawn* Pawn = Cast<APawn>(Actor))
-	{
-		return Pawn->IsLocallyControlled() ? ENetConrolStatus::Local : ENetConrolStatus::NotLocal;
-	}
-
-	return ENetConrolStatus::NA;
-}
-
-inline FNetContext GetNetContext(AActor* Actor)
-{
-	FNetContext Context;
-	Context.PIEIndex = UE::GetPlayInEditorID();
-	Context.NetMode = Actor->GetWorld()->GetNetMode();
-	Context.NetLocalRole = Actor->GetLocalRole();
-	Context.bHasAuthority = Actor->HasAuthority();
-	Context.ControlStatus = GetNetControlStatus(Actor);
-	
-	return Context;
-}
 
 struct FNetDebugContext
 {
-	FNetContext NetContext;
-	FColor DebugColor;
-	bool bIsServer;
+	TOptional<FNetContext> NetContext;
+	int32 PIEIndex;
+	ENetMode NetMode;
+	bool bIsNetModeServer;
+
+	FColor GetDebugColor() const;
+	FString ToString() const;
+	static FNetDebugContext Make(const UWorld* World, TOptional<FNetContext> NetContext = {});
 };
 
-inline FNetDebugContext GetNetDebugContext(UActorComponent* Comp)
-{
-	FNetContext NetContext = FNetContext{};
+FNetDebugContext GetNetDebugContext(const AActor* Actor);
+FNetDebugContext GetNetDebugContext(const UActorComponent* Comp);
+bool ShouldSkipDebugMessage(const FNetDebugContext& Context);
 
-	if(AActor *Actor = Cast<AActor>(Comp->GetOwner()))
-	{
-		NetContext = GetNetContext(Actor);
-	} 
-	else
-	{
-		ensureMsgf(false, TEXT("Not implemented"));
-	}
-	
-	bool bIsServer = IsServer(NetContext.NetMode);
-	FColor DebugColor = bIsServer ? FColor::Green : FColor::Blue; 
-	
-	FNetDebugContext NetDebugContext { NetContext, DebugColor, bIsServer};
-	return NetDebugContext;
-}
+#define SCREEN_DEBUG_NET(Msg) ROGUE_SCREEN_DEBUG_NET_DURATION(Msg, 2.f)
 
-#define SCREEN_DEBUG_NET(Msg) ROGUE_SCREEN_DEBUG_NET_TIME(Msg, 2.f)
-
-#define ROGUE_SCREEN_DEBUG_NET_TIME(Msg, Duration) do \
+#define ROGUE_SCREEN_DEBUG_NET_DURATION(Msg, Duration) do \
 	{ \
-		FNetDebugContext Context = GetNetDebugContext(this); \
-		uint64 DebugKey = DEBUG_KEY_NET(Context.bIsServer); \
+		FNetDebugContext DebugContext = GetNetDebugContext(this); \
+		if(ShouldSkipDebugMessage(DebugContext)) { break; } \
+		\
+		uint64 DebugKey = DEBUG_KEY_NET(DebugContext.bIsNetModeServer); \
+		FString DebugMsg = FString{Msg}; \
 		\
 		GEngine->AddOnScreenDebugMessage( \
 			DebugKey, \
 			Duration, \
-			Context.DebugColor, \
-			Msg + " " + Context.NetContext.ToString() \
+			DebugContext.GetDebugColor(), \
+			FString::Printf(TEXT("%s %s"), *DebugMsg, *DebugContext.ToString()) \
 		); \
 	} while(false) 
 
