@@ -1,11 +1,12 @@
 ﻿#include "RogueItemChest.h"
 
+#include "Net/UnrealNetwork.h"
+
 
 ARogueItemChest::ARogueItemChest()
 {
-	PrimaryActorTick.bCanEverTick = true;
-	PrimaryActorTick.bStartWithTickEnabled = false;
-
+	bReplicates = true;
+	
 	BaseMeshComp = CreateDefaultSubobject<UStaticMeshComponent>(TEXT("BaseMeshComp"));
 	BaseMeshComp->SetCollisionProfileName(TEXT("Interaction"));
 	RootComponent = BaseMeshComp;
@@ -15,30 +16,36 @@ ARogueItemChest::ARogueItemChest()
 	LidMeshComp->SetupAttachment(BaseMeshComp);
 }
 
-void ARogueItemChest::BeginPlay()
-{
-	Super::BeginPlay();
-
-	AnimationPitchCurrent = LidMeshComp->GetRelativeRotation().Pitch;
-}
-
-void ARogueItemChest::Tick(float DeltaTime)
-{
-	Super::Tick(DeltaTime);
-	
-	FRotator NewRotator = FMath::RInterpConstantTo(FRotator{AnimationPitchCurrent, 0.f, 0.f}, FRotator{AnimationPitchMax, 0.f, 0.f}, DeltaTime, AnimationPitchSpeed);
-	AnimationPitchCurrent = NewRotator.Pitch;
-
-	LidMeshComp->SetRelativeRotation(NewRotator);
-	
-	if (FMath::IsNearlyEqual(AnimationPitchCurrent, AnimationPitchMax))
-	{
-		SetActorTickEnabled(false);
-		OnItemChestOpenAnimationComplete();
-	}
-}
-
 void ARogueItemChest::Interact_Implementation()
 {
-	SetActorTickEnabled(true);
+	bIsLidOpen = !bIsLidOpen;
+	OnIsLidOpenChanged(bIsLidOpen);
 }
+
+void ARogueItemChest::OnRep_IsLidOpen()
+{
+	OnIsLidOpenChanged(bIsLidOpen);
+}
+
+void ARogueItemChest::GetLifetimeReplicatedProps(TArray<class FLifetimeProperty>& OutLifetimeProps) const
+{
+	Super::GetLifetimeReplicatedProps(OutLifetimeProps);
+	
+	DOREPLIFETIME(ARogueItemChest, bIsLidOpen);
+}
+
+// void ARogueItemChest::Tick(float DeltaTime)
+// {
+// 	Super::Tick(DeltaTime);
+// 	
+// 	FRotator NewRotator = FMath::RInterpConstantTo(FRotator{AnimationPitchCurrent, 0.f, 0.f}, FRotator{AnimationPitchMax, 0.f, 0.f}, DeltaTime, AnimationPitchSpeed);
+// 	AnimationPitchCurrent = NewRotator.Pitch;
+//
+// 	LidMeshComp->SetRelativeRotation(NewRotator);
+// 	
+// 	if (FMath::IsNearlyEqual(AnimationPitchCurrent, AnimationPitchMax))
+// 	{
+// 		SetActorTickEnabled(false);
+// 		OnItemChestOpenAnimationComplete();
+// 	}
+// }
