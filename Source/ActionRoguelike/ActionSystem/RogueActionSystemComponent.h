@@ -41,7 +41,7 @@ protected:
 	UPROPERTY(EditAnywhere, Category=Action)
 	TArray<TObjectPtr<URogueActionBase>> GrantedActions;
 
-	UPROPERTY(EditAnywhere, Instanced, Category=Attribute)
+	UPROPERTY(Replicated, EditAnywhere, Instanced, Category=Attribute)
 	TObjectPtr<URogueAttributeSet> AttributeSet;
 
 	TMap<FGameplayTag, FRogueAttribute*> CachedAttributeMap;
@@ -49,12 +49,10 @@ protected:
 	TMap<FGameplayTag, FOnAttributeChanged> OnAttributeChangedListeners;
 
 	TMap<FGameplayTag, TArray<FOnAttributeChanged_Dynamic>> OnAttributeChangedListeners_Dynamic;
-
 public:
 	URogueActionSystemComponent();
 	virtual void InitializeComponent() override;
 	virtual void BeginPlay() override;
-	
 	void StartAction(FGameplayTag ActionName);
 	void StopAction(FGameplayTag ActionName);
 	
@@ -78,4 +76,6 @@ public:
 	
 	UFUNCTION(BlueprintCallable, DisplayName="Remove Attribute Changed Listener", meta=(Keywords="Event, Delegate"))
 	void RemoveOnAttributeChangedListener_Dynamic(FOnAttributeChanged_Dynamic ListenerToRemove);
+	
+	virtual bool ReplicateSubobjects(class UActorChannel* Channel, class FOutBunch* Bunch, FReplicationFlags* RepFlags) override;
 };

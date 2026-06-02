@@ -65,10 +65,10 @@ FColor FNetDebugContext::GetDebugColor() const
 
 FString FNetDebugContext::ToString() const
 {
-	FString DebugContextString = FString::Printf(TEXT("PIE: %d | NetMode: %s"), PIEIndex, *GetNetModeName(NetMode));
-	FString NetContextString = NetContext ? NetContext.GetValue().ToString() : TEXT("[Net Context Not Available]");
+	FString WorldContextString = FString::Printf(TEXT("PIE: %d | NetMode: %s"), PIEIndex, *GetNetModeName(NetMode));
+	FString ActorContextString = NetContext ? NetContext.GetValue().ToString() : TEXT("[Net Context Not Available]");
 		
-	return DebugContextString + TEXT(" || ") + NetContextString;
+	return WorldContextString + TEXT(" || ") + ActorContextString;
 }
 
 /////////////

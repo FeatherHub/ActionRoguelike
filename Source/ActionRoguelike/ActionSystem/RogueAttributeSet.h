@@ -39,6 +39,7 @@ protected:
 public:
 	virtual void PostInitializeComponents() {}
 	virtual void PostApplyChange() {}
+	virtual bool IsSupportedForNetworking() const override { return true; }
 };
 
 
@@ -48,10 +49,10 @@ class ACTIONROGUELIKE_API URogueHealthAttributeSet : public URogueAttributeSet
 	GENERATED_BODY()
 
 protected:
-	UPROPERTY(EditAnywhere, Category=Health)
+	UPROPERTY(Replicated, EditAnywhere, Category=Health)
 	FRogueAttribute Health;
 
-	UPROPERTY(EditAnywhere, Category=Health)
+	UPROPERTY(Replicated, EditAnywhere, Category=Health)
 	FRogueAttribute HealthMax;
 	
 public:

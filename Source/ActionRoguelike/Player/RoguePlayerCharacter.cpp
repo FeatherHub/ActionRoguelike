@@ -7,11 +7,27 @@
 #include "ActionSystem/RogueActionSystemComponent.h"
 #include "ActionSystem/RogueAttributeSet.h"
 #include "Core/RogueGameplayTag.h"
+#include "Development/RogueDebugUtil.h"
+#include "Development/RogueNetUtil.h"
 #include "GameFramework/PawnMovementComponent.h"
+#include "Net/UnrealNetwork.h"
+
+// Temp: For Debugging 
+void ARoguePlayerCharacter::Tick(float DeltaSeconds)
+{
+	Super::Tick(DeltaSeconds);
+
+	float Health = ActionSystemComp->GetAttributeValue(RogueGameplayTag::Attribute_Health);
+
+	FString HealthMsg = FString::Printf(TEXT("[PlayerCharacter::Tick] %s Health: %f"), *GetNameSafe(this), Health);
+	
+	DEBUG_NET_ONSCREEN(HealthMsg);
+}
 
 ARoguePlayerCharacter::ARoguePlayerCharacter()
 {
 	PrimaryActorTick.bCanEverTick = true;
+	PrimaryActorTick.bStartWithTickEnabled = true;
 
 	ActionSystemComp = CreateDefaultSubobject<URogueActionSystemComponent>(TEXT("ActionSystemComp"));
 	ActionSystemComp->SetDefaultAttributeSet(URoguePlayerAttributeSet::StaticClass());
@@ -121,4 +137,11 @@ float ARoguePlayerCharacter::TakeDamage(float DamageAmount, struct FDamageEvent 
 	}, 1.f, false);
 	
 	return ActualDamage;
+}
+
+void ARoguePlayerCharacter::GetLifetimeReplicatedProps(TArray<class FLifetimeProperty>& OutLifetimeProps) const
+{
+	Super::GetLifetimeReplicatedProps(OutLifetimeProps);
+	
+	DOREPLIFETIME(ARoguePlayerCharacter, ActionSystemComp);
 }

@@ -19,7 +19,13 @@ class ACTIONROGUELIKE_API ARoguePlayerCharacter : public ACharacter
 
 public:
 	ARoguePlayerCharacter();
-
+	virtual void PostInitializeComponents() override;
+	virtual void SetupPlayerInputComponent(class UInputComponent* PlayerInputComponent) override;
+	virtual void Tick(float DeltaSeconds) override;
+	
+	virtual float TakeDamage(float DamageAmount, struct FDamageEvent const& DamageEvent, class AController* EventInstigator, AActor* DamageCauser) override;
+	float GetPickupRadius() const { return PickupRadius; }
+	
 protected:
 	UPROPERTY(VisibleAnywhere, Category=Component)
 	TObjectPtr<UCameraComponent> CameraComp;
@@ -27,7 +33,7 @@ protected:
 	UPROPERTY(VisibleAnywhere, Category=Component)
 	TObjectPtr<USpringArmComponent> SpringArmComp;
 	
-	UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category=Action)
+	UPROPERTY(Replicated, VisibleAnywhere, BlueprintReadOnly, Category=Action)
 	TObjectPtr<URogueActionSystemComponent> ActionSystemComp;
 	
 	UPROPERTY(EditDefaultsOnly, Category=Input)
@@ -66,16 +72,10 @@ protected:
 	
 	void StartAction(FGameplayTag ActionName);
 	void StopAction(FGameplayTag ActionName);
-	
+
 	UFUNCTION()
 	void OnHealthChanged(float NewHealth, float OldHealth);
-	
-public:
-	virtual void PostInitializeComponents() override;
-	virtual void SetupPlayerInputComponent(class UInputComponent* PlayerInputComponent) override;
-	virtual float TakeDamage(float DamageAmount, struct FDamageEvent const& DamageEvent, class AController* EventInstigator, AActor* DamageCauser) override;
-	
-	float GetPickupRadius() const { return PickupRadius; }
+
 protected:
 	FTimerHandle TimerHandle_HitFlashOverlay;
 };

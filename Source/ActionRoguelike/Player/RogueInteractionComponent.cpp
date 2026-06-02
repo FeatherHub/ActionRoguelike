@@ -5,11 +5,11 @@
 #include "Engine/OverlapResult.h"
 #include "Widget/RogueWorldWidget.h"
 #include "Components/PanelWidget.h"
-#include "Development/DebugUtil.h"
+#include "Development/RogueDebugUtil.h"
 #include "Development/RogueNetUtil.h"
 
 TAutoConsoleVariable<bool> CVarInteractionDebugDraw{
-	TEXT("rogue.interaction.Debugdraw"), true,
+	TEXT("rogue.interaction.Debugdraw"), false,
 	TEXT("Enable interation debug draw. (0 = Off, 1 = On)"), ECVF_Cheat
 };
 
@@ -49,11 +49,10 @@ void URogueInteractionComponent::TickComponent(float DeltaTime, ELevelTick TickT
 	APlayerController* OwningPC = Cast<APlayerController>(GetOwner());
 	if (!OwningPC->IsLocalController())
 	{
-		DEBUG_NET_ONSCREEN(FString::Format(TEXT("[InteractionComp::Tick] {0} is not local controller"), {GetNameSafe(OwningPC)}));	
-		
+		DEBUG_NET_ONSCREEN_CVAR(FString::Format(TEXT("[InteractionComp::Tick] {0} is not local controller"), {GetNameSafe(OwningPC)}), CVarInteractionDebugDraw);	
 		return;
 	}
-	DEBUG_NET_ONSCREEN(FString::Format(TEXT("[InteractionComp::Tick] {0} is local controller"), {GetNameSafe(OwningPC)}));	
+	DEBUG_NET_ONSCREEN_CVAR(FString::Format(TEXT("[InteractionComp::Tick] {0} is local controller"), {GetNameSafe(OwningPC)}), CVarInteractionDebugDraw);	
 	
 	InteractableActor = FindInteractableActor();
 	

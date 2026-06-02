@@ -5,9 +5,14 @@
 #include "GameplayTagContainer.h"
 #include "RogueActionEffect.h"
 #include "RogueAttributeSet.h"
+#include "Engine/ActorChannel.h"
+#include "Net/UnrealNetwork.h"
+
 
 URogueActionSystemComponent::URogueActionSystemComponent()
 {
+	SetIsReplicatedByDefault(true);
+	
 	bWantsInitializeComponent = true;
 }
 
@@ -232,4 +237,23 @@ void URogueActionSystemComponent::RemoveOnAttributeChangedListener_Dynamic(FOnAt
 			return;
 		}
 	}
+}
+
+bool URogueActionSystemComponent::ReplicateSubobjects(class UActorChannel* Channel, class FOutBunch* Bunch, FReplicationFlags* RepFlags)
+{
+	bool bWrote = Super::ReplicateSubobjects(Channel, Bunch, RepFlags);
+	
+	if(AttributeSet)
+	{
+		bWrote |= Channel->ReplicateSubobject(AttributeSet, *Bunch, *RepFlags);
+	}
+	
+	return bWrote;
+}
+
+void URogueActionSystemComponent::GetLifetimeReplicatedProps(TArray<class FLifetimeProperty>& OutLifetimeProps) const
+{
+	Super::GetLifetimeReplicatedProps(OutLifetimeProps);
+	
+	DOREPLIFETIME(URogueActionSystemComponent, AttributeSet);
 }

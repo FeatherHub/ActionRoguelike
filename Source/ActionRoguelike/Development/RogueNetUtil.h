@@ -37,12 +37,19 @@ FNetDebugContext GetNetDebugContext(const UActorComponent* Comp);
 
 void DebugNetOnScreen(uint64 DebugKey, const FString& Msg, const FNetDebugContext& Context, float Duration);
 
+#define DEBUG_NET_ONSCREEN_CVAR(Msg, CVar) \
+	if(CVar.GetValueOnGameThread()) \
+	{ \
+		DEBUG_NET_ONSCREEN(Msg); \
+	}
+
 #define DEBUG_NET_ONSCREEN(Msg) ROGUE_DEBUG_NET_ONSCREEN_IMPL(Msg, 2.f)
 
 #define ROGUE_DEBUG_NET_ONSCREEN_IMPL(Msg, Duration) do \
 	{ \
 		FNetDebugContext Context = GetNetDebugContext(this); \
-		uint64 DebugKey = DEBUG_KEY_NET(Context.bIsNetModeServer); \
+		uint64 HashedThis = GetTypeHash(GetNameSafe(this)); \
+		uint64 DebugKey = HashCombine(DEBUG_KEY_NET(Context.bIsNetModeServer), HashedThis); \
 		FString UserMsg = Msg; \
 		DebugNetOnScreen(DebugKey, UserMsg, Context, Duration); \
 	} while(false) 
