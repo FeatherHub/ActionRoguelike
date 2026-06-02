@@ -1,9 +1,12 @@
 ﻿#include "RogueNetUtil.h"
 
-static TAutoConsoleVariable<int> CVarNetDebugVisibility{TEXT("rogue.net.debug.Visibility"), 0,
-	TEXT("Set net debug visibility. 0=Client and Server, 1=Client Only, 2=Server Only"), ECVF_Cheat};
+static TAutoConsoleVariable<int> CVarNetDebugFilter{TEXT("rogue.net.debug.Filter"), 0,
+	TEXT("Filter net debug messages. 0=Client and Server, 1=Client Only, 2=Server Only"), ECVF_Cheat};
 
-enum class NetDebugVisibility
+static TAutoConsoleVariable<bool> CVarNetDebugShowContext{TEXT("rogue.net.debug.ShowContext"), false,
+	TEXT("Show net debug context. 1=Show, 0=Hide")};
+
+enum class ENetDebugFilter: int
 {
 	ClientAndServer = 0,
 	ClientOnly = 1,
@@ -33,9 +36,9 @@ FNetContext FNetContext::Make(const AActor* Actor)
 FString FNetContext::ToString() const
 {
 	return FString::Printf(
-		TEXT("[%s | Auth: %d | Control: %s]"),
+		TEXT("%s | %s | Control %s"),
 		*StaticEnum<ENetRole>()->GetNameStringByValue(NetLocalRole),
-		bHasAuthority ? 1 : 0,
+		bHasAuthority ? TEXT("Auth") : TEXT("No Auth"),
 		*StaticEnum<ENetControlStatus>()->GetNameStringByValue((int64)ControlStatus)
 	);
 }
@@ -62,15 +65,15 @@ FColor FNetDebugContext::GetDebugColor() const
 
 FString FNetDebugContext::ToString() const
 {
-	FString DebugContextString = FString::Printf(TEXT("[PIE: %d | NetMode: %s]"), PIEIndex, *GetNetModeName(NetMode));
+	FString DebugContextString = FString::Printf(TEXT("PIE: %d | NetMode: %s"), PIEIndex, *GetNetModeName(NetMode));
 	FString NetContextString = NetContext ? NetContext.GetValue().ToString() : TEXT("[Net Context Not Available]");
 		
-	return DebugContextString + NetContextString;
+	return DebugContextString + TEXT(" || ") + NetContextString;
 }
 
-///////////////////
+/////////////
 // Util
-///////////////////
+/////////////
 
 FString GetNetModeName(ENetMode NetMode)
 {
@@ -132,18 +135,44 @@ FNetDebugContext GetNetDebugContext(const UActorComponent* Comp)
 	return FNetDebugContext::Make(Comp->GetWorld());
 }
 
-bool ShouldSkipDebugMessage(const FNetDebugContext& Context)
+bool ShouldShowDebugMessage(const FNetDebugContext& Context)
 {
-	int DebugVisibility = CVarNetDebugVisibility.GetValueOnGameThread();
-	
-	if(DebugVisibility == (int) NetDebugVisibility::ServerOnly && !Context.bIsNetModeServer)
+	ENetDebugFilter DebugFilter = static_cast<ENetDebugFilter>(CVarNetDebugFilter.GetValueOnGameThread());
+
+	switch (DebugFilter)
 	{
+	case ENetDebugFilter::ClientAndServer:
 		return true;
+	case ENetDebugFilter::ClientOnly:
+		return !Context.bIsNetModeServer;
+	case ENetDebugFilter::ServerOnly:
+		return Context.bIsNetModeServer;
+
+	default:
+		return false;
 	}
-	if(DebugVisibility == (int) NetDebugVisibility::ClientOnly && Context.bIsNetModeServer)
+}
+
+void DebugNetOnScreen(uint64 DebugKey, const FString& Msg, const FNetDebugContext& Context, float Duration)
+{
+	if(!ensure(GEngine))
 	{
-		return true;
+		return;
 	}
 	
-	return false;
+	if(!ShouldShowDebugMessage(Context))
+	{
+		return;
+	}
+	
+	FString FinalMsg = CVarNetDebugShowContext.GetValueOnGameThread() 
+		? FString::Printf(TEXT("%-80s %s"), *Context.ToString(), *Msg)
+		: Msg;
+
+	GEngine->AddOnScreenDebugMessage(
+		DebugKey,
+		Duration,
+		Context.GetDebugColor(),
+		FinalMsg
+	);
 }

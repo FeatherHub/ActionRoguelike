@@ -34,23 +34,16 @@ struct FNetDebugContext
 
 FNetDebugContext GetNetDebugContext(const AActor* Actor);
 FNetDebugContext GetNetDebugContext(const UActorComponent* Comp);
-bool ShouldSkipDebugMessage(const FNetDebugContext& Context);
 
-#define SCREEN_DEBUG_NET(Msg) ROGUE_SCREEN_DEBUG_NET_DURATION(Msg, 2.f)
+void DebugNetOnScreen(uint64 DebugKey, const FString& Msg, const FNetDebugContext& Context, float Duration);
 
-#define ROGUE_SCREEN_DEBUG_NET_DURATION(Msg, Duration) do \
+#define DEBUG_NET_ONSCREEN(Msg) ROGUE_DEBUG_NET_ONSCREEN_IMPL(Msg, 2.f)
+
+#define ROGUE_DEBUG_NET_ONSCREEN_IMPL(Msg, Duration) do \
 	{ \
-		FNetDebugContext DebugContext = GetNetDebugContext(this); \
-		if(ShouldSkipDebugMessage(DebugContext)) { break; } \
-		\
-		uint64 DebugKey = DEBUG_KEY_NET(DebugContext.bIsNetModeServer); \
-		FString DebugMsg = FString{Msg}; \
-		\
-		GEngine->AddOnScreenDebugMessage( \
-			DebugKey, \
-			Duration, \
-			DebugContext.GetDebugColor(), \
-			FString::Printf(TEXT("%s %s"), *DebugMsg, *DebugContext.ToString()) \
-		); \
+		FNetDebugContext Context = GetNetDebugContext(this); \
+		uint64 DebugKey = DEBUG_KEY_NET(Context.bIsNetModeServer); \
+		FString UserMsg = Msg; \
+		DebugNetOnScreen(DebugKey, UserMsg, Context, Duration); \
 	} while(false) 
 

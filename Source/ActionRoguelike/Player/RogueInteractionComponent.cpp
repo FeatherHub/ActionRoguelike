@@ -26,14 +26,14 @@ URogueInteractionComponent::URogueInteractionComponent()
 
 void URogueInteractionComponent::Interact()
 {
-	SCREEN_DEBUG_NET(FString::Format(TEXT("[Interact] InteractableActor: {0}"), {GetNameSafe(InteractableActor)}));	
+	DEBUG_NET_ONSCREEN(FString::Format(TEXT("[Interact] InteractableActor: {0}"), {GetNameSafe(InteractableActor)}));	
 	
 	Interact_Server(InteractableActor);
 }
 
 void URogueInteractionComponent::Interact_Server_Implementation(AActor* ActorToInteract)
 {
-	SCREEN_DEBUG_NET(FString::Format(TEXT("[InteractServer] ActorToInteract: {0}"), {GetNameSafe(ActorToInteract)}));	
+	DEBUG_NET_ONSCREEN(FString::Format(TEXT("[InteractServer] ActorToInteract: {0}"), {GetNameSafe(ActorToInteract)}));	
 
 	if (ActorToInteract && ActorToInteract->Implements<URogueInteractionInterface>())
 	{
@@ -49,11 +49,11 @@ void URogueInteractionComponent::TickComponent(float DeltaTime, ELevelTick TickT
 	APlayerController* OwningPC = Cast<APlayerController>(GetOwner());
 	if (!OwningPC->IsLocalController())
 	{
-		SCREEN_DEBUG_NET(FString::Format(TEXT("[InteractionComp::Tick] {0} is not local controller"), {GetNameSafe(OwningPC)}));	
+		DEBUG_NET_ONSCREEN(FString::Format(TEXT("[InteractionComp::Tick] {0} is not local controller"), {GetNameSafe(OwningPC)}));	
 		
 		return;
 	}
-	SCREEN_DEBUG_NET(FString::Format(TEXT("[InteractionComp::Tick] {0} is local controller"), {GetNameSafe(OwningPC)}));	
+	DEBUG_NET_ONSCREEN(FString::Format(TEXT("[InteractionComp::Tick] {0} is local controller"), {GetNameSafe(OwningPC)}));	
 	
 	InteractableActor = FindInteractableActor();
 	
@@ -88,13 +88,13 @@ void URogueInteractionComponent::TickComponent(float DeltaTime, ELevelTick TickT
 			? FString::Printf(TEXT("[InteractComp::Tick] Interactable Actor: %s"), *GetNameSafe(InteractableActor))  
 			: "[InteractComp::Tick] No Interactable Actor";
 		
-		SCREEN_DEBUG_NET(InteractableActorMsg);
+		DEBUG_NET_ONSCREEN(InteractableActorMsg);
 		
 		FString PromptWidgetMsg = InteractionPromptWidget
 			? FString::Printf(TEXT("[InteractComp::Tick] Widget In Viewport? %d Enabled? %d "),InteractionPromptWidget->IsInViewport(), InteractionPromptWidget->GetIsEnabled())
 			: "[InteractComp::Tick] No Prompt Widget";
 
-		SCREEN_DEBUG_NET(PromptWidgetMsg);
+		DEBUG_NET_ONSCREEN(PromptWidgetMsg);
 	}
 #endif
 }
