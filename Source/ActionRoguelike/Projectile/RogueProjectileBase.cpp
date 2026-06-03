@@ -12,6 +12,8 @@
 
 ARogueProjectileBase::ARogueProjectileBase()
 {
+	bReplicates = true;
+	
 	MovementComp = CreateDefaultSubobject<UProjectileMovementComponent>(TEXT("MovementComp"));
 	SphereComp = CreateDefaultSubobject<USphereComponent>(TEXT("SphereComp"));
 	InFlightNiagaraComp = CreateDefaultSubobject<UNiagaraComponent>(TEXT("InFlightNiagaraComp"));

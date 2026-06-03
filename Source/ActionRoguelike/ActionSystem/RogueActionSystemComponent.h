@@ -57,7 +57,13 @@ public:
 	URogueActionSystemComponent();
 	virtual void InitializeComponent() override;
 	virtual void BeginPlay() override;
+	
+	UFUNCTION(Server, Reliable)
+	void ServerStartAction(FGameplayTag ActionName);
 	void StartAction(FGameplayTag ActionName);
+	
+	UFUNCTION(Server, Reliable)
+	void ServerStopAction(FGameplayTag ActionName);
 	void StopAction(FGameplayTag ActionName);
 	
 	UFUNCTION(BlueprintCallable)

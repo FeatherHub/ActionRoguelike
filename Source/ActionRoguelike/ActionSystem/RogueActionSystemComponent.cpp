@@ -84,6 +84,11 @@ void URogueActionSystemComponent::RemoveAction(URogueActionBase* Action)
 	ensure(RemoveCount == 1);
 }
 
+void URogueActionSystemComponent::ServerStartAction_Implementation(FGameplayTag ActionName)
+{
+	StartAction(ActionName);
+}
+
 void URogueActionSystemComponent::StartAction(FGameplayTag ActionName)
 {
 	for (URogueActionBase* Action : GrantedActions)
@@ -92,6 +97,10 @@ void URogueActionSystemComponent::StartAction(FGameplayTag ActionName)
 		{
 			if (Action->CanStart())
 			{
+				if(!GetOwner()->HasAuthority())
+				{
+					ServerStartAction(ActionName);					
+				}
 				Action->StartAction();
 			}
 			return;
@@ -99,6 +108,11 @@ void URogueActionSystemComponent::StartAction(FGameplayTag ActionName)
 	}
 	
 	UE_LOGFMT(LogGame, Warning, "Failed to Start Action '{ActionName}'", ActionName.GetTagName());
+}
+
+void URogueActionSystemComponent::ServerStopAction_Implementation(FGameplayTag ActionName)
+{
+	StopAction(ActionName);
 }
 
 void URogueActionSystemComponent::StopAction(FGameplayTag ActionName)
@@ -109,6 +123,10 @@ void URogueActionSystemComponent::StopAction(FGameplayTag ActionName)
 		{
 			if (Action->CanStop())
 			{
+				if(!GetOwner()->HasAuthority())
+				{
+					ServerStopAction(ActionName);	
+				}
 				Action->StopAction();
 			}
 			return;
