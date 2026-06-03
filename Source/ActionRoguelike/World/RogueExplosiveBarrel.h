@@ -5,6 +5,7 @@
 #include "RogueExplosiveBarrel.generated.h"
 
 
+class UNiagaraComponent;
 class URadialForceComponent;
 class UNiagaraSystem;
 class UBoxComponent;
@@ -26,27 +27,39 @@ protected:
 	TObjectPtr<URadialForceComponent> ExplodeRadialForceComp;
 	
 	UPROPERTY(EditDefaultsOnly, Category=Effect)
-	TObjectPtr<UNiagaraSystem> BurnNiagaraEffect;
+	TObjectPtr<UNiagaraSystem> FuseVFX;
+
+	UPROPERTY(EditDefaultsOnly, Category=Effect)
+	TObjectPtr<USoundBase> FuseSFX;
+
+	UPROPERTY()
+	TObjectPtr<UNiagaraComponent> SpawnedFuseVFX;
 	
-	UPROPERTY(EditDefaultsOnly, Category=Effect)
-	TObjectPtr<UNiagaraSystem> ExplodeNiagaraEffect;
+	UPROPERTY()
+	TObjectPtr<UAudioComponent> SpawnedFuseSFX;
 
 	UPROPERTY(EditDefaultsOnly, Category=Effect)
-	TObjectPtr<USoundBase> BurnSoundEffect;
+	TObjectPtr<UNiagaraSystem> ExplodeVFX;
 
 	UPROPERTY(EditDefaultsOnly, Category=Effect)
-	TObjectPtr<USoundBase> ExplodeSoundEffect;
-
+	TObjectPtr<USoundBase> ExplodeSFX;
+	
 	UPROPERTY(EditDefaultsOnly, Category=Damage)
 	TSubclassOf<UDamageType> DmgTypeClass;
-
+	
 	UPROPERTY(EditDefaultsOnly, Category=Damage)
 	float ExplodeDelay;
 	
 	UFUNCTION()
 	void OnHit(UPrimitiveComponent* HitComponent, AActor* OtherActor, UPrimitiveComponent* OtherComp, FVector NormalImpulse, const FHitResult& Hit);
 	
-	UFUNCTION(BlueprintCallable)
+	UFUNCTION(NetMulticast, Reliable, BlueprintCallable)
+	void MulticastStartExplodeSequence();
+	
+	UFUNCTION()
+	void Fuse();
+	
+	UFUNCTION()
 	void Explode();
 	
 public:
