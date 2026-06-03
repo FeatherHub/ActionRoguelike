@@ -1,6 +1,7 @@
 ﻿#pragma once
 
 #include "CoreMinimal.h"
+#include "RogueDebugUtil.h"
 #include "RogueNetUtil.generated.h"
 
 UENUM()
@@ -34,23 +35,24 @@ struct FNetDebugContext
 
 FNetDebugContext GetNetDebugContext(const AActor* Actor);
 FNetDebugContext GetNetDebugContext(const UActorComponent* Comp);
+FString GetNetDebugName(const UObject* Object);
 
 void DebugNetOnScreen(uint64 DebugKey, const FString& Msg, const FNetDebugContext& Context, float Duration);
 
 #define DEBUG_NET_ONSCREEN_CVAR(Msg, CVar) \
-	if(CVar.GetValueOnGameThread()) \
+	do if(CVar.GetValueOnGameThread()) \
 	{ \
 		DEBUG_NET_ONSCREEN(Msg); \
-	}
+	} while(false)
 
-#define DEBUG_NET_ONSCREEN(Msg) ROGUE_DEBUG_NET_ONSCREEN_IMPL(Msg, 2.f)
+#define DEBUG_NET_ONSCREEN(Msg) DEBUG_NET_ONSCREEN_EX(Msg, 10.f, 0)
 
-#define ROGUE_DEBUG_NET_ONSCREEN_IMPL(Msg, Duration) do \
+#define DEBUG_NET_ONSCREEN_EX(Msg, Duration, DebugSubkey) do \
 	{ \
 		FNetDebugContext Context = GetNetDebugContext(this); \
-		uint64 HashedThis = GetTypeHash(GetNameSafe(this)); \
-		uint64 DebugKey = HashCombine(DEBUG_KEY_NET(Context.bIsNetModeServer), HashedThis); \
+		uint64 Hash1 = HashCombine(GetTypeHash(this), GetTypeHash(DebugSubkey)); \
+		uint64 Hash2 = HashCombine(DEBUG_KEY_NET(Context.bIsNetModeServer), Hash1); \
 		FString UserMsg = Msg; \
-		DebugNetOnScreen(DebugKey, UserMsg, Context, Duration); \
+		DebugNetOnScreen(Hash2, UserMsg, Context, Duration); \
 	} while(false) 
 

@@ -1,5 +1,7 @@
 ﻿#include "RogueNetUtil.h"
 
+#include "Engine/PackageMapClient.h"
+
 static TAutoConsoleVariable<int> CVarNetDebugFilter{TEXT("rogue.net.debug.Filter"), 0,
 	TEXT("Filter net debug messages. 0=Client and Server, 1=Client Only, 2=Server Only"), ECVF_Cheat};
 
@@ -173,6 +175,32 @@ void DebugNetOnScreen(uint64 DebugKey, const FString& Msg, const FNetDebugContex
 		DebugKey,
 		Duration,
 		Context.GetDebugColor(),
-		FinalMsg
+		FinalMsg,
+		false
 	);
+}
+
+FString GetNetDebugName(const UObject* Object)
+{
+	if(!Object)
+	{
+		return FString{TEXT("None")};
+	}
+	
+	if(UWorld* World = Object->GetWorld())
+	{
+		if(UNetDriver* NetDriver = World->GetNetDriver())
+		{
+			if(NetDriver->GuidCache.IsValid())
+			{
+				FNetworkGUID NetGUID = NetDriver->GuidCache->GetNetGUID(Object);
+				if(NetGUID.IsValid())
+				{
+					return FString::Printf(TEXT("GUID%s"), *NetGUID.ToString()) ;
+				}
+			}
+		}
+	}
+	
+	return Object->GetFName().ToString();
 }

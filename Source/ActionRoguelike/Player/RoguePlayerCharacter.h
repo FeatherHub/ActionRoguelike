@@ -22,6 +22,8 @@ public:
 	virtual void PostInitializeComponents() override;
 	virtual void SetupPlayerInputComponent(class UInputComponent* PlayerInputComponent) override;
 	virtual void Tick(float DeltaSeconds) override;
+	virtual void BeginPlay() override;
+	virtual void PossessedBy(AController* NewController) override;
 	
 	virtual float TakeDamage(float DamageAmount, struct FDamageEvent const& DamageEvent, class AController* EventInstigator, AActor* DamageCauser) override;
 	float GetPickupRadius() const { return PickupRadius; }
@@ -61,7 +63,7 @@ protected:
 	TObjectPtr<UAnimMontage> AnimMontage_Death;
 	
 	UPROPERTY(EditDefaultsOnly, Category=Action)
-	float DamagePerRageRatio; /* e.g. 1 Damanage => 5 Rage */
+	float DamagePerRageRatio; /* e.g. 1 Damage => 5 Rage */
 	
 	UPROPERTY(EditDefaultsOnly, Category=Pickup)
 	int32 PickupRadius;

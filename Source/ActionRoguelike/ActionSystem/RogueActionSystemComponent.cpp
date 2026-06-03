@@ -5,6 +5,7 @@
 #include "GameplayTagContainer.h"
 #include "RogueActionEffect.h"
 #include "RogueAttributeSet.h"
+#include "Development/RogueNetUtil.h"
 #include "Engine/ActorChannel.h"
 #include "Net/UnrealNetwork.h"
 
@@ -155,36 +156,49 @@ bool URogueActionSystemComponent::ApplyAttributeChange(FGameplayTag AttributeTag
 	if (!FMath::IsNearlyEqual(NewValue, OldValue))
 	{
 		bHasChanged = true;
-		
-		// Native C++ Listeners
-		if (FOnAttributeChanged* NativeListener = OnAttributeChangedListeners.Find(AttributeTag))
-		{
-			NativeListener->Broadcast(NewValue, OldValue);
-		}
-
-		// Dynamic Blueprint Listeners
-		if (TArray<FOnAttributeChanged_Dynamic>* DynamicListeners = OnAttributeChangedListeners_Dynamic.Find(AttributeTag))
-		{
-			for (int i = DynamicListeners->Num() - 1; i >= 0; --i)
-			{
-				FOnAttributeChanged_Dynamic& Listener = (*DynamicListeners)[i];
-				
-				bool bIsBound = Listener.ExecuteIfBound(NewValue, OldValue);
-				if (!bIsBound)
-				{
-					DynamicListeners->RemoveAt(i);
-					
-					UE_LOG(LogGame, Log, TEXT("Successfully removed unbound OnAttributeChanged_Dynamic for %s")
-						, *AttributeTag.ToString());
-				}
-			}			
-		}
+		MulticastAttributeChanged(AttributeTag, NewValue, OldValue);
 	}
 	
-	UE_LOG(LogGame, Log, TEXT("[%s]-[%s] New: %-6.1f, Old: %-6.1f Type: %s")
-		, *GetFNameSafe(GetOuter()).ToString().Left(25), *AttributeTag.ToString(), NewValue, OldValue, *UEnum::GetValueAsString(ChangeType));
+	FString AttrChangedMsg = FString::Printf(TEXT("[ASC::ApplyAttrChange] %s Attr %s New %f Old %f"), 
+		*GetNetDebugName(GetOwner()), *AttributeTag.ToString(), NewValue, OldValue);
+	DEBUG_NET_ONSCREEN_EX(AttrChangedMsg, 10.f, AttributeTag);
+
+	
+	UE_LOG(LogGame, Log, TEXT("[%s]-[%s] New: %-6.1f, Old: %-6.1f Type: %s"), 
+		*GetFNameSafe(GetOuter()).ToString().Left(25), *AttributeTag.ToString(), NewValue, OldValue, *UEnum::GetValueAsString(ChangeType));
 
 	return bHasChanged;
+}
+
+void URogueActionSystemComponent::MulticastAttributeChanged_Implementation(FGameplayTag AttributeTag, float NewValue, float OldValue)
+{
+	FString AttrChangedMsg = FString::Printf(TEXT("[ASC::MulticastAttrChanged] %s Attr %s New %f Old %f"), 
+		*GetNetDebugName(GetOwner()), *AttributeTag.ToString(), NewValue, OldValue);
+	DEBUG_NET_ONSCREEN_EX(AttrChangedMsg, 10.f, AttributeTag);
+	
+	// Native C++ Listeners
+	if (FOnAttributeChanged* NativeListener = OnAttributeChangedListeners.Find(AttributeTag))
+	{
+		NativeListener->Broadcast(NewValue, OldValue);
+	}
+
+	// Dynamic Blueprint Listeners
+	if (TArray<FOnAttributeChanged_Dynamic>* DynamicListeners = OnAttributeChangedListeners_Dynamic.Find(AttributeTag))
+	{
+		for (int i = DynamicListeners->Num() - 1; i >= 0; --i)
+		{
+			FOnAttributeChanged_Dynamic& Listener = (*DynamicListeners)[i];
+				
+			bool bIsBound = Listener.ExecuteIfBound(NewValue, OldValue);
+			if (!bIsBound)
+			{
+				DynamicListeners->RemoveAt(i);
+					
+				UE_LOG(LogGame, Log, TEXT("Successfully removed unbound OnAttributeChanged_Dynamic for %s")
+					, *AttributeTag.ToString());
+			}
+		}			
+	}
 }
 
 FOnAttributeChanged& URogueActionSystemComponent::GetOnAttributeChangedListener(FGameplayTag AttributeTag)

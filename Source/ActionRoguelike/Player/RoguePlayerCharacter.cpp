@@ -7,21 +7,38 @@
 #include "ActionSystem/RogueActionSystemComponent.h"
 #include "ActionSystem/RogueAttributeSet.h"
 #include "Core/RogueGameplayTag.h"
-#include "Development/RogueDebugUtil.h"
 #include "Development/RogueNetUtil.h"
 #include "GameFramework/PawnMovementComponent.h"
 #include "Net/UnrealNetwork.h"
 
-// Temp: For Debugging 
+
+// For Debugging 
 void ARoguePlayerCharacter::Tick(float DeltaSeconds)
 {
 	Super::Tick(DeltaSeconds);
-
+	
 	float Health = ActionSystemComp->GetAttributeValue(RogueGameplayTag::Attribute_Health);
-
-	FString HealthMsg = FString::Printf(TEXT("[PlayerCharacter::Tick] %s Health: %f"), *GetNameSafe(this), Health);
+	FString HealthMsg = FString::Printf(TEXT("[PlayerCharacter::Tick] %s Health: %f Replicates: %d"), *GetNetDebugName(this), Health, bReplicates);
 	
 	DEBUG_NET_ONSCREEN(HealthMsg);
+}
+
+// For Debugging 
+void ARoguePlayerCharacter::BeginPlay()
+{
+	Super::BeginPlay();
+	
+	FString ReplicatesMsg = FString::Printf(TEXT("[PlayerCharacter::Begin] %s Replicates: %d"), *GetNetDebugName(this), bReplicates);
+	DEBUG_NET_ONSCREEN(ReplicatesMsg);
+}
+
+// For Debugging 
+void ARoguePlayerCharacter::PossessedBy(AController* NewController)
+{
+	Super::PossessedBy(NewController);
+	
+	FString ReplicatesMsg = FString::Printf(TEXT("[PlayerCharacter::PossessedBy] %s Replicates: %d"), *GetNetDebugName(this), bReplicates);
+	DEBUG_NET_ONSCREEN(ReplicatesMsg);
 }
 
 ARoguePlayerCharacter::ARoguePlayerCharacter()
@@ -109,21 +126,23 @@ void ARoguePlayerCharacter::OnHealthChanged(float NewHealth, float OldHealth)
 {
 	if (NewHealth <= 0.f)
 	{
-		PlayAnimMontage(AnimMontage_Death);
+		float Result = PlayAnimMontage(AnimMontage_Death);
 
+		DEBUG_NET_ONSCREEN( FString::Printf(TEXT("[PlayerCharacter::OnHealthChanged] Montage Result: %f"), Result));
 		DisableInput(nullptr);
-		
+
+		// @TODO Figure out why this line causes the animation to stop only on listen server's remote-controlled pawn 
 		GetMovementComponent()->Deactivate();
 	}
 }
 
 float ARoguePlayerCharacter::TakeDamage(float DamageAmount, struct FDamageEvent const& DamageEvent, class AController* EventInstigator, AActor* DamageCauser)
 {
-	float ActualDamage =  Super::TakeDamage(DamageAmount, DamageEvent, EventInstigator, DamageCauser);
+	// float ActualDamage =  Super::TakeDamage(DamageAmount, DamageEvent, EventInstigator, DamageCauser);
 
-	ActionSystemComp->ApplyAttributeChange(RogueGameplayTag::Attribute_Health, -ActualDamage, BaseDelta);
+	ActionSystemComp->ApplyAttributeChange(RogueGameplayTag::Attribute_Health, -DamageAmount, BaseDelta);
 	
-	float RageAmount = ActualDamage * DamagePerRageRatio;
+	float RageAmount = DamageAmount * DamagePerRageRatio;
 	ActionSystemComp->ApplyAttributeChange(RogueGameplayTag::Attribute_RageAmount, RageAmount, BaseDelta);
 	
 	// Hit Flash
@@ -136,7 +155,7 @@ float ARoguePlayerCharacter::TakeDamage(float DamageAmount, struct FDamageEvent 
 		}
 	}, 1.f, false);
 	
-	return ActualDamage;
+	return DamageAmount;
 }
 
 void ARoguePlayerCharacter::GetLifetimeReplicatedProps(TArray<class FLifetimeProperty>& OutLifetimeProps) const

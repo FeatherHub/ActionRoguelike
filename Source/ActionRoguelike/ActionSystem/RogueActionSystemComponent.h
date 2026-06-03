@@ -44,11 +44,15 @@ protected:
 	UPROPERTY(Replicated, EditAnywhere, Instanced, Category=Attribute)
 	TObjectPtr<URogueAttributeSet> AttributeSet;
 
+	UFUNCTION(NetMulticast, Unreliable)
+	void MulticastAttributeChanged(FGameplayTag AttributeTag, float NewValue, float OldValue);
+	
 	TMap<FGameplayTag, FRogueAttribute*> CachedAttributeMap;
 	
 	TMap<FGameplayTag, FOnAttributeChanged> OnAttributeChangedListeners;
 
 	TMap<FGameplayTag, TArray<FOnAttributeChanged_Dynamic>> OnAttributeChangedListeners_Dynamic;
+	
 public:
 	URogueActionSystemComponent();
 	virtual void InitializeComponent() override;
