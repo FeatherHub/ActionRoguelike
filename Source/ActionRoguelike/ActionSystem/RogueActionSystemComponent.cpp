@@ -192,7 +192,10 @@ bool URogueActionSystemComponent::ApplyAttributeChange(FGameplayTag AttributeTag
 	if (!FMath::IsNearlyEqual(NewValue, OldValue))
 	{
 		bHasChanged = true;
-		MulticastAttributeChanged(AttributeTag, NewValue, OldValue);
+		if(GetOwner()->HasAuthority())
+		{
+			MulticastAttributeChanged(AttributeTag, NewValue, OldValue);
+		}
 	}
 	
 	FString AttrChangedMsg = FString::Printf(TEXT("[ASC::ApplyAttrChange] Character %s Attribute %s New %-6.0f Old %-6.0f"), 
