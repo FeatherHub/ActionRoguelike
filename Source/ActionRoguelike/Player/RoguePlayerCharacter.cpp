@@ -20,7 +20,6 @@ void ARoguePlayerCharacter::Tick(float DeltaSeconds)
 	float Health = ActionSystemComp->GetAttributeValue(RogueGameplayTag::Attribute_Health);
 	FString HealthMsg = FString::Printf(TEXT("[PlayerCharacter::Tick] %s Health: %f Replicates: %d"), *GetNetDebugName(this), Health, bReplicates);
 	
-	// DEBUG_NET_ONSCREEN(HealthMsg);
 	ROGUE_DEBUG(0, HealthMsg, 0.f, FColor::White);
 }
 
@@ -30,7 +29,6 @@ void ARoguePlayerCharacter::BeginPlay()
 	Super::BeginPlay();
 	
 	FString ReplicatesMsg = FString::Printf(TEXT("[PlayerCharacter::Begin] %s Replicates: %d"), *GetNetDebugName(this), bReplicates);
-	// DEBUG_NET_ONSCREEN(ReplicatesMsg);
 	ROGUE_DEBUG(0, ReplicatesMsg, 3.f, FColor::White);
 }
 
@@ -40,7 +38,6 @@ void ARoguePlayerCharacter::PossessedBy(AController* NewController)
 	Super::PossessedBy(NewController);
 	
 	FString ReplicatesMsg = FString::Printf(TEXT("[PlayerCharacter::PossessedBy] %s Replicates: %d"), *GetNetDebugName(this), bReplicates);
-	// DEBUG_NET_ONSCREEN(ReplicatesMsg);
 	ROGUE_DEBUG(0, ReplicatesMsg, 3.f, FColor::White);
 }
 

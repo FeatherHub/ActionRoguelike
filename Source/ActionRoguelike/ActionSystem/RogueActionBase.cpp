@@ -14,7 +14,6 @@ void URogueActionBase::StartAction_Implementation()
 	FString ActionMsg = FString::Printf(TEXT("[ActionBase::StartAction] Action(%s, %s). Character(%s)'s Controller(%s)"), 
 		*ActionName.ToString(), *GetNetDebugName(this), *GetNetDebugName(Character), *GetNetDebugName(Character->GetController())); 
 	
-	// DEBUG_NET_ONSCREEN_EX(ActionMsg, 3.f, FPlatformTime::Seconds());
 	ROGUE_DEBUG(0, ActionMsg, 3.f, FColor::Orange);
 	
 	bIsRunning = true;

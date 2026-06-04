@@ -80,7 +80,6 @@ void URogueActionSystemComponent::TickComponent(float DeltaTime, enum ELevelTick
 	{
 		ActionMsg += FString::Printf(TEXT("%s | "), *Action->GetActionName().GetTagLeafName().ToString());
 	}
-	// DEBUG_NET_ONSCREEN(ActionMsg);
 	ROGUE_DEBUG(0, ActionMsg, 0.f, FColor::White);
 }
 
@@ -198,7 +197,6 @@ bool URogueActionSystemComponent::ApplyAttributeChange(FGameplayTag AttributeTag
 	
 	FString AttrChangedMsg = FString::Printf(TEXT("[ASC::ApplyAttrChange] Character %s Attribute %s New %-6.0f Old %-6.0f"), 
 		*GetNetDebugName(GetOwner()), *AttributeTag.GetTagLeafName().ToString(), NewValue, OldValue);
-	// DEBUG_NET_ONSCREEN_EX_CVAR(CVarAttributeDebugMsg, AttrChangedMsg, 10.f, AttributeTag);
 	ROGUE_DEBUG_CVAR(CVarAttributeDebugMsg,AttributeTag, AttrChangedMsg, 3.f, FColor::Orange);
 	
 	UE_LOG(LogGame, Log, TEXT("[%s]-[%s] New: %-6.1f, Old: %-6.1f Type: %s"), 
@@ -211,7 +209,6 @@ void URogueActionSystemComponent::MulticastAttributeChanged_Implementation(FGame
 {
 	FString AttrChangedMsg = FString::Printf(TEXT("[ASC::MulticastAttrChanged] %s Attr %s New %f Old %f"), 
 		*GetNetDebugName(GetOwner()), *AttributeTag.ToString(), NewValue, OldValue);
-	// DEBUG_NET_ONSCREEN_EX_CVAR(CVarAttributeDebugMsg, AttrChangedMsg, 10.f, AttributeTag);
 	ROGUE_DEBUG_CVAR(CVarAttributeDebugMsg, AttributeTag, AttrChangedMsg, 5.f, FColor::Orange);
 	
 	// Native C++ Listeners
