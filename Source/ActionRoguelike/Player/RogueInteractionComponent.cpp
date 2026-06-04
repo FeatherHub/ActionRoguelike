@@ -63,6 +63,7 @@ void URogueInteractionComponent::TickComponent(float DeltaTime, ELevelTick TickT
 		if (!IsValid(InteractionPromptWidget) && ensure(InteractionPromptWidgetClass))
 		{
 			InteractionPromptWidget = CreateWidget<URogueWorldWidget>(Cast<APlayerController>(GetOwner()), InteractionPromptWidgetClass);
+			InteractionPromptWidget->AttachedActor = InteractableActor;
 			InteractionPromptWidget->InitializeWorldWidget();
 			InteractionPromptWidget->AddToViewport();
 		}
@@ -70,7 +71,6 @@ void URogueInteractionComponent::TickComponent(float DeltaTime, ELevelTick TickT
 		if (IsValid(InteractionPromptWidget))
 		{
 			InteractionPromptWidget->AttachedActor = InteractableActor;
-			InteractionPromptWidget->TickWorldWidget();
 		}
 	}
 	else

@@ -5,23 +5,26 @@
 #include "RogueWorldWidget.generated.h"
 
 
+class USizeBox;
+
 UCLASS()
 class ACTIONROGUELIKE_API URogueWorldWidget : public UUserWidget
 {
 	GENERATED_BODY()
 	
 protected:
-	virtual void NativeConstruct() override;
-	void SyncToAttachedActorPosition();
-	
-public:
-	
-	UFUNCTION(BlueprintImplementableEvent)
-	void InitializeWorldWidget();
+	UPROPERTY(meta=(BindWidget))
+	USizeBox* ParentSizeBox;
 	
 	UFUNCTION(BlueprintCallable, Category=WorldWidget)
-	void TickWorldWidget();
-	
+	virtual void NativeTick(const FGeometry& MyGeometry, float InDeltaTime) override;
+
+	void SyncToAttachedActorPosition();
+
+public:
+	UFUNCTION(BlueprintImplementableEvent)
+	void InitializeWorldWidget();
+
 	UPROPERTY(EditDefaultsOnly, Category=WorldWidget)
 	FVector ActorOffSet;
 	

@@ -128,8 +128,10 @@ void ARoguePlayerCharacter::OnHealthChanged(float NewHealth, float OldHealth)
 	{
 		DisableInput(nullptr);
 
-		// @TODO Figure out why this line causes the animation to stop only on listen server's remote-controlled pawn 
-		GetMovementComponent()->Deactivate();
+		PlayAnimMontage(AnimMontage_Death);
+		
+		// @TODO Figure out why this line causes the death animation to stop (only on server's remote-controlled pawn?) 
+		// GetMovementComponent()->Deactivate();
 	}
 }
 
