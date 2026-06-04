@@ -17,11 +17,12 @@ void URogueAction_ProjectileAttack::StartAction_Implementation()
 	Super::StartAction_Implementation();
 
 	ACharacter* Character = GetOwningCharacter();
-
+	
 	Character->PlayAnimMontage(AnimMontage_Attack);
 	
 	FVector SpawnLocation = Character->GetMesh()->GetSocketLocation(MuzzleSocketName);
-	UNiagaraFunctionLibrary::SpawnSystemAtLocation(this, CastingEffect, SpawnLocation, Character->GetController()->GetControlRotation(), FVector::OneVector, false);
+	FRotator SpawnRotation = Character->GetActorRotation();
+	UNiagaraFunctionLibrary::SpawnSystemAtLocation(this, CastingEffect, SpawnLocation, SpawnRotation, FVector::OneVector, false);
 	UGameplayStatics::PlaySound2D(this, CastingSound);
 	
 	FTimerHandle TimerHandle;
@@ -37,7 +38,7 @@ void URogueAction_ProjectileAttack::SpawnProjectile()
 	
 	FVector EyeLocation;
 	FRotator EyeRotation;
-	Character->GetController()->GetPlayerViewPoint(EyeLocation, EyeRotation);
+	Character->GetActorEyesViewPoint(EyeLocation, EyeRotation);
 	
 	FVector TraceEnd = EyeLocation + EyeRotation.Vector() * 5000.f;
 	

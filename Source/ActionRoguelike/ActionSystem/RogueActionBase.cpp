@@ -3,10 +3,19 @@
 #include "ActionRoguelike.h"
 #include "RogueActionSystemComponent.h"
 #include "RogueAttributeSet.h"
+#include "Development/RogueNetUtil.h"
 #include "GameFramework/Character.h"
+#include "Net/UnrealNetwork.h"
 
 void URogueActionBase::StartAction_Implementation()
 {
+	ACharacter* Character = GetOwningCharacter();
+	
+	FString ActionMsg = FString::Printf(TEXT("[ActionBase::StartAction] Action(%s, %s). Character(%s)'s Controller(%s)"), 
+		*ActionName.ToString(), *GetNetDebugName(this), *GetNetDebugName(Character), *GetNetDebugName(Character->GetController())); 
+	
+	DEBUG_NET_ONSCREEN_EX(ActionMsg, 3.f, FPlatformTime::Seconds());
+	
 	bIsRunning = true;
 	
 	float CurrentTime = GetWorld()->TimeSeconds;
@@ -102,4 +111,23 @@ URogueActionSystemComponent* URogueActionBase::GetOwningComponent() const
 ACharacter* URogueActionBase::GetOwningCharacter() const
 {
 	return Cast<ACharacter>(GetOuter()->GetOuter());
+}
+
+void URogueActionBase::OnRep_IsRunning()
+{
+	if(bIsRunning)
+	{
+		StartAction();
+	}
+	else
+	{
+		StopAction();
+	}
+}
+
+void URogueActionBase::GetLifetimeReplicatedProps(TArray<class FLifetimeProperty>& OutLifetimeProps) const
+{
+	UObject::GetLifetimeReplicatedProps(OutLifetimeProps);
+	
+	DOREPLIFETIME(URogueActionBase, bIsRunning);
 }

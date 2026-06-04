@@ -32,8 +32,11 @@ protected:
 	UPROPERTY(Transient)
 	float CooldownEndTime = 0.f;
 	
-	UPROPERTY(Transient)
+	UPROPERTY(ReplicatedUsing=OnRep_IsRunning, Transient)
 	bool bIsRunning = false;
+	
+	UFUNCTION()
+	void OnRep_IsRunning();
 	
 protected:
 	UFUNCTION(BlueprintCallable)
@@ -43,6 +46,7 @@ protected:
 	ACharacter* GetOwningCharacter() const;
 	
 	virtual bool ImplementsGetWorld() const override { return true; }
+	virtual bool IsSupportedForNetworking() const override { return true; }
 	
 public:
 	UFUNCTION(BlueprintNativeEvent, Category=Action)

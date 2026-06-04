@@ -137,6 +137,26 @@ FNetDebugContext GetNetDebugContext(const UActorComponent* Comp)
 	return FNetDebugContext::Make(Comp->GetWorld());
 }
 
+FNetDebugContext GetNetDebugContext(const UObject* Object)
+{
+	if(!Object)
+	{
+		return FNetDebugContext::Make(nullptr);
+	}
+	
+	if(UActorComponent* ActorComp = Cast<UActorComponent>(Object->GetOuter()))
+	{
+		return GetNetDebugContext(ActorComp);
+	}
+	
+	if(AActor* Actor = Cast<AActor>(Object->GetOuter()))
+	{
+		return GetNetDebugContext(Actor);
+	}
+	
+	return FNetDebugContext::Make(Object->GetWorld());
+}
+
 bool ShouldShowDebugMessage(const FNetDebugContext& Context)
 {
 	ENetDebugFilter DebugFilter = static_cast<ENetDebugFilter>(CVarNetDebugFilter.GetValueOnGameThread());
@@ -168,8 +188,8 @@ void DebugNetOnScreen(uint64 DebugKey, const FString& Msg, const FNetDebugContex
 	}
 	
 	FString FinalMsg = CVarNetDebugShowContext.GetValueOnGameThread() 
-		? FString::Printf(TEXT("%-80s %s"), *Context.ToString(), *Msg)
-		: Msg;
+		? FString::Printf(TEXT("%f %s %s"),FPlatformTime::Seconds(),  *Context.ToString().LeftPad(80), *Msg)
+		: FString::Printf(TEXT("%f %s"), FPlatformTime::Seconds(), *Msg);
 
 	GEngine->AddOnScreenDebugMessage(
 		DebugKey,

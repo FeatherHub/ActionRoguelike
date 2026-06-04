@@ -9,6 +9,8 @@
 #include "Engine/ActorChannel.h"
 #include "Net/UnrealNetwork.h"
 
+TAutoConsoleVariable<bool> CVarAttributeDebugMsg { TEXT("rogue.asc.attribute.ShowMsg"), false,
+	TEXT("Show ActionSystemComponent's Attribute related on-screen messages. 0=off, 1=on"), ECVF_Cheat };
 
 URogueActionSystemComponent::URogueActionSystemComponent()
 {
@@ -179,7 +181,7 @@ bool URogueActionSystemComponent::ApplyAttributeChange(FGameplayTag AttributeTag
 	
 	FString AttrChangedMsg = FString::Printf(TEXT("[ASC::ApplyAttrChange] %s Attr %s New %f Old %f"), 
 		*GetNetDebugName(GetOwner()), *AttributeTag.ToString(), NewValue, OldValue);
-	DEBUG_NET_ONSCREEN_EX(AttrChangedMsg, 10.f, AttributeTag);
+	DEBUG_NET_ONSCREEN_EX_CVAR(CVarAttributeDebugMsg, AttrChangedMsg, 10.f, AttributeTag);
 
 	
 	UE_LOG(LogGame, Log, TEXT("[%s]-[%s] New: %-6.1f, Old: %-6.1f Type: %s"), 
@@ -192,7 +194,7 @@ void URogueActionSystemComponent::MulticastAttributeChanged_Implementation(FGame
 {
 	FString AttrChangedMsg = FString::Printf(TEXT("[ASC::MulticastAttrChanged] %s Attr %s New %f Old %f"), 
 		*GetNetDebugName(GetOwner()), *AttributeTag.ToString(), NewValue, OldValue);
-	DEBUG_NET_ONSCREEN_EX(AttrChangedMsg, 10.f, AttributeTag);
+	DEBUG_NET_ONSCREEN_EX_CVAR(CVarAttributeDebugMsg, AttrChangedMsg, 10.f, AttributeTag);
 	
 	// Native C++ Listeners
 	if (FOnAttributeChanged* NativeListener = OnAttributeChangedListeners.Find(AttributeTag))
@@ -275,9 +277,13 @@ bool URogueActionSystemComponent::ReplicateSubobjects(class UActorChannel* Chann
 {
 	bool bWrote = Super::ReplicateSubobjects(Channel, Bunch, RepFlags);
 	
-	if(AttributeSet)
+	bWrote |= Channel->ReplicateSubobject(AttributeSet, *Bunch, *RepFlags);
+	ensure(AttributeSet);
+
+	for (URogueActionBase* Action : GrantedActions)
 	{
-		bWrote |= Channel->ReplicateSubobject(AttributeSet, *Bunch, *RepFlags);
+		bWrote |= Channel->ReplicateSubobject(Action, *Bunch, *RepFlags);
+		ensure(Action);
 	}
 	
 	return bWrote;
@@ -288,4 +294,5 @@ void URogueActionSystemComponent::GetLifetimeReplicatedProps(TArray<class FLifet
 	Super::GetLifetimeReplicatedProps(OutLifetimeProps);
 	
 	DOREPLIFETIME(URogueActionSystemComponent, AttributeSet);
+	DOREPLIFETIME(URogueActionSystemComponent, GrantedActions);
 }

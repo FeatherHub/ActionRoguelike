@@ -35,6 +35,8 @@ struct FNetDebugContext
 
 FNetDebugContext GetNetDebugContext(const AActor* Actor);
 FNetDebugContext GetNetDebugContext(const UActorComponent* Comp);
+FNetDebugContext GetNetDebugContext(const UObject* Object);
+
 FString GetNetDebugName(const UObject* Object);
 
 void DebugNetOnScreen(uint64 DebugKey, const FString& Msg, const FNetDebugContext& Context, float Duration);
@@ -56,3 +58,8 @@ void DebugNetOnScreen(uint64 DebugKey, const FString& Msg, const FNetDebugContex
 		DebugNetOnScreen(Hash2, UserMsg, Context, Duration); \
 	} while(false) 
 
+#define DEBUG_NET_ONSCREEN_EX_CVAR(CVar, Msg, Duration, DebugSubkey) \
+	do if(CVar.GetValueOnGameThread()) \
+	{ \
+		DEBUG_NET_ONSCREEN_EX(Msg, Duration, DebugSubkey); \
+	} while(false)

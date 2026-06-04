@@ -38,7 +38,7 @@ protected:
 	UPROPERTY(EditDefaultsOnly, Category=Action)
 	TArray<TSubclassOf<URogueActionBase>> DefaultGrantActions;
 
-	UPROPERTY(EditAnywhere, Category=Action)
+	UPROPERTY(Replicated, EditAnywhere, Category=Action)
 	TArray<TObjectPtr<URogueActionBase>> GrantedActions;
 
 	UPROPERTY(Replicated, EditAnywhere, Instanced, Category=Attribute)
