@@ -25,14 +25,18 @@ URogueInteractionComponent::URogueInteractionComponent()
 
 void URogueInteractionComponent::Interact()
 {
-	DEBUG_NET_ONSCREEN(FString::Format(TEXT("[Interact] InteractableActor: {0}"), {GetNameSafe(InteractableActor)}));	
+	FString InteractMsg = FString::Format(TEXT("[Interact] InteractableActor: {0}"), {GetNameSafe(InteractableActor)});
+	// DEBUG_NET_ONSCREEN(InteractMsg);	
+	ROGUE_DEBUG(0, InteractMsg, 3.f, FColor::White);
 	
 	Interact_Server(InteractableActor);
 }
 
 void URogueInteractionComponent::Interact_Server_Implementation(AActor* ActorToInteract)
 {
-	DEBUG_NET_ONSCREEN(FString::Format(TEXT("[InteractServer] ActorToInteract: {0}"), {GetNameSafe(ActorToInteract)}));	
+	FString InteractServerMsg = FString::Format(TEXT("[InteractServer] ActorToInteract: {0}"), {GetNameSafe(ActorToInteract)}); 
+	// DEBUG_NET_ONSCREEN(InteractServerMsg);
+	ROGUE_DEBUG(0, InteractServerMsg, 3.f, FColor::Blue);
 
 	if (ActorToInteract && ActorToInteract->Implements<URogueInteractionInterface>())
 	{
@@ -46,12 +50,13 @@ void URogueInteractionComponent::TickComponent(float DeltaTime, ELevelTick TickT
 	Super::TickComponent(DeltaTime, TickType, ThisTickFunction);
 
 	APlayerController* OwningPC = Cast<APlayerController>(GetOwner());
+
+	FString LocalControllerMsg = FString::Printf(TEXT("[InteractionComp::Tick] %s Is Local Controller? %d"), *GetNetDebugName(OwningPC), OwningPC->IsLocalController());
+	ROGUE_DEBUG_CVAR(CVarInteractionDebugDraw, 0, LocalControllerMsg, 0.f, FColor::White);
 	if (!OwningPC->IsLocalController())
 	{
-		DEBUG_NET_ONSCREEN_CVAR(FString::Format(TEXT("[InteractionComp::Tick] {0} is not local controller"), {GetNameSafe(OwningPC)}), CVarInteractionDebugDraw);	
 		return;
 	}
-	DEBUG_NET_ONSCREEN_CVAR(FString::Format(TEXT("[InteractionComp::Tick] {0} is local controller"), {GetNameSafe(OwningPC)}), CVarInteractionDebugDraw);	
 	
 	InteractableActor = FindInteractableActor();
 	
@@ -86,13 +91,15 @@ void URogueInteractionComponent::TickComponent(float DeltaTime, ELevelTick TickT
 			? FString::Printf(TEXT("[InteractComp::Tick] Interactable Actor: %s"), *GetNameSafe(InteractableActor))  
 			: "[InteractComp::Tick] No Interactable Actor";
 		
-		DEBUG_NET_ONSCREEN(InteractableActorMsg);
-		
-		FString PromptWidgetMsg = InteractionPromptWidget
-			? FString::Printf(TEXT("[InteractComp::Tick] Widget In Viewport? %d Enabled? %d "),InteractionPromptWidget->IsInViewport(), InteractionPromptWidget->GetIsEnabled())
-			: "[InteractComp::Tick] No Prompt Widget";
+		// DEBUG_NET_ONSCREEN(InteractableActorMsg);
+		ROGUE_DEBUG(0, InteractableActorMsg, 0.f, FColor::White);
 
-		DEBUG_NET_ONSCREEN(PromptWidgetMsg);
+		FString PromptWidgetMsg = InteractionPromptWidget
+			                          ? FString::Printf(TEXT("[InteractComp::Tick] Widget In Viewport? %d Enabled? %d "),InteractionPromptWidget->IsInViewport(), InteractionPromptWidget->GetIsEnabled())
+			                          : "[InteractComp::Tick] No Prompt Widget";
+
+		// DEBUG_NET_ONSCREEN(PromptWidgetMsg);
+		ROGUE_DEBUG(0, PromptWidgetMsg, 0.f, FColor::White);
 	}
 #endif
 }

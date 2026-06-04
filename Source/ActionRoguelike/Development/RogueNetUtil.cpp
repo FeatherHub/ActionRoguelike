@@ -1,5 +1,6 @@
 ﻿#include "RogueNetUtil.h"
 
+#include "RogueDebugSubsystem.h"
 #include "Engine/PackageMapClient.h"
 
 static TAutoConsoleVariable<int> CVarNetDebugFilter{TEXT("rogue.net.debug.Filter"), 0,
@@ -15,7 +16,6 @@ enum class ENetDebugFilter: int
 	ServerOnly = 2,
 };
 
-bool IsNetModeServer(ENetMode NetMode);
 FString GetNetModeName(ENetMode NetMode);
 ENetControlStatus GetNetControlStatus(const AActor* Actor);
 
@@ -175,29 +175,11 @@ bool ShouldShowDebugMessage(const FNetDebugContext& Context)
 	}
 }
 
-void DebugNetOnScreen(uint64 DebugKey, const FString& Msg, const FNetDebugContext& Context, float Duration)
+FString GetDebugString(const FString& Msg, const FNetDebugContext& Context)
 {
-	if(!ensure(GEngine))
-	{
-		return;
-	}
-	
-	if(!ShouldShowDebugMessage(Context))
-	{
-		return;
-	}
-	
-	FString FinalMsg = CVarNetDebugShowContext.GetValueOnGameThread() 
-		? FString::Printf(TEXT("%f %s %s"),FPlatformTime::Seconds(),  *Context.ToString().LeftPad(80), *Msg)
-		: FString::Printf(TEXT("%f %s"), FPlatformTime::Seconds(), *Msg);
-
-	GEngine->AddOnScreenDebugMessage(
-		DebugKey,
-		Duration,
-		Context.GetDebugColor(),
-		FinalMsg,
-		false
-	);
+	return CVarNetDebugShowContext.GetValueOnGameThread() 
+		? FString::Printf(TEXT("%s %s"), *Context.ToString().LeftPad(80), *Msg)
+		: FString::Printf(TEXT("%s"), *Msg);
 }
 
 FString GetNetDebugName(const UObject* Object)
@@ -224,3 +206,44 @@ FString GetNetDebugName(const UObject* Object)
 	
 	return Object->GetFName().ToString();
 }
+
+void SubmitDebugContext(UObject* WorldContext, uint64 DebugKey, const FString& Msg, const FColor& Color, float Duration, const FNetDebugContext& DebugContext)
+{
+	UWorld* World = WorldContext->GetWorld();
+	URogueDebugSubsystem* DebugSubsystem = World->GetSubsystem<URogueDebugSubsystem>();
+	
+	FString FinalMsg = GetDebugString(Msg, DebugContext);
+	
+	FScreenDebugContext ScreenDebugContext;
+	ScreenDebugContext.TimeStamp = FPlatformTime::Seconds();
+	ScreenDebugContext.DateTime = FDateTime::Now();
+	ScreenDebugContext.RemainingTime = Duration;
+	ScreenDebugContext.Color = Color;
+	ScreenDebugContext.Message = FinalMsg;
+	ScreenDebugContext.DebugKey = DebugKey;
+	
+	DebugSubsystem->Submit(ScreenDebugContext);
+}
+
+// void DebugNetOnScreen(uint64 DebugKey, const FString& Msg, const FNetDebugContext& Context, float Duration)
+// {
+// 	if(!ensure(GEngine))
+// 	{
+// 		return;
+// 	}
+// 	
+// 	if(!ShouldShowDebugMessage(Context))
+// 	{
+// 		return;
+// 	}
+//
+// 	FString FinalMsg = GetDebugString(Msg, Context);
+// 	
+// 	GEngine->AddOnScreenDebugMessage(
+// 		DebugKey,
+// 		Duration,
+// 		Context.GetDebugColor(),
+// 		FinalMsg,
+// 		false
+// 	);
+// }
