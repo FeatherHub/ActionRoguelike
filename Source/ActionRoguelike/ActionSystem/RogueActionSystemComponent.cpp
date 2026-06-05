@@ -83,6 +83,11 @@ void URogueActionSystemComponent::TickComponent(float DeltaTime, enum ELevelTick
 	ROGUE_DEBUG(0, ActionMsg, 0.f, FColor::White);
 }
 
+
+///////////
+// Action
+///////////
+
 void URogueActionSystemComponent::GrantAction(TSubclassOf<URogueActionBase> ActionClass)
 {
 	URogueActionBase* NewAction = NewObject<URogueActionBase>(this, ActionClass);
@@ -153,6 +158,11 @@ void URogueActionSystemComponent::StopAction(FGameplayTag ActionName)
 	
 	UE_LOGFMT(LogGame, Warning, "Failed to Stop Action '{ActionName}'", ActionName.GetTagName());
 }
+
+
+///////////////
+// Attribute
+///////////////
 
 bool URogueActionSystemComponent::ApplyAttributeChange(FGameplayTag AttributeTag, float InValue, EAttributeChangeType ChangeType)
 {
@@ -291,6 +301,35 @@ void URogueActionSystemComponent::RemoveOnAttributeChangedListener_Dynamic(FOnAt
 	}
 }
 
+///////////////
+// Active Tags
+///////////////
+
+void URogueActionSystemComponent::AppendActiveTags(const FGameplayTagContainer& NewTags)
+{
+	ActiveTags.AppendTags(NewTags);
+
+	for (const FGameplayTag& NewTag : NewTags)
+	{
+		OnGameplayTagUpdated.Broadcast(NewTag, 1);
+	}
+}
+
+void URogueActionSystemComponent::RemoveActiveTags(const FGameplayTagContainer& TagsToRemove)
+{
+	int32 OldCount = ActiveTags.Num();
+	ActiveTags.RemoveTags(TagsToRemove);
+	ensure((OldCount - ActiveTags.Num()) == TagsToRemove.Num());
+
+	for (const FGameplayTag& TagToRemove : TagsToRemove)
+	{
+		OnGameplayTagUpdated.Broadcast(TagToRemove, 0);
+	}
+}
+
+////////////////
+// Replication
+////////////////
 bool URogueActionSystemComponent::ReplicateSubobjects(class UActorChannel* Channel, class FOutBunch* Bunch, FReplicationFlags* RepFlags)
 {
 	bool bWrote = Super::ReplicateSubobjects(Channel, Bunch, RepFlags);

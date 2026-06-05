@@ -4,6 +4,7 @@
 #include "Animation/AnimInstance.h"
 #include "URogueCharacterAnimInstance.generated.h"
 
+struct FGameplayTag;
 class URogueActionSystemComponent;
 
 UCLASS()
@@ -21,7 +22,10 @@ protected:
 	UPROPERTY(Transient, BlueprintReadonly)
 	bool bIsStunned;
 	
+	UFUNCTION()
+	void OnGameplayTagUpdated(FGameplayTag UpdatedTag, int32 NewCount);
+	
 public:
 	virtual void NativeInitializeAnimation() override;
-	virtual void NativeUpdateAnimation(float DeltaSeconds) override;
+	virtual void NativeBeginPlay() override;
 };
