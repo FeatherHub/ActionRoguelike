@@ -113,6 +113,8 @@ public:
 	}
 	
 protected:
+	void CheckAgainstBlockedTags(const FGameplayTagContainer& NewTags);
+	
 	UPROPERTY(VisibleAnywhere, Category=Action)
 	FGameplayTagContainer ActiveTags;
 	

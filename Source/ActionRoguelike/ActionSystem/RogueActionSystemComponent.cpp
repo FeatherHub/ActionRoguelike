@@ -309,6 +309,7 @@ void URogueActionSystemComponent::AppendActiveTags(const FGameplayTagContainer& 
 {
 	ActiveTags.AppendTags(NewTags);
 
+	CheckAgainstBlockedTags(NewTags);
 	for (const FGameplayTag& NewTag : NewTags)
 	{
 		OnGameplayTagUpdated.Broadcast(NewTag, 1);
@@ -324,6 +325,20 @@ void URogueActionSystemComponent::RemoveActiveTags(const FGameplayTagContainer& 
 	for (const FGameplayTag& TagToRemove : TagsToRemove)
 	{
 		OnGameplayTagUpdated.Broadcast(TagToRemove, 0);
+	}
+}
+
+void URogueActionSystemComponent::CheckAgainstBlockedTags(const FGameplayTagContainer& NewTags)
+{
+	for (URogueActionBase* Action : GrantedActions)
+	{
+		if(Action->GetBlockedTags().HasAny(NewTags))
+		{
+			if(Action->IsRunning())
+			{
+				Action->StopAction();
+			}
+		}
 	}
 }
 

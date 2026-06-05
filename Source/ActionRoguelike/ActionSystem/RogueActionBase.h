@@ -58,6 +58,12 @@ public:
 	bool CanStart() const;
 	bool CanStop() const;
 	bool IsRunning() const { return bIsRunning; }
+	
+	const FGameplayTagContainer& GetBlockedTags() const
+	{
+		return ActivationBlockedTags;
+	}
+	
 	float GetCooldownRemaining() const;
 	FGameplayTag GetActionName() const { return ActionName; }
 };
