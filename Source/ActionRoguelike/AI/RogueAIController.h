@@ -13,8 +13,9 @@ protected:
 	UPROPERTY(EditDefaultsOnly, Category=AI)
 	TObjectPtr<UBehaviorTree> BehaviorTree;
 	
+	UFUNCTION()
+	virtual void OnPawnDeathStart();
 public:
-	ARogueAIController();
-
+	virtual void OnPossess(APawn* InPawn) override;
 	virtual void BeginPlay() override;
 };

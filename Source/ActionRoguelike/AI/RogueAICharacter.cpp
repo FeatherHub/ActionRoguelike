@@ -31,10 +31,12 @@ void ARogueAICharacter::BeginPlay()
 	}
 }
 
+// @TODO: Refactor to use ActionSystem (e.g. ASC->AddListener)
 float ARogueAICharacter::TakeDamage(float DamageAmount, struct FDamageEvent const& DamageEvent, class AController* EventInstigator, AActor* DamageCauser)
 {
 	float ActualDamageAmount = Super::TakeDamage(DamageAmount, DamageEvent, EventInstigator, DamageCauser);
 
+	float OldValue = ActionSystemComp->GetAttributeValue(RogueGameplayTag::Attribute_Health);
 	ActionSystemComp->ApplyAttributeChange(RogueGameplayTag::Attribute_Health, -ActualDamageAmount, BaseDelta);
 
 	// Hit Flash
@@ -50,13 +52,17 @@ float ARogueAICharacter::TakeDamage(float DamageAmount, struct FDamageEvent cons
 
 	// Handle Death
 	float NewHealth = ActionSystemComp->GetAttributeValue(RogueGameplayTag::Attribute_Health);
-	if (NewHealth < 0.f)
+	if (OldValue > 0.f && NewHealth <= 0.f)
 	{
 		if(HealthWorldWidget)
 		{
 			HealthWorldWidget->RemoveFromParent();
-			SetLifeSpan(3.f);
 		}
+
+		OnDeathStart.Broadcast();
+
+		float AnimDuration = PlayAnimMontage(AnimMontage_Death);
+		SetLifeSpan(AnimDuration);
 	}
 	
 	return ActualDamageAmount;

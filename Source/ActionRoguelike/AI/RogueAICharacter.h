@@ -7,6 +7,8 @@
 class URogueWorldWidget;
 class URogueActionSystemComponent;
 
+DECLARE_DYNAMIC_MULTICAST_DELEGATE(FOnDeathStart);
+
 UCLASS()
 class ACTIONROGUELIKE_API ARogueAICharacter : public ACharacter
 {
@@ -15,6 +17,9 @@ class ACTIONROGUELIKE_API ARogueAICharacter : public ACharacter
 protected:
 	UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category=Action)
 	TObjectPtr<URogueActionSystemComponent> ActionSystemComp;
+	
+	UPROPERTY(EditDefaultsOnly, NoClear, Category=Animation)
+	TObjectPtr<UAnimMontage> AnimMontage_Death;
 	
 	UPROPERTY(EditDefaultsOnly, Category=Widget)
 	TSubclassOf<URogueWorldWidget> HealthWorldWidgetClass;
@@ -28,6 +33,7 @@ public:
 	virtual void BeginPlay() override;
 	virtual float TakeDamage(float DamageAmount, struct FDamageEvent const& DamageEvent, class AController* EventInstigator, AActor* DamageCauser) override;
 	
+	FOnDeathStart OnDeathStart;
 protected:
 	FTimerHandle TimerHandle_FitFlashOverlay;
 };
