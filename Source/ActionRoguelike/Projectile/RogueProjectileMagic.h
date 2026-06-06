@@ -6,6 +6,8 @@
 #include "RogueProjectileMagic.generated.h"
 
 
+class URogueActionEffect;
+
 UCLASS(Abstract)
 class ACTIONROGUELIKE_API ARogueProjectileMagic : public ARogueProjectileBase
 {
@@ -17,6 +19,10 @@ protected:
 
 	UPROPERTY(EditDefaultsOnly, Category=Damage)
 	float DamageAmount;
+	
+	UPROPERTY(EditDefaultsOnly, Category=Damage)
+	// HitEffect is Applied to hit actor
+	TSubclassOf<URogueActionEffect> HitEffect; 
 	
 	virtual void OnHit(UPrimitiveComponent* HitComponent, AActor* OtherActor, UPrimitiveComponent* OtherComp, FVector NormalImpulse, const FHitResult& Hit) override;
 public:

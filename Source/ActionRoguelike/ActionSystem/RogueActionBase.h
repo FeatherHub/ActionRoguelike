@@ -49,10 +49,10 @@ protected:
 	virtual bool IsSupportedForNetworking() const override { return true; }
 	
 public:
-	UFUNCTION(BlueprintNativeEvent, Category=Action)
+	UFUNCTION(BlueprintNativeEvent, BlueprintCallable, Category=Action)
 	void StartAction();
 	
-	UFUNCTION(BlueprintNativeEvent, Category=Action)
+	UFUNCTION(BlueprintNativeEvent, BlueprintCallable,Category=Action)
 	void StopAction();
 	
 	bool CanStart() const;
