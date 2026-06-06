@@ -103,6 +103,7 @@ protected:
 	// Gameplay Tags
 	//////////////////
 public:
+	UPROPERTY(BlueprintAssignable)
 	FOnGameplayTagUpdated OnGameplayTagUpdated;
 	
 	void AppendActiveTags(const FGameplayTagContainer& NewTags);

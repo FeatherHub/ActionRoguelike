@@ -31,10 +31,10 @@ void UURogueCharacterAnimInstance::OnGameplayTagUpdated(FGameplayTag UpdatedTag,
 	}	
 	
 	bool bWasAdded = NewCount > 0;
-	if(UpdatedTag == RogueGameplayTag::Status_Sprinting)
+	if(UpdatedTag.MatchesTag(RogueGameplayTag::Status_Sprinting))
 	{
 		bIsSprinting = bWasAdded;
-	} else if(UpdatedTag == RogueGameplayTag::Status_Stunned)
+	} else if(UpdatedTag.MatchesTag(RogueGameplayTag::Status_Stunned))
 	{
 		bIsStunned = bWasAdded;
 	}
