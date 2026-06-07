@@ -90,14 +90,27 @@ void URogueActionSystemComponent::TickComponent(float DeltaTime, enum ELevelTick
 
 void URogueActionSystemComponent::GrantAction(TSubclassOf<URogueActionBase> ActionClass)
 {
-	URogueActionBase* NewAction = NewObject<URogueActionBase>(this, ActionClass);
+	for (URogueActionBase* GrantedAction : GrantedActions)
+	{
+		if(GrantedAction->GetClass() == ActionClass)
+		{
+			if(URogueActionEffect* ActionEffect = Cast<URogueActionEffect>(GrantedAction))
+			{
+				ActionEffect->IncrementStackCount();
+				return;
+			}
+
+			ensureMsgf(true, TEXT("Non-effect Action cannot exist more than one"));
+		}
+	}
 	
+	URogueActionBase* NewAction = NewObject<URogueActionBase>(this, ActionClass);
 	GrantedActions.Add(NewAction);
 	
-	if (NewAction->IsA(URogueActionEffect::StaticClass()))
+	if (URogueActionEffect* ActionEffect = Cast<URogueActionEffect>(NewAction))
 	{
-		ensureMsgf(NewAction->CanStart(), TEXT("Effect CanStart returns FALSE"));
-		NewAction->StartAction();
+		ensureMsgf(ActionEffect->CanStart(), TEXT("Effect Action -> CanStart returned FALSE"));
+		ActionEffect->StartAction();
 	}
 }
 
@@ -105,6 +118,7 @@ void URogueActionSystemComponent::RemoveAction(URogueActionBase* Action)
 {
 	int32 RemoveCount = GrantedActions.RemoveSingle(Action);
 	ensure(RemoveCount == 1);
+	Action->MarkAsGarbage();
 }
 
 void URogueActionSystemComponent::ServerStartAction_Implementation(FGameplayTag ActionName)
@@ -242,8 +256,8 @@ void URogueActionSystemComponent::MulticastAttributeChanged_Implementation(FGame
 			{
 				DynamicListeners->RemoveAt(i);
 					
-				UE_LOG(LogGame, Log, TEXT("Successfully removed unbound OnAttributeChanged_Dynamic for %s")
-					, *AttributeTag.ToString());
+				UE_LOG(LogGame, Log, TEXT("Successfully removed unbound OnAttributeChanged_Dynamic for %s"), 
+					*AttributeTag.ToString());
 			}
 		}			
 	}
@@ -263,8 +277,8 @@ FRogueAttribute* URogueActionSystemComponent::GetAttribute(FGameplayTag Attribut
 		return *FoundAttribute;
 	}
 	
-	UE_LOG(LogGame, Warning, TEXT("Attribute %s not found on %s's ActionSystemComponent")
-		, *AttributeTag.ToString(), *GetNameSafe(GetOuter()));
+	UE_LOG(LogGame, Warning, TEXT("Attribute %s not found on %s's ActionSystemComponent"), 
+		*AttributeTag.ToString(), *GetNameSafe(GetOuter()));
 	
 	return nullptr;
 }
@@ -293,8 +307,8 @@ void URogueActionSystemComponent::RemoveOnAttributeChangedListener_Dynamic(FOnAt
 	{
 		if (ListenersEntry.Value.RemoveSingle(ListenerToRemove) > 0)
 		{
-			UE_LOG(LogGame, Log, TEXT("Successfully removed OnAttributeChanged_Dynamic for %s")
-				, *ListenersEntry.Key.ToString())
+			UE_LOG(LogGame, Log, TEXT("Successfully removed OnAttributeChanged_Dynamic for %s"), 
+				*ListenersEntry.Key.ToString())
 
 			return;
 		}
@@ -310,6 +324,7 @@ void URogueActionSystemComponent::AppendActiveTags(const FGameplayTagContainer& 
 	ActiveTags.AppendTags(NewTags);
 
 	CheckAgainstBlockedTags(NewTags);
+	
 	for (const FGameplayTag& NewTag : NewTags)
 	{
 		OnGameplayTagUpdated.Broadcast(NewTag, 1);
