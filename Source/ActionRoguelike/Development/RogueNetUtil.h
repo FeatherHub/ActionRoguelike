@@ -59,16 +59,20 @@ FNetDebugContext GetNetDebugContext(const UObject* Object);
 
 void SubmitDebugContext(UObject* WorldContext, uint64 DebugKey, const FString& Msg, const FColor& Color, float Duration, const FNetDebugContext& DebugContext);
 
-#define ROGUE_DEBUG_CVARFMT(CVar, DebugSubkey, Duration, Color, Format, ...) \
-	do if(CVar.GetValueOnGameThread()) \
-	{ \
-		ROGUE_DEBUG(DebugSubkey, FString::Printf(Format, ##__VA_ARGS__), Duration, Color); \
+#define ROGUE_DEBUG_CVARFMT(CVar, DebugSubkey, Duration, Color, Fmt, ...) \
+	do if(CVar.GetValueOnGameThread()) { \
+		ROGUE_DEBUG(DebugSubkey, Duration, Color, FString::Printf(Fmt, ##__VA_ARGS__)); \
 	} while(false);
 
-#define ROGUE_DEBUG_CVAR(CVar, DebugSubkey, Msg, Duration, Color) \
-	do if(CVar.GetValueOnGameThread()) { ROGUE_DEBUG(DebugSubkey, Msg, Duration, Color); } while(false);
+#define ROGUE_DEBUG_CVAR(CVar, DebugSubkey, Duration, Color, Msg) \
+	do if(CVar.GetValueOnGameThread()) { \
+		ROGUE_DEBUG(DebugSubkey, Duration, Color, Msg); \
+	} while(false);
 
-#define ROGUE_DEBUG(DebugSubkey, Msg, Duration, Color) \
+#define ROGUE_DEBUGFMT(DebugSubkey, Duration, Color, Fmt, ...) \
+	do { ROGUE_DEBUG(DebugSubkey, Duration, Color, FString::Printf(Fmt, ##__VA_ARGS__)); } while(false);
+
+#define ROGUE_DEBUG(DebugSubkey, Duration, Color, Msg) \
 	do \
 	{ \
 		FNetDebugContext Context = GetNetDebugContext(this); \

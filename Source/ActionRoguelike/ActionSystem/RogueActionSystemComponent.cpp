@@ -75,12 +75,12 @@ void URogueActionSystemComponent::TickComponent(float DeltaTime, enum ELevelTick
 {
 	Super::TickComponent(DeltaTime, TickType, ThisTickFunction);
 
-	FString ActionMsg = FString::Printf(TEXT("Character(%s) has Actions: "), *GetNetDebugName(GetOwner()));
+	FString OwningActionMsg = FString::Printf(TEXT("Character(%s) has Actions: "), *GetNetDebugName(GetOwner()));
 	for (URogueActionBase* Action : GrantedActions)
 	{
-		ActionMsg += FString::Printf(TEXT("%s | "), *Action->GetActionName().GetTagLeafName().ToString());
+		OwningActionMsg += FString::Printf(TEXT("%s | "), *Action->GetActionName().GetTagLeafName().ToString());
 	}
-	ROGUE_DEBUG(0, ActionMsg, 0.f, FColor::White);
+	ROGUE_DEBUG(0, 0.f, FColor::White, OwningActionMsg);
 }
 
 
@@ -222,9 +222,9 @@ bool URogueActionSystemComponent::ApplyAttributeChange(FGameplayTag AttributeTag
 		}
 	}
 	
-	FString AttrChangedMsg = FString::Printf(TEXT("[ASC::ApplyAttrChange] Character %s Attribute %s New %-6.0f Old %-6.0f"), 
+	ROGUE_DEBUG_CVARFMT(CVarAttributeDebugMsg,AttributeTag, 3.f, FColor::Orange,
+		TEXT("[ASC::ApplyAttrChange] Character %s Attribute %s New %-6.0f Old %-6.0f"),
 		*GetNetDebugName(GetOwner()), *AttributeTag.GetTagLeafName().ToString(), NewValue, OldValue);
-	ROGUE_DEBUG_CVAR(CVarAttributeDebugMsg,AttributeTag, AttrChangedMsg, 3.f, FColor::Orange);
 	
 	UE_LOG(LogGame, Log, TEXT("[%s]-[%s] New: %-6.1f, Old: %-6.1f Type: %s"), 
 		*GetFNameSafe(GetOuter()).ToString().Left(25), *AttributeTag.ToString(), NewValue, OldValue, *UEnum::GetValueAsString(ChangeType));
@@ -234,9 +234,9 @@ bool URogueActionSystemComponent::ApplyAttributeChange(FGameplayTag AttributeTag
 
 void URogueActionSystemComponent::MulticastAttributeChanged_Implementation(FGameplayTag AttributeTag, float NewValue, float OldValue)
 {
-	FString AttrChangedMsg = FString::Printf(TEXT("[ASC::MulticastAttrChanged] %s Attr %s New %f Old %f"), 
+	ROGUE_DEBUG_CVARFMT(CVarAttributeDebugMsg, AttributeTag, 5.f, FColor::Orange,
+		TEXT("[ASC::MulticastAttrChanged] %s Attr %s New %f Old %f"),
 		*GetNetDebugName(GetOwner()), *AttributeTag.ToString(), NewValue, OldValue);
-	ROGUE_DEBUG_CVAR(CVarAttributeDebugMsg, AttributeTag, AttrChangedMsg, 5.f, FColor::Orange);
 	
 	// Native C++ Listeners
 	if (FOnAttributeChanged* NativeListener = OnAttributeChangedListeners.Find(AttributeTag))

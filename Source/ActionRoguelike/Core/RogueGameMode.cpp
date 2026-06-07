@@ -25,7 +25,8 @@ void ARogueGameMode::StartPlay()
 {
 	Super::StartPlay();
 	
-	ROGUE_DEBUG_CVAR(CVarRogueGameModeShowDebug, 0, TEXT("[GameMode] StartPlay"), 3.f, FColor::Green)
+	ROGUE_DEBUG_CVAR(CVarRogueGameModeShowDebug, 0, 3.f, FColor::Green, 
+		TEXT("[GameMode] StartPlay"))
 
 	GetWorldTimerManager().SetTimer(SpawnBotTimer, this, &ThisClass::SpawnBot, SpawnBotInterval, true);
 }
@@ -48,8 +49,11 @@ void ARogueGameMode::SpawnBot()
 	
 	
 	int32 MaxBotCount = FMath::RoundToInt32(SpawnBotMaxCurve->GetFloatValue(GetWorld()->TimeSeconds));
-	ROGUE_DEBUG_CVARFMT(CVarRogueGameModeShowDebug, 0, 3.f, FColor::Black,
-		TEXT("[GameMode] Alive Bots: %d / %d at %f"), NumOfAliveBot, MaxBotCount, GetWorld()->TimeSeconds);
+	
+	ROGUE_DEBUG_CVARFMT(CVarRogueGameModeShowDebug, 0, 3.f, FColor::Yellow,
+		TEXT("[GameMode] Alive Bots: %d / %d at %f"), 
+		NumOfAliveBot, MaxBotCount, GetWorld()->TimeSeconds);
+
 	if(NumOfAliveBot >= MaxBotCount)
 	{
 		return;

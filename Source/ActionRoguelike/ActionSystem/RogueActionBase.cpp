@@ -11,10 +11,9 @@ void URogueActionBase::StartAction_Implementation()
 {
 	ACharacter* Character = GetOwningCharacter();
 	
-	FString ActionMsg = FString::Printf(TEXT("[ActionBase::StartAction] Action(%s, %s). Character(%s)'s Controller(%s)"), 
-		*ActionName.ToString(), *GetNetDebugName(this), *GetNetDebugName(Character), *GetNetDebugName(Character->GetController())); 
-	
-	ROGUE_DEBUG(0, ActionMsg, 3.f, FColor::Orange);
+	ROGUE_DEBUGFMT(0, 3.f, FColor::Orange, 
+		TEXT("[ActionBase::StartAction] Action(%s, %s). Character(%s)'s Controller(%s)"),
+		*ActionName.ToString(), *GetNetDebugName(this), *GetNetDebugName(Character), *GetNetDebugName(Character->GetController()));
 	
 	
 	float CurrentTime = GetWorld()->TimeSeconds;
