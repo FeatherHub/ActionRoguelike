@@ -16,7 +16,6 @@ void URogueActionBase::StartAction_Implementation()
 	
 	ROGUE_DEBUG(0, ActionMsg, 3.f, FColor::Orange);
 	
-	bIsRunning = true;
 	
 	float CurrentTime = GetWorld()->TimeSeconds;
 	CooldownEndTime = CurrentTime + CooldownTime;
@@ -30,6 +29,8 @@ void URogueActionBase::StartAction_Implementation()
 	{
 		ASC->ApplyAttributeChange(CostEntry.Key, -CostEntry.Value, BaseDelta);
 	}
+	
+	bIsRunning = true;
 }
 
 void URogueActionBase::StopAction_Implementation()
