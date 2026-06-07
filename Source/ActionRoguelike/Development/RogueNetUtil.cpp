@@ -215,7 +215,6 @@ void SubmitDebugContext(UObject* WorldContext, uint64 DebugKey, const FString& M
 	FString FinalMsg = GetDebugString(Msg, DebugContext);
 	
 	FScreenDebugContext ScreenDebugContext;
-	ScreenDebugContext.TimeStamp = FPlatformTime::Seconds();
 	ScreenDebugContext.DateTime = FDateTime::Now();
 	ScreenDebugContext.RemainingTime = Duration;
 	ScreenDebugContext.Color = Color;

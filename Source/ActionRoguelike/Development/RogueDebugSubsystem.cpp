@@ -34,8 +34,6 @@ void URogueDebugSubsystem::FlushDebugContextQueue(UWorld* World, ELevelTick Leve
 		return;
 	}
 	
-	// DebugContextQueue.Sort();
-
 	for (const FScreenDebugContext& DebugContext : DebugContextQueue)
 	{
 		FString DateTimeStamp = FString::Printf(TEXT("[%s] "), *RogueTimeUtil::ToMMSSMMM(DebugContext.DateTime)); 
@@ -44,8 +42,7 @@ void URogueDebugSubsystem::FlushDebugContextQueue(UWorld* World, ELevelTick Leve
 			DebugContext.DebugKey,
 			0.f,
 			DebugContext.Color,
-			DateTimeStamp + DebugContext.Message,
-			false);
+			DateTimeStamp + DebugContext.Message);
 	}
 
 	bool bIsServer = IsNetModeServer(World->GetNetMode());
@@ -53,8 +50,7 @@ void URogueDebugSubsystem::FlushDebugContextQueue(UWorld* World, ELevelTick Leve
 		bIsServer ? 9999 : 8888,
 		0.f,
 		bIsServer ? FColor::Green : FColor::Blue,
-		bIsServer ? TEXT("[SERVER]") : TEXT("[CLIENT]"),
-		false
+		bIsServer ? TEXT("[SERVER]") : TEXT("[CLIENT]")
 	);
 	
 	// update Remaining time

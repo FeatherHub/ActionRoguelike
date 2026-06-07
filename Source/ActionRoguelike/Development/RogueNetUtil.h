@@ -35,18 +35,12 @@ struct FNetDebugContext
 
 struct FScreenDebugContext
 {
-	double TimeStamp;  // internal purpose
-	FDateTime DateTime; // display purpose
+	FDateTime DateTime; 
 	float RemainingTime;
 
 	uint64 DebugKey;
 	FString Message;
 	FColor Color;
-	
-	bool operator<(const FScreenDebugContext& Other) const 
-	{
-		return TimeStamp < Other.TimeStamp;
-	}
 };
 
 bool IsNetModeServer(ENetMode NetMode);
@@ -70,11 +64,12 @@ void SubmitDebugContext(UObject* WorldContext, uint64 DebugKey, const FString& M
 	} while(false);
 
 #define ROGUE_DEBUGFMT(DebugSubkey, Duration, Color, Fmt, ...) \
-	do { ROGUE_DEBUG(DebugSubkey, Duration, Color, FString::Printf(Fmt, ##__VA_ARGS__)); } while(false);
+	do { \
+		ROGUE_DEBUG(DebugSubkey, Duration, Color, FString::Printf(Fmt, ##__VA_ARGS__)); \
+	} while(false);
 
 #define ROGUE_DEBUG(DebugSubkey, Duration, Color, Msg) \
-	do \
-	{ \
+	do { \
 		FNetDebugContext Context = GetNetDebugContext(this); \
 		uint64 Hash1 = HashCombine(GetTypeHash(this), GetTypeHash(DebugSubkey)); \
  		uint64 Hash2 = HashCombine(DEBUG_KEY_NET(Context.bIsNetModeServer), Hash1); \
