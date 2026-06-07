@@ -1,9 +1,7 @@
 ﻿#include "RogueProjectileMagic.h"
 
-#include "ActionSystem/RogueActionSystemComponent.h"
 #include "Components/SphereComponent.h"
-#include "Kismet/GameplayStatics.h"
-#include "ActionSystem/RogueActionEffect.h"
+#include "ActionSystem/RogueGameplayStatics.h"
 
 ARogueProjectileMagic::ARogueProjectileMagic()
 {
@@ -26,13 +24,7 @@ void ARogueProjectileMagic::OnHit(UPrimitiveComponent* HitComponent, AActor* Oth
 	
 	FVector HitFromDirection = GetActorRotation().Vector();
 	
-	UGameplayStatics::ApplyPointDamage(OtherActor, DamageAmount, HitFromDirection, Hit, GetInstigatorController(), this, DamageTypeClass);
-	
-	// note: awkward couping; low level projectile knows high level ActionSystem
-	if(URogueActionSystemComponent* ASC = OtherActor->GetComponentByClass<URogueActionSystemComponent>())
-	{
-		ASC->GrantAction(HitEffect);
-	}
+	FRogueGameplayStatics::ApplyPointDamage(OtherActor, DamageAmount, HitFromDirection, Hit, GetInstigatorController(), this, DamageTypeClass, ActionEffectOnHit);	
 	
 	Destroy();
 }

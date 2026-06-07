@@ -21,8 +21,7 @@ protected:
 	float DamageAmount;
 	
 	UPROPERTY(EditDefaultsOnly, Category=Damage)
-	// HitEffect is Applied to hit actor
-	TSubclassOf<URogueActionEffect> HitEffect; 
+	TSubclassOf<URogueActionEffect> ActionEffectOnHit; 
 	
 	virtual void OnHit(UPrimitiveComponent* HitComponent, AActor* OtherActor, UPrimitiveComponent* OtherComp, FVector NormalImpulse, const FHitResult& Hit) override;
 public:
