@@ -10,6 +10,8 @@ ARogueAICharacter::ARogueAICharacter()
 {
 	ActionSystemComp = CreateDefaultSubobject<URogueActionSystemComponent>(TEXT("ActionSystemComp"));
 	ActionSystemComp->SetDefaultAttributeSet(URogueMonsterAttributeSet::StaticClass());
+	
+	AutoPossessAI = EAutoPossessAI::PlacedInWorldOrSpawned;
 }
 
 void ARogueAICharacter::PostInitializeComponents()
@@ -31,7 +33,7 @@ void ARogueAICharacter::BeginPlay()
 	}
 }
 
-// @TODO: Refactor to use ActionSystem (e.g. ASC->AddListener)
+
 float ARogueAICharacter::TakeDamage(float DamageAmount, struct FDamageEvent const& DamageEvent, class AController* EventInstigator, AActor* DamageCauser)
 {
 	float ActualDamageAmount = Super::TakeDamage(DamageAmount, DamageEvent, EventInstigator, DamageCauser);
@@ -66,4 +68,9 @@ float ARogueAICharacter::TakeDamage(float DamageAmount, struct FDamageEvent cons
 	}
 	
 	return ActualDamageAmount;
+}
+
+bool ARogueAICharacter::IsAlive() const
+{
+	return ActionSystemComp->GetAttributeValue(RogueGameplayTag::Attribute_Health) > 0.f;
 }

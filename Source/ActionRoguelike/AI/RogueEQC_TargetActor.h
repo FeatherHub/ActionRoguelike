@@ -2,11 +2,11 @@
 
 #include "CoreMinimal.h"
 #include "EnvironmentQuery/EnvQueryContext.h"
-#include "RogueEnvQueryContext_TargetActor.generated.h"
+#include "RogueEQC_TargetActor.generated.h"
 
 
 UCLASS()
-class ACTIONROGUELIKE_API URogueEnvQueryContext_TargetActor : public UEnvQueryContext
+class ACTIONROGUELIKE_API URogueEQC_TargetActor : public UEnvQueryContext
 {
 	GENERATED_BODY()
 	
