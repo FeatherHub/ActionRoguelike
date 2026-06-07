@@ -65,7 +65,7 @@ void URogueActionEffect::StopAction_Implementation()
 	StackCount = 0;
 	URogueActionSystemComponent* ASC = GetOwningComponent();
 	
-	if(ensure(IsValid(ASC)))
+	if(ensure(ASC))
 	{
 		ASC->RemoveAction(this);
 	}
@@ -82,7 +82,7 @@ EDataValidationResult URogueActionEffect::IsDataValid(FDataValidationContext& Co
 		Result = EDataValidationResult::Valid;
 	}
 	
-	if (EffectDuration > 0.f && PeriodInterval > EffectDuration)
+	if (PeriodInterval > EffectDuration)
 	{
 		Context.AddWarning(NSLOCTEXT("Validation", "PeriodExceedsDuration",
 			"Period is greater than Duration — it will do nothing."));
