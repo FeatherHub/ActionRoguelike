@@ -1,6 +1,7 @@
 ﻿#include "RogueActionEffect.h"
 
 #include "RogueActionSystemComponent.h"
+#include "GameFramework/GameStateBase.h"
 #include "Misc/DataValidation.h"
 
 
@@ -48,6 +49,8 @@ void URogueActionEffect::OnEffectExpired()
 
 void URogueActionEffect::RestartExpirationTimer()
 {
+	TimeStarted = GetWorld()->GetGameState()->GetServerWorldTimeSeconds();
+	
 	GetWorld()->GetTimerManager().ClearTimer(ExpirationTimerHandle);
 	GetWorld()->GetTimerManager().SetTimer(ExpirationTimerHandle, this, &ThisClass::OnEffectExpired, EffectDuration);
 }
@@ -69,6 +72,13 @@ void URogueActionEffect::StopAction_Implementation()
 	{
 		ASC->RemoveAction(this);
 	}
+}
+
+float URogueActionEffect::GetRemainingTime() const
+{
+	float EndTime = TimeStarted + EffectDuration;
+	float RemainingTime = EndTime - GetWorld()->GetGameState()->GetServerWorldTimeSeconds();
+	return FMath::Max(0.f, RemainingTime);
 }
 
 #if WITH_EDITOR

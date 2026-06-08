@@ -10,7 +10,7 @@ class ACTIONROGUELIKE_API URogueActionEffect : public URogueActionBase
 	GENERATED_BODY()
 	
 protected:
-	UPROPERTY(EditDefaultsOnly, Category=Effect, meta=(ClampMin=0))
+	UPROPERTY(EditDefaultsOnly, BlueprintReadOnly, Category=Effect, meta=(ClampMin=0))
 	float EffectDuration = 0.f;
 
 	UPROPERTY(EditDefaultsOnly, Category=Effect, meta=(ClampMin=0))
@@ -21,6 +21,8 @@ protected:
 	
 	UPROPERTY(Transient, BlueprintReadOnly)
 	int32 StackCount = 0;
+
+	float TimeStarted = 0.f;
 	
 	FTimerHandle ExpirationTimerHandle;
 	FTimerHandle PeriodTimerHandle;
@@ -38,6 +40,9 @@ public:
 
 	void IncrementStackCount();
 	int32 GetStackCount() const { return StackCount; }
+
+	UFUNCTION(BlueprintPure)
+	float GetRemainingTime() const;
 	
 #if WITH_EDITOR
 	virtual EDataValidationResult IsDataValid(FDataValidationContext& Context) const override;
