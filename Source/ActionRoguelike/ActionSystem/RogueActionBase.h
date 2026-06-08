@@ -45,6 +45,9 @@ protected:
 	UFUNCTION(BlueprintCallable)
 	ACharacter* GetOwningCharacter() const;
 	
+	UPROPERTY(EditDefaultsOnly, BlueprintReadOnly, Category=UI)
+	UTexture2D* EffectIcon;
+	
 	virtual bool ImplementsGetWorld() const override { return true; }
 	virtual bool IsSupportedForNetworking() const override { return true; }
 	
