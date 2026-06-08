@@ -68,14 +68,27 @@ void ARogueGameMode::SpawnBot()
 		{
 			EnvQueryInstance->GetOnQueryFinishedEvent().AddDynamic(this, &ThisClass::OnEnvQueryFinished);
 		}
+		else
+		{
+			ROGUE_DEBUG_CVAR(CVarRogueGameModeShowDebug, 0, 3.f, FColor::Red,
+			    TEXT("[GameMode] Fail to run EQSQuery"))
+		}
+	} 
+	else
+	{
+		ROGUE_DEBUG_CVAR(CVarRogueGameModeShowDebug, 0, 3.f, FColor::Red,
+		    TEXT("[GameMode] EnvQueryInstance is already running"))
 	}
 }
 
 void ARogueGameMode::OnEnvQueryFinished(UEnvQueryInstanceBlueprintWrapper* QueryInstance, EEnvQueryStatus::Type QueryStatus)
 {
+	EnvQueryInstance = nullptr;
+	
 	if(QueryStatus != EEnvQueryStatus::Success)
 	{
-		UE_LOGFMT(LogGame, Warning, "[GameMode] EQS query failed for bot spawn (Status={Status})", UEnum::GetValueAsString(QueryStatus));
+		ROGUE_DEBUG_CVARFMT(CVarRogueGameModeShowDebug, 0, 3.f, FColor::Red,
+		    TEXT("[GameMode] EQS query failed for bot spawn (Status=%s)"), *UEnum::GetValueAsString(QueryStatus));
 		return;
 	}
 	
@@ -93,8 +106,6 @@ void ARogueGameMode::OnEnvQueryFinished(UEnvQueryInstanceBlueprintWrapper* Query
 				TEXT("[GameMode] Bot Spawned at %s"), *SpawnLocation.ToString())
 		}
 	}
-	
-	EnvQueryInstance = nullptr;
 }
 
 #if !UE_BUILD_SHIPPING
