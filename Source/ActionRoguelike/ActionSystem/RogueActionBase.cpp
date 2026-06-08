@@ -39,8 +39,8 @@ void URogueActionBase::StopAction_Implementation()
 	URogueActionSystemComponent* ASC = GetOwningComponent();
 	ASC->RemoveActiveTags(ActivationGrantTags);
 	
-	float GameTime = GetWorld()->TimeSeconds;
-	UE_LOGFMT(LogGame, Log, "Stop Action '{ActionName}' at {GameTime}", ActionName.GetTagName(), GameTime);
+	UE_LOGFMT(LogGame, Log, 
+		"Stop Action '{ActionName}' at {GameTime}", ActionName.GetTagName(), GetWorld()->TimeSeconds);
 }
 
 bool URogueActionBase::CanStart() const

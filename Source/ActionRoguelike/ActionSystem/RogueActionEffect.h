@@ -19,6 +19,9 @@ protected:
 	UPROPERTY(EditDefaultsOnly, Category=Effect, meta=(EditCondition="PeriodInterval > 0"))
 	bool bExecutePeriodicEffectOnStart = false;
 	
+	UPROPERTY(EditDefaultsOnly, BlueprintReadOnly, Category=UI)
+	UTexture2D* EffectIcon;
+	
 	UPROPERTY(Transient, BlueprintReadOnly)
 	int32 StackCount = 0;
 
