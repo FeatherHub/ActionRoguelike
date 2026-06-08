@@ -8,6 +8,7 @@
 #include "Development/RogueNetUtil.h"
 #include "Engine/ActorChannel.h"
 #include "Net/UnrealNetwork.h"
+#include "Player/RoguePlayerCharacter.h"
 
 TAutoConsoleVariable<bool> CVarAttributeDebugMsg { TEXT("rogue.asc.attribute.ShowMsg"), false,
 	TEXT("Show ActionSystemComponent's Attribute related on-screen messages. 0=off, 1=on"), ECVF_Cheat };
@@ -16,11 +17,27 @@ URogueActionSystemComponent::URogueActionSystemComponent()
 {
 	SetIsReplicatedByDefault(true);
 	
+	bWantsInitializeComponent = true;
+	
 	// debugging purpose
 	PrimaryComponentTick.bCanEverTick = true;
 	PrimaryComponentTick.bStartWithTickEnabled = true;
-	
-	bWantsInitializeComponent = true;
+}
+
+// debugging purpose
+void URogueActionSystemComponent::TickComponent(float DeltaTime, enum ELevelTick TickType, FActorComponentTickFunction* ThisTickFunction)
+{
+	Super::TickComponent(DeltaTime, TickType, ThisTickFunction);
+
+	if(GetOwner()->IsA(ARoguePlayerCharacter::StaticClass()))
+	{
+		FString OwningActionMsg = FString::Printf(TEXT("Character(%s) has Actions: "), *GetNetDebugName(GetOwner()));
+		for (URogueActionBase* Action : GrantedActions)
+		{
+			OwningActionMsg += FString::Printf(TEXT("%s | "), *Action->GetActionName().GetTagLeafName().ToString());
+		}
+		ROGUE_DEBUG(0, 0.f, FColor::White, OwningActionMsg);
+	}
 }
 
 void URogueActionSystemComponent::InitializeComponent()
@@ -70,19 +87,6 @@ void URogueActionSystemComponent::BeginPlay()
 	
 	AttributeSet->PostInitializeComponents();
 }
-
-void URogueActionSystemComponent::TickComponent(float DeltaTime, enum ELevelTick TickType, FActorComponentTickFunction* ThisTickFunction)
-{
-	Super::TickComponent(DeltaTime, TickType, ThisTickFunction);
-
-	FString OwningActionMsg = FString::Printf(TEXT("Character(%s) has Actions: "), *GetNetDebugName(GetOwner()));
-	for (URogueActionBase* Action : GrantedActions)
-	{
-		OwningActionMsg += FString::Printf(TEXT("%s | "), *Action->GetActionName().GetTagLeafName().ToString());
-	}
-	ROGUE_DEBUG(0, 0.f, FColor::White, OwningActionMsg);
-}
-
 
 ///////////
 // Action
