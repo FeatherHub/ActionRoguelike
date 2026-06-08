@@ -111,11 +111,17 @@ void URogueActionSystemComponent::GrantAction(TSubclassOf<URogueActionBase> Acti
 	{
 		ensureMsgf(ActionEffect->CanStart(), TEXT("Effect Action -> CanStart returned FALSE"));
 		ActionEffect->StartAction();
+		OnActionEffectAdded.Broadcast(ActionEffect);
 	}
 }
 
 void URogueActionSystemComponent::RemoveAction(URogueActionBase* Action)
 {
+	if(URogueActionEffect* ActionEffect = Cast<URogueActionEffect>(Action))
+	{
+		OnActionEffectRemoved.Broadcast(ActionEffect);
+	}
+	
 	int32 RemoveCount = GrantedActions.RemoveSingle(Action);
 	ensure(RemoveCount == 1);
 	Action->MarkAsGarbage();

@@ -9,6 +9,7 @@
 struct FRogueAttribute;
 class URogueAttributeSet;
 class URogueActionBase;
+class URogueActionEffect;
 class URogueActionSystemComponent;
 struct FGameplayTag;
 
@@ -25,6 +26,8 @@ enum EAttributeChangeType
 DECLARE_MULTICAST_DELEGATE_TwoParams(FOnAttributeChanged, float /*NewValue*/, float /*OldValue*/);
 DECLARE_DYNAMIC_DELEGATE_TwoParams(FOnAttributeChanged_Dynamic, float, NewValue, float, OldValue);
 DECLARE_DYNAMIC_MULTICAST_DELEGATE_TwoParams(FOnGameplayTagUpdated, FGameplayTag, UpdatedTag, int32, NewCount);
+
+DECLARE_DYNAMIC_MULTICAST_DELEGATE_OneParam(FOnActionEffectUpdated, URogueActionEffect*, UpdatedActionEffect);
 
 UCLASS(ClassGroup=(Custom), meta=(BlueprintSpawnableComponent))
 class ACTIONROGUELIKE_API URogueActionSystemComponent : public UActorComponent
@@ -57,7 +60,12 @@ public:
 	void GrantAction(TSubclassOf<URogueActionBase> ActionClass);
 
 	void RemoveAction(URogueActionBase* Action);
-	
+
+	UPROPERTY(BlueprintAssignable)
+	FOnActionEffectUpdated OnActionEffectAdded;
+	UPROPERTY(BlueprintAssignable)
+	FOnActionEffectUpdated OnActionEffectRemoved;
+
 protected:
 	UPROPERTY(EditDefaultsOnly, Category=Action)
 	TArray<TSubclassOf<URogueActionBase>> DefaultGrantActions;
