@@ -6,6 +6,7 @@
 #include "Components/AudioComponent.h"
 #include "Components/InstancedStaticMeshComponent.h"
 #include "Core/RoguePickupSystemSetting.h"
+#include "Core/RoguePlayerState.h"
 #include "Player/RoguePlayerCharacter.h"
 #include "ProfilingDebugging/CountersTrace.h"
 
@@ -54,55 +55,55 @@ void URogueCoinPickupSubsystem::Tick(float DeltaTime)
 {
 	Super::Tick(DeltaTime);
 
-	FVector PlayerLocation = FVector::ZeroVector;
-	float PickupRadius = 0.f;
 	for (ARoguePlayerCharacter* PlayerCharacter : TActorRange<ARoguePlayerCharacter>(GetWorld()))
 	{
-		PlayerLocation = PlayerCharacter->GetActorLocation();
-		PickupRadius = PlayerCharacter->GetPickupRadius();
-	}
-
-
-	TArray<int32> PickedCoinIndicies;
-	{
-		TRACE_CPUPROFILER_EVENT_SCOPE(URogueCoinPickupSubsystem::Tick::DistanceCheck);
-		for (int i = 0; i < CoinLocations.Num(); ++i)
+		FVector PlayerLocation = PlayerCharacter->GetActorLocation();
+		float PickupRadius = PlayerCharacter->GetPickupRadius();
+		
+		
+		TArray<int32> PickedCoinIndicies;
 		{
-			float DistTo = FVector::Dist(PlayerLocation, CoinLocations[i]);
-			if (DistTo < PickupRadius)
+			TRACE_CPUPROFILER_EVENT_SCOPE(URogueCoinPickupSubsystem::Tick::DistanceCheck);
+			for (int i = 0; i < CoinLocations.Num(); ++i)
 			{
-				PickedCoinIndicies.Add(i);
+				float DistTo = FVector::Dist(PlayerLocation, CoinLocations[i]);
+				if (DistTo < PickupRadius)
+				{
+					PickedCoinIndicies.Add(i);
+				}
 			}
 		}
-	}
 
 
-	int32 TotalCoinCreditToGrant = 0.f;
+		int32 TotalCoinCreditToGrant = 0.f;
 
-	{
-		TRACE_CPUPROFILER_EVENT_SCOPE(URogueCoinPickupSubsystem::Tick::PickupCoins);
+		{
+			TRACE_CPUPROFILER_EVENT_SCOPE(URogueCoinPickupSubsystem::Tick::PickupCoins);
 		
-		for (int i = PickedCoinIndicies.Num() - 1; i >= 0; --i)
-		{
-			int32 PickedCoinIndex = PickedCoinIndicies[i];
+			for (int i = PickedCoinIndicies.Num() - 1; i >= 0; --i)
+			{
+				int32 PickedCoinIndex = PickedCoinIndicies[i];
 			
-			TotalCoinCreditToGrant += CoinCredits[PickedCoinIndex];
+				TotalCoinCreditToGrant += CoinCredits[PickedCoinIndex];
 
-			RemoveCoin(PickedCoinIndex);
+				RemoveCoin(PickedCoinIndex);
+			}
 		}
-	}
 
 	
-	if (TotalCoinCreditToGrant > 0)
-	{
-		if (!CoinPickupAudioComp->IsPlaying())
+		if (TotalCoinCreditToGrant > 0)
 		{
-			CoinPickupAudioComp->Play();
+			if (!CoinPickupAudioComp->IsPlaying())
+			{
+				CoinPickupAudioComp->Play();
+			}
+			CoinPickupAudioComp->SetTriggerParameter(CoinPickupTriggerName);
+			
+			PlayerCharacter->GetPlayerState<ARoguePlayerState>()->AddCredit(TotalCoinCreditToGrant);
 		}
-		CoinPickupAudioComp->SetTriggerParameter(CoinPickupTriggerName);
-	}
 	
-	UE_CLOG(TotalCoinCreditToGrant > 0, LogGame, Log, TEXT("Picked up Coin Total Credit: %d"), TotalCoinCreditToGrant)
+		UE_CLOG(TotalCoinCreditToGrant > 0, LogGame, Log, TEXT("Picked up Coin Total Credit: %d"), TotalCoinCreditToGrant)
+	}
 }
 
 void URogueCoinPickupSubsystem::SpawnCoins(int32 CoinCount, const FVector& Location, int32 Radius)

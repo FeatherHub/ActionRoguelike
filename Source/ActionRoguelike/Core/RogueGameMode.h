@@ -5,6 +5,7 @@
 #include "GameFramework/GameMode.h"
 #include "RogueGameMode.generated.h"
 
+class URogueSaveGame;
 class ARogueAICharacter;
 class UEnvQueryInstanceBlueprintWrapper;
 
@@ -13,6 +14,16 @@ class ACTIONROGUELIKE_API ARogueGameMode : public AGameModeBase
 {
 	GENERATED_BODY()
 	
+////////////////
+// LifeCycle
+public:
+	ARogueGameMode();
+	virtual void InitGame(const FString& MapName, const FString& Options, FString& ErrorMessage) override;
+	virtual void StartPlay() override;
+	virtual void HandleStartingNewPlayer_Implementation(APlayerController* NewPlayer) override;
+	
+///////////////
+// Spawn Bot
 protected:
 	UPROPERTY(EditDefaultsOnly, Category=Spawn)
 	TSubclassOf<ARogueAICharacter> BotClass;
@@ -38,9 +49,19 @@ private:
 	UPROPERTY()
 	TObjectPtr<UEnvQueryInstanceBlueprintWrapper> EnvQueryInstance;
 	
+////////////////
+// SaveSystem
+protected:
+	UPROPERTY(EditDefaultsOnly, Category=Save)
+	FString SaveSlotName;
+
+	UPROPERTY()
+	TObjectPtr<URogueSaveGame> CurrentSaveGame;
+	
 public:
-	ARogueGameMode();
-	virtual void StartPlay() override;
+	UFUNCTION(BlueprintCallable)
+	bool WriteToSaveGameObject();
+	void LoadSaveGameObject();
 	
 #if !UE_BUILD_SHIPPING
 	virtual EDataValidationResult IsDataValid(class FDataValidationContext& Context) const override;
