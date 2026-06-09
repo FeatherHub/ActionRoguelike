@@ -1,6 +1,7 @@
 ﻿#include "RogueItemChest.h"
 
 #include "Net/UnrealNetwork.h"
+#include "SaveSystem/RogueSaveComponent.h"
 
 
 ARogueItemChest::ARogueItemChest()
@@ -14,6 +15,20 @@ ARogueItemChest::ARogueItemChest()
 	LidMeshComp = CreateDefaultSubobject<UStaticMeshComponent>(TEXT("LidMeshComp"));
 	LidMeshComp->SetCollisionProfileName(UCollisionProfile::NoCollision_ProfileName);
 	LidMeshComp->SetupAttachment(BaseMeshComp);
+
+	SaveComp = CreateDefaultSubobject<URogueSaveComponent>(TEXT("SaveComp"));
+}
+
+void ARogueItemChest::BeginPlay()
+{
+	Super::BeginPlay();
+	
+	SaveComp->OnSaveLoaded.AddDynamic(this, &ThisClass::OnSaveLoaded);
+}
+
+void ARogueItemChest::OnSaveLoaded()
+{
+	OnIsLidOpenChanged(bIsLidOpen);
 }
 
 void ARogueItemChest::Interact_Implementation()

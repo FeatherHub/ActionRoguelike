@@ -1,10 +1,8 @@
 ﻿#include "RogueGameMode.h"
 
-#include "ActionRoguelike.h"
 #include "EngineUtils.h"
-#include "RogueInteractionInterface.h"
 #include "RoguePlayerState.h"
-#include "RogueSaveGame.h"
+#include "SaveSystem/RogueSaveGame.h"
 #include "ActionRoguelike/Player/RoguePlayerController.h"
 #include "AI/RogueAICharacter.h"
 #include "Development/RogueNetUtil.h"
@@ -13,7 +11,7 @@
 #include "GameFramework/GameState.h"
 #include "Kismet/GameplayStatics.h"
 #include "Misc/DataValidation.h"
-#include "Serialization/ObjectAndNameAsStringProxyArchive.h"
+#include "SaveSystem/RogueSaveComponent.h"
 
 static TAutoConsoleVariable<bool> CVarSpawnBotShowDebug{
 	TEXT("rogue.gamemode.spawnbot.ShowDebug"), false,
@@ -51,7 +49,7 @@ void ARogueGameMode::HandleStartingNewPlayer_Implementation(APlayerController* N
 	
 	if(ARoguePlayerState* PlayerState = NewPlayer->GetPlayerState<ARoguePlayerState>())
 	{
-		PlayerState->Load(CurrentSaveGame);
+		PlayerState->LoadFromSaveGame(CurrentSaveGame);
 	}
 }
 
@@ -155,35 +153,24 @@ bool ARogueGameMode::WriteToSaveGameObject()
 	{
 		return false;
 	}
-	
-	auto& AllPlayerState = GameState->PlayerArray;
-	for (int i = 0; i < AllPlayerState.Num(); ++i)
+
+	for (APlayerState* PlayerState : GameState->PlayerArray)
 	{
-		if(ARoguePlayerState* PlayerState = Cast<ARoguePlayerState>(AllPlayerState[i]))
+		if(ARoguePlayerState* RoguePlayerState = Cast<ARoguePlayerState>(PlayerState))
 		{
-			PlayerState->SaveGame(CurrentSaveGame);
+			RoguePlayerState->WriteToSaveGame(CurrentSaveGame);
 		}
 	}
-
-
+	
 	CurrentSaveGame->ActorSaveDataArray.Empty();
 	
 	for (AActor* Actor : FActorRange{GetWorld()})
 	{
-		if(!Actor->Implements<URogueInteractionInterface>())
+		if(URogueSaveComponent* SaveableComp = Actor->GetComponentByClass<URogueSaveComponent>())
 		{
-			continue;
+			FActorSaveData ActorSaveData = SaveableComp->GetActorSaveData();
+			CurrentSaveGame->ActorSaveDataArray.Add(ActorSaveData);
 		}
-		
-		FActorSaveData ActorSaveData;
-		ActorSaveData.ActorName = Actor->GetFName();
-		ActorSaveData.ActorTransform = Actor->GetActorTransform();
-
-		FMemoryWriter MemWriter {ActorSaveData.ByteArray};
-		FObjectAndNameAsStringProxyArchive Ar {MemWriter, true};
-		Actor->Serialize(Ar);
-		
-		CurrentSaveGame->ActorSaveDataArray.Add(ActorSaveData);
 	}
 	
 	bool bSaveSucceed = UGameplayStatics::SaveGameToSlot(CurrentSaveGame, SaveSlotName, 0);
@@ -206,23 +193,17 @@ void ARogueGameMode::LoadSavedActors()
 	TMap<FName, const FActorSaveData*> ActorSaveDataMap;
 	for (const FActorSaveData& ActorSaveData : CurrentSaveGame->ActorSaveDataArray)
 	{
-		ActorSaveDataMap.Add(ActorSaveData.ActorName, &ActorSaveData);
+		ActorSaveDataMap.Add(ActorSaveData.Id, &ActorSaveData);
 	}
 		
 	for (AActor* Actor : FActorRange{GetWorld()})
 	{
-		if(!Actor->Implements<URogueInteractionInterface>())
+		if(URogueSaveComponent* SaveableComponent = Actor->GetComponentByClass<URogueSaveComponent>())
 		{
-			continue;
-		}
-
-		if(const FActorSaveData** ActorSaveData = ActorSaveDataMap.Find(Actor->GetFName()))
-		{
-			Actor->SetActorTransform((*ActorSaveData)->ActorTransform);
-			
-			FMemoryReader MemReader {(*ActorSaveData)->ByteArray};
-			FObjectAndNameAsStringProxyArchive Ar {MemReader, true};
-			Actor->Serialize(Ar);
+			if(const FActorSaveData** ActorSaveData = ActorSaveDataMap.Find(SaveableComponent->GetSaveId()))
+			{
+				SaveableComponent->ApplyActorSaveData(**ActorSaveData);
+			}
 		}
 	}
 }

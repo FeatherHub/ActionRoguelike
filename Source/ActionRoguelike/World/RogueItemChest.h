@@ -5,6 +5,8 @@
 #include "GameFramework/Actor.h"
 #include "RogueItemChest.generated.h"
 
+class URogueSaveComponent;
+
 UCLASS()
 class ACTIONROGUELIKE_API ARogueItemChest : public AActor, public IRogueInteractionInterface
 {
@@ -17,6 +19,9 @@ protected:
 	UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category=Component)
 	TObjectPtr<UStaticMeshComponent> BaseMeshComp;
 
+	UPROPERTY(VisibleAnywhere, Category=Component)
+	TObjectPtr<URogueSaveComponent> SaveComp;
+	
 	UPROPERTY(SaveGame, ReplicatedUsing=OnRep_IsLidOpen, BlueprintReadOnly, Category=Chest)
 	bool bIsLidOpen;
 	
@@ -27,7 +32,11 @@ protected:
 	UFUNCTION(BlueprintImplementableEvent)
 	void OnIsLidOpenChanged(bool bNewIsLidOpen);
 
+	UFUNCTION()
+	void OnSaveLoaded();
+	
 public:
 	ARogueItemChest();
+	virtual void BeginPlay() override;
 	virtual void Interact_Implementation() override;
 };

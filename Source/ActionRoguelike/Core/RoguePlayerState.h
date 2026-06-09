@@ -23,8 +23,8 @@ public:
 	
 public:
 	UFUNCTION(BlueprintNativeEvent)
-	void SaveGame(URogueSaveGame* SaveGameObject);
+	void WriteToSaveGame(URogueSaveGame* SaveGameObject);
 	
 	UFUNCTION(BlueprintNativeEvent)
-	void Load(URogueSaveGame* SaveGameObject);
+	void LoadFromSaveGame(URogueSaveGame* SaveGameObject);
 };

@@ -5,14 +5,14 @@
 #include "RogueSaveGame.generated.h"
 
 
-USTRUCT()
+USTRUCT(BlueprintType)
 struct FActorSaveData
 {
 	GENERATED_BODY()
 	
 public:
 	UPROPERTY()
-	FName ActorName;
+	FName Id;
 	
 	UPROPERTY()
 	FTransform ActorTransform;

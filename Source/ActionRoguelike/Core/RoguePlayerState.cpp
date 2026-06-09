@@ -1,9 +1,9 @@
 ﻿#include "RoguePlayerState.h"
 
-#include "RogueSaveGame.h"
+#include "SaveSystem/RogueSaveGame.h"
 
 
-void ARoguePlayerState::SaveGame_Implementation(URogueSaveGame* SaveGameObject)
+void ARoguePlayerState::WriteToSaveGame_Implementation(URogueSaveGame* SaveGameObject)
 {
 	if(SaveGameObject)
 	{
@@ -11,7 +11,7 @@ void ARoguePlayerState::SaveGame_Implementation(URogueSaveGame* SaveGameObject)
 	}
 }
 
-void ARoguePlayerState::Load_Implementation(URogueSaveGame* SaveGameObject)
+void ARoguePlayerState::LoadFromSaveGame_Implementation(URogueSaveGame* SaveGameObject)
 {
 	if(SaveGameObject)
 	{
