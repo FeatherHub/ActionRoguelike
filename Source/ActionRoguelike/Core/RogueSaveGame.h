@@ -16,6 +16,9 @@ public:
 	
 	UPROPERTY()
 	FTransform ActorTransform;
+	
+	UPROPERTY()
+	TArray<uint8> ByteArray;
 };
 
 UCLASS()

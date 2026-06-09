@@ -17,7 +17,7 @@ protected:
 	UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category=Component)
 	TObjectPtr<UStaticMeshComponent> BaseMeshComp;
 
-	UPROPERTY(ReplicatedUsing=OnRep_IsLidOpen, BlueprintReadOnly, Category=Chest)
+	UPROPERTY(SaveGame, ReplicatedUsing=OnRep_IsLidOpen, BlueprintReadOnly, Category=Chest)
 	bool bIsLidOpen;
 	
 	UFUNCTION()

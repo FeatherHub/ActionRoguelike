@@ -13,6 +13,7 @@
 #include "GameFramework/GameState.h"
 #include "Kismet/GameplayStatics.h"
 #include "Misc/DataValidation.h"
+#include "Serialization/ObjectAndNameAsStringProxyArchive.h"
 
 static TAutoConsoleVariable<bool> CVarSpawnBotShowDebug{
 	TEXT("rogue.gamemode.spawnbot.ShowDebug"), false,
@@ -178,6 +179,10 @@ bool ARogueGameMode::WriteToSaveGameObject()
 		ActorSaveData.ActorName = Actor->GetFName();
 		ActorSaveData.ActorTransform = Actor->GetActorTransform();
 
+		FMemoryWriter MemWriter {ActorSaveData.ByteArray};
+		FObjectAndNameAsStringProxyArchive Ar {MemWriter, true};
+		Actor->Serialize(Ar);
+		
 		CurrentSaveGame->ActorSaveDataArray.Add(ActorSaveData);
 	}
 	
@@ -187,18 +192,6 @@ bool ARogueGameMode::WriteToSaveGameObject()
 	    TEXT("[GameMode] Save Game Result: %d"), bSaveSucceed);
 	
 	return bSaveSucceed;
-}
-
-void ARogueGameMode::LoadSaveGameObject()
-{
-	if(UGameplayStatics::DoesSaveGameExist(SaveSlotName, 0))
-	{
-		CurrentSaveGame = Cast<URogueSaveGame>(UGameplayStatics::LoadGameFromSlot(SaveSlotName, 0));
-	}
-	else
-	{
-		CurrentSaveGame = Cast<URogueSaveGame>(UGameplayStatics::CreateSaveGameObject(URogueSaveGame::StaticClass()));
-	}
 }
 
 void ARogueGameMode::LoadSavedActors()
@@ -226,7 +219,23 @@ void ARogueGameMode::LoadSavedActors()
 		if(const FActorSaveData** ActorSaveData = ActorSaveDataMap.Find(Actor->GetFName()))
 		{
 			Actor->SetActorTransform((*ActorSaveData)->ActorTransform);
+			
+			FMemoryReader MemReader {(*ActorSaveData)->ByteArray};
+			FObjectAndNameAsStringProxyArchive Ar {MemReader, true};
+			Actor->Serialize(Ar);
 		}
+	}
+}
+
+void ARogueGameMode::LoadSaveGameObject()
+{
+	if(UGameplayStatics::DoesSaveGameExist(SaveSlotName, 0))
+	{
+		CurrentSaveGame = Cast<URogueSaveGame>(UGameplayStatics::LoadGameFromSlot(SaveSlotName, 0));
+	}
+	else
+	{
+		CurrentSaveGame = Cast<URogueSaveGame>(UGameplayStatics::CreateSaveGameObject(URogueSaveGame::StaticClass()));
 	}
 }
 
