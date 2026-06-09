@@ -19,8 +19,8 @@ class ACTIONROGUELIKE_API ARogueGameMode : public AGameModeBase
 public:
 	ARogueGameMode();
 	virtual void InitGame(const FString& MapName, const FString& Options, FString& ErrorMessage) override;
-	virtual void StartPlay() override;
 	virtual void HandleStartingNewPlayer_Implementation(APlayerController* NewPlayer) override;
+	virtual void StartPlay() override;
 	
 ///////////////
 // Spawn Bot
@@ -61,8 +61,11 @@ protected:
 public:
 	UFUNCTION(BlueprintCallable)
 	bool WriteToSaveGameObject();
+protected:
 	void LoadSaveGameObject();
+	void LoadSavedActors();
 	
+public:
 #if !UE_BUILD_SHIPPING
 	virtual EDataValidationResult IsDataValid(class FDataValidationContext& Context) const override;
 #endif

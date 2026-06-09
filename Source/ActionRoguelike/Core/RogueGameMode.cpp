@@ -2,6 +2,7 @@
 
 #include "ActionRoguelike.h"
 #include "EngineUtils.h"
+#include "RogueInteractionInterface.h"
 #include "RoguePlayerState.h"
 #include "RogueSaveGame.h"
 #include "ActionRoguelike/Player/RoguePlayerController.h"
@@ -42,15 +43,6 @@ void ARogueGameMode::InitGame(const FString& MapName, const FString& Options, FS
 	LoadSaveGameObject();
 }
 
-void ARogueGameMode::StartPlay()
-{
-	Super::StartPlay();
-	
-	ROGUE_DEBUG_CVAR(CVarSpawnBotShowDebug, 0, 3.f, FColor::Green, 
-		TEXT("[GameMode] StartPlay"))
-
-	GetWorldTimerManager().SetTimer(SpawnBotTimer, this, &ThisClass::SpawnBot, SpawnBotInterval, true);
-}
 
 void ARogueGameMode::HandleStartingNewPlayer_Implementation(APlayerController* NewPlayer)
 {
@@ -61,6 +53,19 @@ void ARogueGameMode::HandleStartingNewPlayer_Implementation(APlayerController* N
 		PlayerState->Load(CurrentSaveGame);
 	}
 }
+
+void ARogueGameMode::StartPlay()
+{
+	Super::StartPlay();
+
+	LoadSavedActors();
+	
+	ROGUE_DEBUG_CVAR(CVarSpawnBotShowDebug, 0, 3.f, FColor::Green, 
+		TEXT("[GameMode] StartPlay"))
+
+	GetWorldTimerManager().SetTimer(SpawnBotTimer, this, &ThisClass::SpawnBot, SpawnBotInterval, true);
+}
+
 
 ///////////////
 // Spawn Bot
@@ -145,7 +150,12 @@ void ARogueGameMode::OnEnvQueryFinished(UEnvQueryInstanceBlueprintWrapper* Query
 // Save System
 bool ARogueGameMode::WriteToSaveGameObject()
 {
-	auto AllPlayerState = GameState->PlayerArray;
+	if(!ensure(CurrentSaveGame))
+	{
+		return false;
+	}
+	
+	auto& AllPlayerState = GameState->PlayerArray;
 	for (int i = 0; i < AllPlayerState.Num(); ++i)
 	{
 		if(ARoguePlayerState* PlayerState = Cast<ARoguePlayerState>(AllPlayerState[i]))
@@ -153,6 +163,24 @@ bool ARogueGameMode::WriteToSaveGameObject()
 			PlayerState->SaveGame(CurrentSaveGame);
 		}
 	}
+
+
+	CurrentSaveGame->ActorSaveDataArray.Empty();
+	
+	for (AActor* Actor : FActorRange{GetWorld()})
+	{
+		if(!Actor->Implements<URogueInteractionInterface>())
+		{
+			continue;
+		}
+		
+		FActorSaveData ActorSaveData;
+		ActorSaveData.ActorName = Actor->GetFName();
+		ActorSaveData.ActorTransform = Actor->GetActorTransform();
+
+		CurrentSaveGame->ActorSaveDataArray.Add(ActorSaveData);
+	}
+	
 	bool bSaveSucceed = UGameplayStatics::SaveGameToSlot(CurrentSaveGame, SaveSlotName, 0);
 	
 	ROGUE_DEBUG_CVARFMT(CVarSaveSystemShowDebug, 0, 3.f, bSaveSucceed ? FColor::Green : FColor::Red, 
@@ -170,6 +198,35 @@ void ARogueGameMode::LoadSaveGameObject()
 	else
 	{
 		CurrentSaveGame = Cast<URogueSaveGame>(UGameplayStatics::CreateSaveGameObject(URogueSaveGame::StaticClass()));
+	}
+}
+
+void ARogueGameMode::LoadSavedActors()
+{
+	if(!CurrentSaveGame || CurrentSaveGame->ActorSaveDataArray.IsEmpty())
+	{
+		return;
+	}
+	
+	// Pointers into ActorSaveDataArray to accelerate Actor look up
+	// Do not modify the array below this line
+	TMap<FName, const FActorSaveData*> ActorSaveDataMap;
+	for (const FActorSaveData& ActorSaveData : CurrentSaveGame->ActorSaveDataArray)
+	{
+		ActorSaveDataMap.Add(ActorSaveData.ActorName, &ActorSaveData);
+	}
+		
+	for (AActor* Actor : FActorRange{GetWorld()})
+	{
+		if(!Actor->Implements<URogueInteractionInterface>())
+		{
+			continue;
+		}
+
+		if(const FActorSaveData** ActorSaveData = ActorSaveDataMap.Find(Actor->GetFName()))
+		{
+			Actor->SetActorTransform((*ActorSaveData)->ActorTransform);
+		}
 	}
 }
 
