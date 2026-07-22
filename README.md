@@ -140,14 +140,6 @@ AI 전투는 다음 노드로 나누었습니다.
 - `GetDefault<URoguePickupSystemSetting>()`으로 런타임 기본 설정 조회
 - `LoadAsync()`와 `FLoadSoftObjectPathAsyncDelegate`로 Mesh/Sound 비동기 로드
 
-현재 기본 설정은 다음과 같습니다.
-
-```ini
-[/Script/ActionRoguelike.RoguePickupSystemSetting]
-CoinMeshSoftAsset=/Game/ExampleContent/Meshes/SM_Pickup_Coin.SM_Pickup_Coin
-CoinPickupSoundSoftAsset=/Game/SanderAudio/Sources/Interactables/MSS_Interactables_CurrencyPickup.MSS_Interactables_CurrencyPickup
-CoinPickupTriggerParameterName=CoinPickedUp
-```
 
 ### 7. 재사용 가능한 상호작용과 저장 시스템
 
@@ -172,16 +164,16 @@ CoinPickupTriggerParameterName=CoinPickedUp
 
 주요 CVar 예시는 다음과 같습니다.
 
-| CVar | 용도 | 기본값 |
+| CVar | 용도 |
 | --- | --- | ---: |
-| `rogue.net.debug.ShowContext` | 메시지 앞에 PIE/NetMode/Role/Authority/Control 컨텍스트 표시 | `0` |
-| `rogue.asc.attribute.ShowMsg` | 어트리뷰트 변경 화면 메시지 | `0` |
-| `rogue.interaction.Debugdraw` | 탐색 반경, 후보 Bounds, 가중치 시각화 | `0` |
-| `rogue.worldwidget.DebugDraw` | 월드 좌표와 화면 투영 상태 표시 | `0` |
-| `rogue.projectile.DebugDraw` | 카메라 Trace, 보정 경로, 원래 조준 경로 표시 및 표시 시간 지정 | `0` |
-| `rogue.ai.minionranged.DebugDraw` | AI 사거리 원과 공격 방향 표시 | `1` |
-| `rogue.gamemode.spawnbot.ShowDebug` | 생존/최대 Bot 수와 EQS 스폰 결과 표시 | `0` |
-| `rogue.gamemode.savesystem.ShowDebug` | 저장 성공 여부 표시 | `1` |
+| `rogue.net.debug.ShowContext` | 메시지 앞에 PIE/NetMode/Role/Authority/Control 컨텍스트 표시 |
+| `rogue.asc.attribute.ShowMsg` | 어트리뷰트 변경 화면 메시지 |
+| `rogue.interaction.Debugdraw` | 탐색 반경, 후보 Bounds, 가중치 시각화 |
+| `rogue.worldwidget.DebugDraw` | 월드 좌표와 화면 투영 상태 표시 |
+| `rogue.projectile.DebugDraw` | 카메라 Trace, 보정 경로, 원래 조준 경로 표시 및 표시 시간 지정 |
+| `rogue.ai.minionranged.DebugDraw` | AI 사거리 원과 공격 방향 표시 |
+| `rogue.gamemode.spawnbot.ShowDebug` | 생존/최대 Bot 수와 EQS 스폰 결과 표시 |
+| `rogue.gamemode.savesystem.ShowDebug` | 저장 성공 여부 표시 |
 
 `rogue.net.debug.Filter`와 필터 판정 함수도 Client/Server/Both 모드로 정의되어 있습니다. 다만 현재 `SubmitDebugContext()` 경로에는 이 판정이 연결되어 있지 않아, 실제 필터 적용은 개선 과제로 분리했습니다.
 
@@ -241,18 +233,4 @@ Gameplay Tag도 코드와 데이터 양쪽에서 관리합니다. 공격·기본
 - `URogueActionEffect::IsDataValid()`에서 Duration/Period 누락과 Period가 Duration보다 긴 설정을 경고
 - `ARogueGameMode::IsDataValid()`에서 Bot Spawn Curve 누락을 Invalid로 보고
 - `ensure`, `ensureMsgf`, `check`로 필수 런타임 참조와 불변 조건 검증
-
-## 기술적 의사결정
-
-| 문제 | 선택 | 이유 |
-| --- | --- | --- |
-| 기능이 늘수록 Character가 비대해지는 문제 | 액션을 독립 UObject로 구성 | 기능별 수명 주기와 데이터를 분리하고 Blueprint 파생을 허용 |
-| 상태 간 상호 배제 | Gameplay Tag 컨테이너 | 구체 클래스 참조 없이 의미 기반으로 차단·상태 전파 |
-| UI와 게임플레이의 결합 | Native/Dynamic Delegate | C++와 Blueprint 소비자가 같은 변경 이벤트를 구독 |
-| 다수 코인의 Actor 비용 | World Subsystem + ISM | 오브젝트 수와 Draw Call 부담을 줄이고 중앙 관리 |
-| 에셋 경로의 코드 결합 | UDeveloperSettings + Soft Reference | Project Settings에서 교체하고 필요 시점에 비동기 로드 |
-| Actor별 저장 코드 반복 | SaveGame Archive 직렬화 | 컴포넌트 부착과 프로퍼티 지정만으로 저장 대상을 확장 |
-| AI 스폰 위치 하드코딩 | EQS 비동기 Query | 내비게이션과 환경 조건을 데이터에서 조정 |
-| 기능마다 다른 충돌 규칙 | 전용 Channel/Profile + 이름 상수 | Trace 의도와 물리 반응을 프로젝트 설정에서 일관되게 관리 |
-| 여러 월드의 화면 로그 혼선 | World Subsystem Debug Queue | PIE 월드별 큐, Net Context, 고정 Debug Key로 메시지를 분리 |
 
