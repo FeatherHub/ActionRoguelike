@@ -7,10 +7,16 @@
 #include "Components/InstancedStaticMeshComponent.h"
 #include "Core/RoguePickupSystemSetting.h"
 #include "Core/RoguePlayerState.h"
+#include "Development/RogueNetUtil.h"
 #include "Player/RoguePlayerCharacter.h"
 #include "ProfilingDebugging/CountersTrace.h"
 
 TRACE_DECLARE_INT_COUNTER(TotalCoinCount, TEXT("TotalCoinCount"));
+
+TAutoConsoleVariable<bool> CVarCoinPickupSubsystemDebug {
+	TEXT("rogue.coin.ShowDebug"), false, 
+	TEXT("Show On Screen Coin Pickup related debug information. 0=off, 1=on"), ECVF_Cheat
+};
 
 void URogueCoinPickupSubsystem::OnWorldBeginPlay(UWorld& InWorld)
 {
@@ -55,6 +61,8 @@ void URogueCoinPickupSubsystem::Tick(float DeltaTime)
 {
 	Super::Tick(DeltaTime);
 
+	ROGUE_DEBUG_CVARFMT(CVarCoinPickupSubsystemDebug, 0, 0.f, FColor::Green, TEXT("Total Coin in Scene: %d"), CoinLocations.Num());
+	
 	for (ARoguePlayerCharacter* PlayerCharacter : TActorRange<ARoguePlayerCharacter>(GetWorld()))
 	{
 		FVector PlayerLocation = PlayerCharacter->GetActorLocation();
