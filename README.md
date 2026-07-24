@@ -7,15 +7,15 @@
 | 엔진 | Unreal Engine 5.6.1 |
 | 사용 기술 | Gameplay Tags, Enhanced Input, Behavior Tree, EQS, UMG, Niagara, SaveGame, RPC/Replication, World Subsystem, ISM, Unreal Insights Trace, Developer Settings |
 
-## 핵심 플레이 요소들
+## 핵심 요소들
 - 일반 마법 탄환, 블랙홀, 순간이동 투사체
 - 체력·분노·이동 속도 캐릭터 어트리뷰트
 - 화상과 기절 상태효과 
 - 캐릭터 근처를 배회, 사거리/시야 판정으로 사격권 내로 이동 후 공격, 체력 기반 도피 및 자가 회복을 수행하는 적 AI
-- 거리와 시선 방향을 가중 합산하는 월드 오브젝트 상호작용 선택
+- 스위치, 보물상자 등 월드 상호작용 오브젝트들
 - 체력 포션, 코인 수집, 크레딧 수집
-- 월드 상태와 플레이어 크레딧을 보존하는 세이브/로드 시스템
-- 인월드 체력비, 상호작용 프롬프트 위젯
+- 세이브/로드 시스템
+- 인월드 체력바, 상호작용 프롬프트 위젯
 - 상태 효과 아이콘, 인게임 메뉴
   
 ## 디렉터리 구성
@@ -92,9 +92,11 @@
 
 ## 대량 코인을 위한 World Subsystem
 
-`URogueCoinPickupSubsystem`은 코인을 Actor로 생성하지 않고 위치·보상·ISM 인스턴스 ID로 관리합니다. Navigation System으로 배치하고, 거리 검사 후 인스턴스를 제거하며 크레딧을 지급합니다.
+`URogueCoinPickupSubsystem`은 코인을 Actor로 생성하지 않고 위치·보상·ISM 인스턴스 ID로 관리합니다.
 
 - [`RogueCoinPickupSubsystem.h`](/Source/ActionRoguelike/Pickup/RogueCoinPickupSubsystem.h): 거리 검사와 획득 처리, Navigation 배치와 ISM 추가·제거
+
+![InGame_Coin](/Docs/InGame_Coins.png)
 
 ---
 
@@ -119,7 +121,9 @@
 코인 시스템이 콘텐츠 경로를 에디터 프로젝트 세팅에서 설정할 수 있도록 `URoguePickupSystemSetting : UDeveloperSettings`를 구현했습니다.
 
 - [`RoguePickupSystemSetting.h`](/Source/ActionRoguelike/Core/RoguePickupSystemSetting.h): Soft Reference와 프로젝트 설정 카테고리
-  
+
+![Editor_ProjectSettings](/Docs/Editor_ProjectSettings.png)
+
 ---
 
 ## 재사용 가능한 상호작용 시스템과 저장 시스템
