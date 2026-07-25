@@ -45,7 +45,9 @@ protected:
 	UFUNCTION(BlueprintCallable)
 	ACharacter* GetOwningCharacter() const;
 	
+#if WITH_EDITOR
 	virtual bool ImplementsGetWorld() const override { return true; }
+#endif 
 	virtual bool IsSupportedForNetworking() const override { return true; }
 	
 public:

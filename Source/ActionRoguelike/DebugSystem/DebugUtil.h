@@ -35,8 +35,9 @@ void SubmitDebugContext(UObject* ContextObject, uint64 DebugKey, const FString& 
 
 
 
-// 주의: else 절을 붙이면 안 된다
-// 주의: 조건문 내에 변수를 선언하면 안 된다 (shipping에서 선언이 사라져 컴파일 에러 발생)
+// 주의: 중괄호 없는 if 안에 쓰면 안 된다 (그 if 의 else 가 이 DEBUG_IF에 결합된다)
+// 주의: else 절을 붙이면 안 된다 (그러면 shipping에서 항상 그 else 블록이 실행된다)
+// 주의: 조건문 내에 변수를 선언하면 안 된다 (shipping에서 선언이 사라져 컴파일 에러가 발생한다)
 #if UE_BUILD_SHIPPING || UE_BUILD_TEST
 	#define DEBUG_IF(Cond) if constexpr(false)
 	#define DEBUG_IF_CVAR(CVar) if constexpr(false)
