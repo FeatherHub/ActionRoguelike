@@ -11,8 +11,8 @@
 #include "Network/NetUtil.h"
 #include "Player/RoguePlayerCharacter.h"
 
-TAutoConsoleVariable<bool> CVarAttributeDebugMsg { TEXT("rogue.asc.attribute.ShowMsg"), false,
-	TEXT("Show ActionSystemComponent's Attribute related on-screen messages. 0=off, 1=on"), ECVF_Cheat };
+static TAutoConsoleVariable<bool> CVarAttributeDebugMsg { TEXT("rogue.asc.attribute.ShowMsg"), false,
+	TEXT("Show ActionSystemComponent's Attribute related on-screen messages. 0=off, 1=on"), ECVF_Default };
 
 URogueActionSystemComponent::URogueActionSystemComponent()
 {

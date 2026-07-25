@@ -13,9 +13,9 @@
 
 TRACE_DECLARE_INT_COUNTER(TotalCoinCount, TEXT("TotalCoinCount"));
 
-TAutoConsoleVariable<bool> CVarCoinPickupSubsystemDebug {
+static TAutoConsoleVariable<bool> CVarCoinPickupSubsystemDebug {
 	TEXT("rogue.coin.ShowDebug"), false, 
-	TEXT("Show On Screen Coin Pickup related debug information. 0=off, 1=on"), ECVF_Cheat
+	TEXT("Show On Screen Coin Pickup related debug information. 0=off, 1=on"), ECVF_Default
 };
 
 void URogueCoinPickupSubsystem::OnWorldBeginPlay(UWorld& InWorld)

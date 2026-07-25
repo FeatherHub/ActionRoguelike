@@ -2,9 +2,9 @@
 
 #include "NiagaraComponent.h"
 #include "NiagaraFunctionLibrary.h"
+#include "RogueProjectileConsoleVariable.h"
 #include "Components/AudioComponent.h"
 #include "Components/SphereComponent.h"
-#include "Core/RogueDebug.h"
 #include "Core/RogueGameType.h"
 #include "GameFramework/ProjectileMovementComponent.h"
 #include "Kismet/GameplayStatics.h"

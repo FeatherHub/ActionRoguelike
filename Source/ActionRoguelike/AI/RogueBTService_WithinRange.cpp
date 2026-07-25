@@ -1,8 +1,8 @@
 ﻿#include "RogueBTService_WithinRange.h"
 
 #include "AIController.h"
+#include "RogueAIConsoleVariable.h"
 #include "BehaviorTree/BlackboardComponent.h"
-#include "Core/RogueDebug.h"
 
 void URogueBTService_WithinRange::TickNode(UBehaviorTreeComponent& OwnerComp, uint8* NodeMemory, float DeltaSeconds)
 {
@@ -27,10 +27,14 @@ void URogueBTService_WithinRange::TickNode(UBehaviorTreeComponent& OwnerComp, ui
 
 	if (CVarMinionRangedDrawDebug.GetValueOnGameThread())
 	{
+		FVector ActorLocation = AIActor->GetActorLocation();
+		FVector CircleLocation {ActorLocation.X, ActorLocation.Y, 10.f};
+		
 		FRotationTranslationMatrix CircleMatrix{
 			FRotator{90.f, 0.f, 0.f},
-			AIActor->GetActorLocation()
+			CircleLocation
 		};
+		
 		DrawDebugCircle(GetWorld(), CircleMatrix, MaxRange, 64, FColor::Black, false, Interval, 0, 1);
 	}
 }

@@ -8,9 +8,9 @@
 #include "DebugSystem/DebugUtil.h"
 #include "Network/NetUtil.h"
 
-TAutoConsoleVariable<bool> CVarInteractionDebugDraw{
+static TAutoConsoleVariable<bool> CVarInteractionDebugDraw{
 	TEXT("rogue.interaction.Debugdraw"), false,
-	TEXT("Enable interation debug draw. (0 = Off, 1 = On)"), ECVF_Cheat
+	TEXT("Enable interation debug draw. (0 = Off, 1 = On)"), ECVF_Default
 };
 
 const float DEBUG_BOX_EXTENT = 50.f;

@@ -5,8 +5,8 @@
 #include "DebugSystem/DebugUtil.h"
 #include "Kismet/GameplayStatics.h"
 
-inline TAutoConsoleVariable<bool> CVarWorldWidgetDrawDebug{TEXT("rogue.worldwidget.DebugDraw"), false, 
-	TEXT("Draw World Widget info. (0=off. 1=on)"), ECVF_Cheat};
+static TAutoConsoleVariable<bool> CVarWorldWidgetDrawDebug{TEXT("rogue.worldwidget.DebugDraw"), false, 
+	TEXT("Draw World Widget info. (0=off. 1=on)"), ECVF_Default};
 
 
 

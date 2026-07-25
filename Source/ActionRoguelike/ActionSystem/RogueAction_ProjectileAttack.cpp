@@ -1,11 +1,11 @@
 ﻿#include "RogueAction_ProjectileAttack.h"
 
 #include "NiagaraFunctionLibrary.h"
-#include "Core/RogueDebug.h"
 #include "Core/RogueGameType.h"
 #include "GameFramework/Character.h"
 #include "Kismet/GameplayStatics.h"
 #include "Projectile/RogueProjectileBase.h"
+#include "Projectile/RogueProjectileConsoleVariable.h"
 
 URogueAction_ProjectileAttack::URogueAction_ProjectileAttack()
 {
@@ -75,13 +75,13 @@ void URogueAction_ProjectileAttack::SpawnProjectile()
 	if (DebugDrawTime > 0.0f)
 	{
 		// line trace 
-		DrawDebugLine(GetWorld(), EyeLocation, TraceEnd, FColor::Green, false, DebugDrawTime);
+		DrawDebugDirectionalArrow(GetWorld(), EyeLocation, TraceEnd, 48, FColor::Green, false, DebugDrawTime);
 
 		// adjusted projectile path
-		DrawDebugLine(GetWorld(), SpawnLocation, AdjustedTargetLocation, FColor::Cyan, false, DebugDrawTime);
+		DrawDebugDirectionalArrow(GetWorld(), SpawnLocation, AdjustedTargetLocation, 48, FColor::Cyan, false, DebugDrawTime);
 
 		// original projectile path
-		DrawDebugLine(GetWorld(), SpawnLocation, SpawnLocation + EyeRotation.Vector() * 5000.f, FColor::Red, false, DebugDrawTime);
+		DrawDebugDirectionalArrow(GetWorld(), SpawnLocation, SpawnLocation + EyeRotation.Vector() * 5000.f, 48, FColor::Red, false, DebugDrawTime);
 
 		DrawDebugBox(GetWorld(), TraceEnd, FVector{20.f}, FColor::Green, false, DebugDrawTime);
 	}

@@ -15,12 +15,12 @@
 
 static TAutoConsoleVariable<bool> CVarSpawnBotShowDebug{
 	TEXT("rogue.gamemode.spawnbot.ShowDebug"), false,
-	TEXT("Show spawn bot related debug info"), ECVF_Cheat
+	TEXT("Show spawn bot related debug info"), ECVF_Default
 };
 
 static TAutoConsoleVariable<bool> CVarSaveSystemShowDebug{
 	TEXT("rogue.gamemode.savesystem.ShowDebug"), true,
-	TEXT("Show save system related debug info"), ECVF_Cheat
+	TEXT("Show save system related debug info"), ECVF_Default
 };
 
 //////////////
