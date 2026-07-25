@@ -1,10 +1,9 @@
 ﻿#pragma once
 
 #include "CoreMinimal.h"
+#include "DebugContext.h"
 #include "Subsystems/WorldSubsystem.h"
 #include "RogueDebugSubsystem.generated.h"
-
-struct FOnScreenDebugContext;
 
 UCLASS()
 class ACTIONROGUELIKE_API URogueDebugSubsystem : public UWorldSubsystem

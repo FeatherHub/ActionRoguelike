@@ -1,0 +1,34 @@
+﻿#pragma once
+
+#include "CoreMinimal.h"
+
+void SubmitDebugContext(UObject* ContextObject, uint64 DebugKey, const FString& Msg, const FColor& Color, float Duration);
+
+#if UE_BUILD_SHIPPING || UE_BUILD_TEST
+	#define DEBUG_ONSCREEN(DebugSubkey, Duration, Color, Msg)
+	#define DEBUG_ONSCREEN_FMT(DebugSubkey, Duration, Color, Fmt, ...)
+	#define DEBUG_ONSCREEN_CVAR(CVar, DebugSubkey, Duration, Color, Msg)
+	#define DEBUG_ONSCREEN_CVARFMT(CVar, DebugSubkey, Duration, Color, Fmt, ...)
+#else
+	#define DEBUG_ONSCREEN_CVARFMT(CVar, DebugSubkey, Duration, Color, Fmt, ...) \
+		do if(CVar.GetValueOnGameThread()) { \
+			DEBUG_ONSCREEN(DebugSubkey, Duration, Color, FString::Printf(Fmt, ##__VA_ARGS__)); \
+		} while(false)
+
+	#define DEBUG_ONSCREEN_CVAR(CVar, DebugSubkey, Duration, Color, Msg) \
+		do if(CVar.GetValueOnGameThread()) { \
+			DEBUG_ONSCREEN(DebugSubkey, Duration, Color, Msg); \
+		} while(false)
+
+	#define DEBUG_ONSCREEN_FMT(DebugSubkey, Duration, Color, Fmt, ...) \
+		do { \
+			DEBUG_ONSCREEN(DebugSubkey, Duration, Color, FString::Printf(Fmt, ##__VA_ARGS__)); \
+		} while(false)
+
+	#define DEBUG_ONSCREEN(DebugSubkey, Duration, Color, Msg) \
+		do { \
+			uint64 Hash1 = HashCombine(GetTypeHash(this), GetTypeHash(DebugSubkey)); \
+ 			uint64 Hash2 = HashCombine(PointerHash(__FILE__, __LINE__), Hash1); \
+			SubmitDebugContext(this, Hash2, Msg, Color, Duration); \
+		} while(false)
+#endif

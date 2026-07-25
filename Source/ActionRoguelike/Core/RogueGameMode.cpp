@@ -5,7 +5,7 @@
 #include "SaveSystem/RogueSaveGame.h"
 #include "ActionRoguelike/Player/RoguePlayerController.h"
 #include "AI/RogueAICharacter.h"
-#include "Development/DebugUtil.h"
+#include "DebugSystem/DebugUtil.h"
 #include "EnvironmentQuery/EnvQueryInstanceBlueprintWrapper.h"
 #include "EnvironmentQuery/EnvQueryManager.h"
 #include "GameFramework/GameState.h"

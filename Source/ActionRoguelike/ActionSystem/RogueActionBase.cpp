@@ -3,9 +3,10 @@
 #include "ActionRoguelike.h"
 #include "RogueActionSystemComponent.h"
 #include "RogueAttributeSet.h"
-#include "Development/DebugUtil.h"
+#include "DebugSystem/DebugUtil.h"
 #include "GameFramework/Character.h"
 #include "Net/UnrealNetwork.h"
+#include "Network/NetUtil.h"
 
 void URogueActionBase::StartAction_Implementation()
 {
@@ -13,7 +14,7 @@ void URogueActionBase::StartAction_Implementation()
 	
 	DEBUG_ONSCREEN_FMT(0, 3.f, FColor::Orange, 
 		TEXT("[ActionBase::StartAction] Action(%s, %s). Character(%s)'s Controller(%s)"),
-		*ActionName.ToString(), *GetNetDebugName(this), *GetNetDebugName(Character), *GetNetDebugName(Character->GetController()));
+		*ActionName.ToString(), *NetUtil::GetNetName(this), *NetUtil::GetNetName(Character), *NetUtil::GetNetName(Character->GetController()));
 	
 	
 	float CurrentTime = GetWorld()->TimeSeconds;

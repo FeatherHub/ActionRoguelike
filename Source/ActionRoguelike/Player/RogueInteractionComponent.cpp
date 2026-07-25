@@ -5,7 +5,8 @@
 #include "Engine/OverlapResult.h"
 #include "Widget/RogueWorldWidget.h"
 #include "Components/PanelWidget.h"
-#include "Development/DebugUtil.h"
+#include "DebugSystem/DebugUtil.h"
+#include "Network/NetUtil.h"
 
 TAutoConsoleVariable<bool> CVarInteractionDebugDraw{
 	TEXT("rogue.interaction.Debugdraw"), false,
@@ -51,7 +52,7 @@ void URogueInteractionComponent::TickComponent(float DeltaTime, ELevelTick TickT
 
 	DEBUG_ONSCREEN_CVARFMT(CVarInteractionDebugDraw, 0, 0.f, FColor::White,
 		TEXT("[InteractionComp::Tick] %s Is Local Controller? %d"),
-			*GetNetDebugName(OwningPC), OwningPC->IsLocalController());
+			*NetUtil::GetNetName(OwningPC), OwningPC->IsLocalController());
 	
 	if (!OwningPC->IsLocalController())
 	{

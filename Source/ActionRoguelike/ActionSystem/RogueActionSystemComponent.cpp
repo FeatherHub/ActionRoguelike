@@ -5,9 +5,10 @@
 #include "GameplayTagContainer.h"
 #include "RogueActionEffect.h"
 #include "RogueAttributeSet.h"
-#include "Development/DebugUtil.h"
+#include "DebugSystem/DebugUtil.h"
 #include "Engine/ActorChannel.h"
 #include "Net/UnrealNetwork.h"
+#include "Network/NetUtil.h"
 #include "Player/RoguePlayerCharacter.h"
 
 TAutoConsoleVariable<bool> CVarAttributeDebugMsg { TEXT("rogue.asc.attribute.ShowMsg"), false,
@@ -31,7 +32,7 @@ void URogueActionSystemComponent::TickComponent(float DeltaTime, enum ELevelTick
 
 	if(GetOwner()->IsA(ARoguePlayerCharacter::StaticClass()))
 	{
-		FString OwningActionMsg = FString::Printf(TEXT("Character(%s) has Actions: "), *GetNetDebugName(GetOwner()));
+		FString OwningActionMsg = FString::Printf(TEXT("Character(%s) has Actions: "), *NetUtil::GetNetName(GetOwner()));
 		for (URogueActionBase* Action : GrantedActions)
 		{
 			OwningActionMsg += FString::Printf(TEXT("%s | "), *Action->GetActionName().GetTagLeafName().ToString());
@@ -235,7 +236,7 @@ bool URogueActionSystemComponent::ApplyAttributeChange(FGameplayTag AttributeTag
 	
 	DEBUG_ONSCREEN_CVARFMT(CVarAttributeDebugMsg,AttributeTag, 3.f, FColor::Orange,
 		TEXT("[ASC::ApplyAttrChange] Character %s Attribute %s New %-6.0f Old %-6.0f"),
-		*GetNetDebugName(GetOwner()), *AttributeTag.GetTagLeafName().ToString(), NewValue, OldValue);
+		*NetUtil::GetNetName(GetOwner()), *AttributeTag.GetTagLeafName().ToString(), NewValue, OldValue);
 	
 	UE_LOG(LogGame, Log, TEXT("[%s]-[%s] New: %-6.1f, Old: %-6.1f Type: %s"), 
 		*GetFNameSafe(GetOuter()).ToString().Left(25), *AttributeTag.ToString(), NewValue, OldValue, *UEnum::GetValueAsString(ChangeType));
@@ -247,7 +248,7 @@ void URogueActionSystemComponent::MulticastAttributeChanged_Implementation(FGame
 {
 	DEBUG_ONSCREEN_CVARFMT(CVarAttributeDebugMsg, AttributeTag, 5.f, FColor::Orange,
 		TEXT("[ASC::MulticastAttrChanged] %s Attr %s New %f Old %f"),
-		*GetNetDebugName(GetOwner()), *AttributeTag.ToString(), NewValue, OldValue);
+		*NetUtil::GetNetName(GetOwner()), *AttributeTag.ToString(), NewValue, OldValue);
 	
 	// Native C++ Listeners
 	if (FOnAttributeChanged* NativeListener = OnAttributeChangedListeners.Find(AttributeTag))

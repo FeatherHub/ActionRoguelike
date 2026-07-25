@@ -2,7 +2,7 @@
 
 #include "Blueprint/WidgetLayoutLibrary.h"
 #include "Components/SizeBox.h"
-#include "Development/DebugUtil.h"
+#include "DebugSystem/DebugUtil.h"
 #include "Kismet/GameplayStatics.h"
 
 inline TAutoConsoleVariable<bool> CVarWorldWidgetDrawDebug{TEXT("rogue.worldwidget.DebugDraw"), false, 

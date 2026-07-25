@@ -7,7 +7,7 @@
 #include "Components/InstancedStaticMeshComponent.h"
 #include "Core/RoguePickupSystemSetting.h"
 #include "Core/RoguePlayerState.h"
-#include "Development/DebugUtil.h"
+#include "DebugSystem/DebugUtil.h"
 #include "Player/RoguePlayerCharacter.h"
 #include "ProfilingDebugging/CountersTrace.h"
 
