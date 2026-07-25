@@ -3,7 +3,7 @@
 #include "ActionRoguelike.h"
 #include "RogueActionSystemComponent.h"
 #include "RogueAttributeSet.h"
-#include "Development/RogueNetUtil.h"
+#include "Development/DebugUtil.h"
 #include "GameFramework/Character.h"
 #include "Net/UnrealNetwork.h"
 
@@ -11,7 +11,7 @@ void URogueActionBase::StartAction_Implementation()
 {
 	ACharacter* Character = GetOwningCharacter();
 	
-	ROGUE_DEBUGFMT(0, 3.f, FColor::Orange, 
+	DEBUG_ONSCREEN_FMT(0, 3.f, FColor::Orange, 
 		TEXT("[ActionBase::StartAction] Action(%s, %s). Character(%s)'s Controller(%s)"),
 		*ActionName.ToString(), *GetNetDebugName(this), *GetNetDebugName(Character), *GetNetDebugName(Character->GetController()));
 	

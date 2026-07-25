@@ -4,7 +4,7 @@
 #include "Subsystems/WorldSubsystem.h"
 #include "RogueDebugSubsystem.generated.h"
 
-struct FScreenDebugContext;
+struct FOnScreenDebugContext;
 
 UCLASS()
 class ACTIONROGUELIKE_API URogueDebugSubsystem : public UWorldSubsystem
@@ -13,10 +13,11 @@ class ACTIONROGUELIKE_API URogueDebugSubsystem : public UWorldSubsystem
 	
 public:
 	virtual void OnWorldBeginPlay(UWorld& InWorld) override;
-	void Submit(FScreenDebugContext Context);
+	
+	void Submit(const FOnScreenDebugContext& Context);
 	
 protected:
 	void FlushDebugContextQueue(UWorld* World, ELevelTick LevelTick, float Delta);
 	
-	TArray<FScreenDebugContext> DebugContextQueue;
+	TArray<FOnScreenDebugContext> DebugContextQueue;
 };

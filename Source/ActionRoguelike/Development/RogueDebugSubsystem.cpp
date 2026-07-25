@@ -1,25 +1,23 @@
 ﻿#include "RogueDebugSubsystem.h"
 
-#include "ActionRoguelike.h"
-#include "RogueNetUtil.h"
-#include "RogueTimeUtil.h"
+#include "DebugUtil.h"
+#include "TimeUtil.h"
 
 void URogueDebugSubsystem::OnWorldBeginPlay(UWorld& InWorld)
 {
 	Super::OnWorldBeginPlay(InWorld);
-	
+
 	DebugContextQueue.Reset();
 	
 	FWorldDelegates::OnWorldTickEnd.AddUObject(this, &ThisClass::FlushDebugContextQueue);
 
-	FString RunningContextString = IsNetModeServer(GetWorld()->GetNetMode()) ? TEXT("[SERVER]") : TEXT("[CLIENT]");
-	
-	UE_LOG(LogGame, Log, TEXT("[%s] WorldSubsystem %s Initialized"), *RunningContextString, TEXT(__FILE__));
+	FString NetModeName = GetNetModeName(GetWorld()->GetNetMode());
+	DEBUG_ONSCREEN_FMT(0, 3.f, FColor::Green, TEXT("[%s] WorldSubsystem %s Initialized"), *NetModeName, TEXT(__FILE__));
 }
 
-void URogueDebugSubsystem::Submit(FScreenDebugContext Context)
+void URogueDebugSubsystem::Submit(const FOnScreenDebugContext& Context)
 {
-	DebugContextQueue.Add(MoveTemp(Context));
+	DebugContextQueue.Add(Context);
 }
 
 void URogueDebugSubsystem::FlushDebugContextQueue(UWorld* World, ELevelTick LevelTick, float Delta)
@@ -34,9 +32,9 @@ void URogueDebugSubsystem::FlushDebugContextQueue(UWorld* World, ELevelTick Leve
 		return;
 	}
 	
-	for (const FScreenDebugContext& DebugContext : DebugContextQueue)
+	for (const FOnScreenDebugContext& DebugContext : DebugContextQueue)
 	{
-		FString DateTimeStamp = FString::Printf(TEXT("[%s] "), *RogueTimeUtil::ToMMSSMMM(DebugContext.DateTime)); 
+		FString DateTimeStamp = FString::Printf(TEXT("[%s] "), *TimeUtil::ToMMSSMMM(DebugContext.DateTime)); 
 		
 		GEngine->AddOnScreenDebugMessage(
 			DebugContext.DebugKey,
@@ -47,14 +45,14 @@ void URogueDebugSubsystem::FlushDebugContextQueue(UWorld* World, ELevelTick Leve
 
 	bool bIsServer = IsNetModeServer(World->GetNetMode());
 	GEngine->AddOnScreenDebugMessage(
-		bIsServer ? 9999 : 8888,
+		UE::GetPlayInEditorID(),
 		0.f,
 		bIsServer ? FColor::Green : FColor::Blue,
 		bIsServer ? TEXT("[SERVER]") : TEXT("[CLIENT]")
 	);
 	
 	// update Remaining time
-	for (FScreenDebugContext& DebugContext : DebugContextQueue)
+	for (FOnScreenDebugContext& DebugContext : DebugContextQueue)
 	{
 		DebugContext.RemainingTime -= Delta;
 	}

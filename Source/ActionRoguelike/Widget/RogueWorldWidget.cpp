@@ -2,7 +2,7 @@
 
 #include "Blueprint/WidgetLayoutLibrary.h"
 #include "Components/SizeBox.h"
-#include "Development/RogueNetUtil.h"
+#include "Development/DebugUtil.h"
 #include "Kismet/GameplayStatics.h"
 
 inline TAutoConsoleVariable<bool> CVarWorldWidgetDrawDebug{TEXT("rogue.worldwidget.DebugDraw"), false, 
@@ -21,7 +21,7 @@ void URogueWorldWidget::NativeTick(const FGeometry& MyGeometry, float InDeltaTim
 		FString AttachedActorMsg = AttachedActor ? FString::Printf(TEXT("[World Widget] Attached Actor: %s"), *GetNameSafe(AttachedActor)) : "[World Widget] No Attached Actor";
 
 		DrawDebugSphere(GetWorld(), AttachedActor->GetActorLocation(), 32.f, 24, FColor::Blue);
-		ROGUE_DEBUG(0, 0.f, DebugColor, AttachedActorMsg)
+		DEBUG_ONSCREEN(0, 0.f, DebugColor, AttachedActorMsg);
 	}
 #endif
 	
@@ -60,7 +60,7 @@ void URogueWorldWidget::SyncToAttachedActorPosition()
 				*AttachedActor->GetActorLocation().ToString(),  *ScreenPosition.ToString()); 
 		}
 		
-		ROGUE_DEBUG(0, 1.f, DebugColor, ProjectionMsg)
+		DEBUG_ONSCREEN(0, 1.f, DebugColor, ProjectionMsg);
 	}
 #endif
 }

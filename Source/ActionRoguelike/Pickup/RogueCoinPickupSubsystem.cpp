@@ -7,7 +7,7 @@
 #include "Components/InstancedStaticMeshComponent.h"
 #include "Core/RoguePickupSystemSetting.h"
 #include "Core/RoguePlayerState.h"
-#include "Development/RogueNetUtil.h"
+#include "Development/DebugUtil.h"
 #include "Player/RoguePlayerCharacter.h"
 #include "ProfilingDebugging/CountersTrace.h"
 
@@ -61,7 +61,7 @@ void URogueCoinPickupSubsystem::Tick(float DeltaTime)
 {
 	Super::Tick(DeltaTime);
 
-	ROGUE_DEBUG_CVARFMT(CVarCoinPickupSubsystemDebug, 0, 0.f, FColor::Green, TEXT("Total Coin in Scene: %d"), CoinLocations.Num());
+	DEBUG_ONSCREEN_CVARFMT(CVarCoinPickupSubsystemDebug, 0, 0.f, FColor::Green, TEXT("Total Coin in Scene: %d"), CoinLocations.Num());
 	
 	for (ARoguePlayerCharacter* PlayerCharacter : TActorRange<ARoguePlayerCharacter>(GetWorld()))
 	{

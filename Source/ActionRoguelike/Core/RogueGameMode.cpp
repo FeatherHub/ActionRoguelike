@@ -5,7 +5,7 @@
 #include "SaveSystem/RogueSaveGame.h"
 #include "ActionRoguelike/Player/RoguePlayerController.h"
 #include "AI/RogueAICharacter.h"
-#include "Development/RogueNetUtil.h"
+#include "Development/DebugUtil.h"
 #include "EnvironmentQuery/EnvQueryInstanceBlueprintWrapper.h"
 #include "EnvironmentQuery/EnvQueryManager.h"
 #include "GameFramework/GameState.h"
@@ -59,8 +59,8 @@ void ARogueGameMode::StartPlay()
 
 	LoadSavedActors();
 	
-	ROGUE_DEBUG_CVAR(CVarSpawnBotShowDebug, 0, 3.f, FColor::Green, 
-		TEXT("[GameMode] StartPlay"))
+	DEBUG_ONSCREEN_CVAR(CVarSpawnBotShowDebug, 0, 3.f, FColor::Green, 
+		TEXT("[GameMode] StartPlay"));
 
 	GetWorldTimerManager().SetTimer(SpawnBotTimer, this, &ThisClass::SpawnBot, SpawnBotInterval, true);
 }
@@ -87,7 +87,7 @@ void ARogueGameMode::SpawnBot()
 	
 	int32 MaxBotCount = FMath::RoundToInt32(SpawnBotMaxCurve->GetFloatValue(GetWorld()->TimeSeconds));
 	
-	ROGUE_DEBUG_CVARFMT(CVarSpawnBotShowDebug, 0, 3.f, FColor::Yellow,
+	DEBUG_ONSCREEN_CVARFMT(CVarSpawnBotShowDebug, 0, 3.f, FColor::Yellow,
 		TEXT("[GameMode] Alive Bots: %d / %d at %f"), 
 		NumOfAliveBot, MaxBotCount, GetWorld()->TimeSeconds);
 
@@ -107,14 +107,14 @@ void ARogueGameMode::SpawnBot()
 		}
 		else
 		{
-			ROGUE_DEBUG_CVAR(CVarSpawnBotShowDebug, 0, 3.f, FColor::Red,
-			    TEXT("[GameMode] Fail to run EQSQuery"))
+			DEBUG_ONSCREEN_CVAR(CVarSpawnBotShowDebug, 0, 3.f, FColor::Red,
+			    TEXT("[GameMode] Fail to run EQSQuery"));
 		}
 	} 
 	else
 	{
-		ROGUE_DEBUG_CVAR(CVarSpawnBotShowDebug, 0, 3.f, FColor::Red,
-		    TEXT("[GameMode] EnvQueryInstance is already running"))
+		DEBUG_ONSCREEN_CVAR(CVarSpawnBotShowDebug, 0, 3.f, FColor::Red,
+		    TEXT("[GameMode] EnvQueryInstance is already running"));
 	}
 }
 
@@ -124,7 +124,7 @@ void ARogueGameMode::OnEnvQueryFinished(UEnvQueryInstanceBlueprintWrapper* Query
 	
 	if(QueryStatus != EEnvQueryStatus::Success)
 	{
-		ROGUE_DEBUG_CVARFMT(CVarSpawnBotShowDebug, 0, 3.f, FColor::Red,
+		DEBUG_ONSCREEN_CVARFMT(CVarSpawnBotShowDebug, 0, 3.f, FColor::Red,
 		    TEXT("[GameMode] EQS query failed for bot spawn (Status=%s)"), *UEnum::GetValueAsString(QueryStatus));
 		return;
 	}
@@ -139,8 +139,8 @@ void ARogueGameMode::OnEnvQueryFinished(UEnvQueryInstanceBlueprintWrapper* Query
 		ARogueAICharacter* SpawnedBot = GetWorld()->SpawnActor<ARogueAICharacter>(BotClass, SpawnLocation, FRotator::ZeroRotator, SpawnParams);
 		if(SpawnedBot)
 		{
-			ROGUE_DEBUG_CVARFMT(CVarSpawnBotShowDebug, 0, 3.f, FColor::Blue,
-				TEXT("[GameMode] Bot Spawned at %s"), *SpawnLocation.ToString())
+			DEBUG_ONSCREEN_CVARFMT(CVarSpawnBotShowDebug, 0, 3.f, FColor::Blue,
+				TEXT("[GameMode] Bot Spawned at %s"), *SpawnLocation.ToString());
 		}
 	}
 }
@@ -175,7 +175,7 @@ bool ARogueGameMode::WriteToSaveGameObject()
 	
 	bool bSaveSucceed = UGameplayStatics::SaveGameToSlot(CurrentSaveGame, SaveSlotName, 0);
 	
-	ROGUE_DEBUG_CVARFMT(CVarSaveSystemShowDebug, 0, 3.f, bSaveSucceed ? FColor::Green : FColor::Red, 
+	DEBUG_ONSCREEN_CVARFMT(CVarSaveSystemShowDebug, 0, 3.f, bSaveSucceed ? FColor::Green : FColor::Red, 
 	    TEXT("[GameMode] Save Game Result: %d"), bSaveSucceed);
 	
 	return bSaveSucceed;

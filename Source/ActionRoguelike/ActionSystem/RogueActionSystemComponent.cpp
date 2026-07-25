@@ -5,7 +5,7 @@
 #include "GameplayTagContainer.h"
 #include "RogueActionEffect.h"
 #include "RogueAttributeSet.h"
-#include "Development/RogueNetUtil.h"
+#include "Development/DebugUtil.h"
 #include "Engine/ActorChannel.h"
 #include "Net/UnrealNetwork.h"
 #include "Player/RoguePlayerCharacter.h"
@@ -36,7 +36,7 @@ void URogueActionSystemComponent::TickComponent(float DeltaTime, enum ELevelTick
 		{
 			OwningActionMsg += FString::Printf(TEXT("%s | "), *Action->GetActionName().GetTagLeafName().ToString());
 		}
-		ROGUE_DEBUG(0, 0.f, FColor::White, OwningActionMsg);
+		DEBUG_ONSCREEN(0, 0.f, FColor::White, OwningActionMsg);
 	}
 }
 
@@ -233,7 +233,7 @@ bool URogueActionSystemComponent::ApplyAttributeChange(FGameplayTag AttributeTag
 		}
 	}
 	
-	ROGUE_DEBUG_CVARFMT(CVarAttributeDebugMsg,AttributeTag, 3.f, FColor::Orange,
+	DEBUG_ONSCREEN_CVARFMT(CVarAttributeDebugMsg,AttributeTag, 3.f, FColor::Orange,
 		TEXT("[ASC::ApplyAttrChange] Character %s Attribute %s New %-6.0f Old %-6.0f"),
 		*GetNetDebugName(GetOwner()), *AttributeTag.GetTagLeafName().ToString(), NewValue, OldValue);
 	
@@ -245,7 +245,7 @@ bool URogueActionSystemComponent::ApplyAttributeChange(FGameplayTag AttributeTag
 
 void URogueActionSystemComponent::MulticastAttributeChanged_Implementation(FGameplayTag AttributeTag, float NewValue, float OldValue)
 {
-	ROGUE_DEBUG_CVARFMT(CVarAttributeDebugMsg, AttributeTag, 5.f, FColor::Orange,
+	DEBUG_ONSCREEN_CVARFMT(CVarAttributeDebugMsg, AttributeTag, 5.f, FColor::Orange,
 		TEXT("[ASC::MulticastAttrChanged] %s Attr %s New %f Old %f"),
 		*GetNetDebugName(GetOwner()), *AttributeTag.ToString(), NewValue, OldValue);
 	

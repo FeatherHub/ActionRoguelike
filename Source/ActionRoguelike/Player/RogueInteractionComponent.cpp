@@ -5,7 +5,7 @@
 #include "Engine/OverlapResult.h"
 #include "Widget/RogueWorldWidget.h"
 #include "Components/PanelWidget.h"
-#include "Development/RogueNetUtil.h"
+#include "Development/DebugUtil.h"
 
 TAutoConsoleVariable<bool> CVarInteractionDebugDraw{
 	TEXT("rogue.interaction.Debugdraw"), false,
@@ -25,7 +25,7 @@ URogueInteractionComponent::URogueInteractionComponent()
 
 void URogueInteractionComponent::Interact()
 {
-	ROGUE_DEBUGFMT(0, 3.f, FColor::White, 
+	DEBUG_ONSCREEN_FMT(0, 3.f, FColor::White, 
 		TEXT("[Interact] InteractableActor: %s"), *GetNameSafe(InteractableActor));
 	
 	Interact_Server(InteractableActor);
@@ -33,7 +33,7 @@ void URogueInteractionComponent::Interact()
 
 void URogueInteractionComponent::Interact_Server_Implementation(AActor* ActorToInteract)
 {
-	ROGUE_DEBUGFMT(0, 3.f, FColor::Blue,
+	DEBUG_ONSCREEN_FMT(0, 3.f, FColor::Blue,
 		TEXT("[InteractServer] ActorToInteract: %s"), *GetNameSafe(ActorToInteract));
 
 	if (ActorToInteract && ActorToInteract->Implements<URogueInteractionInterface>())
@@ -49,7 +49,7 @@ void URogueInteractionComponent::TickComponent(float DeltaTime, ELevelTick TickT
 
 	APlayerController* OwningPC = Cast<APlayerController>(GetOwner());
 
-	ROGUE_DEBUG_CVARFMT(CVarInteractionDebugDraw, 0, 0.f, FColor::White,
+	DEBUG_ONSCREEN_CVARFMT(CVarInteractionDebugDraw, 0, 0.f, FColor::White,
 		TEXT("[InteractionComp::Tick] %s Is Local Controller? %d"),
 			*GetNetDebugName(OwningPC), OwningPC->IsLocalController());
 	
@@ -91,13 +91,13 @@ void URogueInteractionComponent::TickComponent(float DeltaTime, ELevelTick TickT
 			? FString::Printf(TEXT("[InteractComp::Tick] Interactable Actor: %s"), *GetNameSafe(InteractableActor))  
 			: "[InteractComp::Tick] No Interactable Actor";
 		
-		ROGUE_DEBUG(0, 0.f, FColor::White, InteractableActorMsg);
+		DEBUG_ONSCREEN(0, 0.f, FColor::White, InteractableActorMsg);
 
 		FString PromptWidgetMsg = InteractionPromptWidget
 			? FString::Printf(TEXT("[InteractComp::Tick] Widget In Viewport? %d Enabled? %d "),InteractionPromptWidget->IsInViewport(), InteractionPromptWidget->GetIsEnabled())
 			: "[InteractComp::Tick] No Prompt Widget";
 
-		ROGUE_DEBUG(0, 0.f, FColor::White, PromptWidgetMsg);
+		DEBUG_ONSCREEN(0, 0.f, FColor::White, PromptWidgetMsg);
 	}
 #endif
 }

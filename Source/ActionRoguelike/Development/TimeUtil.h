@@ -1,6 +1,6 @@
 ﻿#pragma once
 
-class RogueTimeUtil
+class TimeUtil
 {
 public:
 	static FString ToMMSSMMM(const FDateTime& DateTime);
