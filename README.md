@@ -22,15 +22,17 @@
 
 | 경로 | 내용 |
 | --- | --- |
-| [`ActionSystem`](/Source/ActionRoguelike/ActionSystem) | 액션, 상태 효과, 어트리뷰트, Gameplay Tag 규칙 |
+| [`ActionSystem`](/Source/ActionRoguelike/ActionSystem) | 액션, 상태 효과, 어트리뷰트 |
 | [`AI`](/Source/ActionRoguelike/AI) | AI 캐릭터·컨트롤러, BT Task·Service, EQS Context |
 | [`Animation`](/Source/ActionRoguelike/Animation) | Gameplay Tag와 애니메이션 상태 연결 |
 | [`Core`](/Source/ActionRoguelike/Core) | GameMode, PlayerState, 태그, 충돌 채널, 프로젝트 설정 |
-| [`Development`](/Source/ActionRoguelike/Development) | 네트워크 컨텍스트와 화면 디버그 도구 |
+| [`DebugSystem`](/Source/ActionRoguelike/DebugSystem) | 온스크린 메시지 관리자, CVar 필터 |
+| [`Development`](/Source/ActionRoguelike/Development) | 개발 관련 범용 유틸 |
+| [`Network`](/Source/ActionRoguelike/Network) | 네트워크 타입 관련 유틸 |
 | [`Pickup`](/Source/ActionRoguelike/Pickup) | 포션과 ISM 기반 코인 서브시스템 |
-| [`Player`](/Source/ActionRoguelike/Player) | 플레이어 캐릭터·컨트롤러와 상호작용 |
-| [`Projectile`](/Source/ActionRoguelike/Projectile) | 공통 투사체와 공격별 구현 |
-| [`SaveSystem`](/Source/ActionRoguelike/SaveSystem) | Actor 직렬화와 SaveGame 데이터 |
+| [`Player`](/Source/ActionRoguelike/Player) | 플레이어 캐릭터·컨트롤러 |
+| [`Projectile`](/Source/ActionRoguelike/Projectile) | 투사체 종류별 로직 구현 |
+| [`SaveSystem`](/Source/ActionRoguelike/SaveSystem) | SaveComponent, SaveGame 데이터 정의 |
 | [`Widget`](/Source/ActionRoguelike/Widget) | 월드 좌표를 화면 UI에 동기화하는 위젯 |
 | [`World`](/Source/ActionRoguelike/World) | 상자와 폭발 배럴 등 월드 오브젝트 |
 
@@ -143,24 +145,32 @@
 
 ## 개발·디버깅 도구
 
-플레이 중 네트워크 관련 기능을 게임 화면에서 관찰하기 위해 `URogueDebugSubsystem : UWorldSubsystem` 기반 로그 Queue와 전용 매크로를 구현했습니다. 
+- [`DebugUtil.h`](/Source/ActionRoguelike/DebugSystem/DebugUtil.h): 디버그 편의 매크로
+- [`DebugUtil.cpp`](/Source/ActionRoguelike/DebugSystem/DebugUtil.cpp): CVar 필터, 디버그 컨텍스트 생성과 제출
+- [`DebugContext.h`](/Source/ActionRoguelike/DebugSystem/DebugContext.h): 화면 메시지와 네트워크 컨텍스트 구조
+- [`RogueDebugSubsystem.cpp`](/Source/ActionRoguelike/DebugSystem/RogueDebugSubsystem.cpp): 메시지 Queue 출력 관리
 
-- [`RogueDebugSubsystem.cpp`](/Source/ActionRoguelike/Development/RogueDebugSubsystem.cpp): 화면 로그 큐와 수명 관리
-- [`RogueNetUtil.h`](/Source/ActionRoguelike/Development/RogueNetUtil.h): 네트워크 컨텍스트와 디버그 매크로
-- [`RogueNetUtil.cpp`](/Source/ActionRoguelike/Development/RogueNetUtil.cpp): CVar 필터 판정과 로그 제출
+온스크린 디버그 공통 제어
 
-주요 CVar는 다음과 같습니다.
-
-| CVar | 용도 |
+| 경로 | 내용 |
 | --- | --- |
-| `rogue.net.debug.ShowContext` | 메시지 앞에 PIE/NetMode/Role/Authority/Control 컨텍스트 표시 |
-| `rogue.asc.attribute.ShowMsg` | 어트리뷰트 변경 화면 메시지 |
-| `rogue.interaction.Debugdraw` | 탐색 반경, 후보 Bounds, 가중치 시각화 |
-| `rogue.worldwidget.DebugDraw` | 월드 좌표와 화면 투영 상태 표시 |
-| `rogue.projectile.DebugDraw` | 카메라 Trace, 보정 경로, 원래 조준 경로 표시 및 표시 시간 지정 |
-| `rogue.ai.minionranged.DebugDraw` | AI 사거리 원과 공격 방향 표시 |
-| `rogue.gamemode.spawnbot.ShowDebug` | 생존/최대 Bot 수와 EQS 스폰 결과 표시 |
-| `rogue.gamemode.savesystem.ShowDebug` | 저장 성공 여부 표시 |
+|`rogue.debug.onscreen.ToggleAll`| 온스크린 메시지 전체 활성화/비활성화 |
+|`rogue.debug.onscreen.PIEFilter`| `-1`은 전체 PIE, 그 외 값은 해당 PIE 인스턴스만 표시 |
+|`rogue.debug.onscreen.NetModeFilter`| `0`은 Client·Server, `1`은 Client, `2`는 Server만 표시 |
+|`rogue.debug.onscreen.ShowNetContext`| PIE번호/NetMode/Role/Authority/Control 등 네트워크 정보 표시 |
+
+기능별 ConsoleVariable
+
+| 경로 | 내용 |
+| --- | --- |
+| `rogue.coin.ShowDebug`| 현재 월드의 코인 수 표시 |
+| `rogue.asc.attribute.ShowMsg`| ActionSystemComponent의 어트리뷰트 변경 메시지 표시 |
+| `rogue.interaction.Debugdraw`| 탐색 반경, 후보 Bounds와 가중치 시각화 |
+| `rogue.worldwidget.DebugDraw`| 월드 좌표와 화면 투영 상태 표시 |
+| `rogue.projectile.DebugDraw`| 카메라 Trace, 보정·원래 조준 경로 표시와 표시 시간 지정 |
+| `rogue.ai.minionranged.DebugDraw`| AI 사거리 원과 공격 방향 표시 |
+| `rogue.gamemode.spawnbot.ShowDebug`| 생존·최대 Bot 수와 EQS 스폰 결과 표시 |
+| `rogue.gamemode.savesystem.ShowDebug`| 저장 성공 여부 표시 |
 
 ---
 
