@@ -8,7 +8,6 @@
 #include "ActionSystem/RogueAttributeSet.h"
 #include "Core/RogueGameplayTag.h"
 #include "DebugSystem/DebugUtil.h"
-#include "GameFramework/PawnMovementComponent.h"
 #include "Net/UnrealNetwork.h"
 #include "Network/NetUtil.h"
 
@@ -21,8 +20,8 @@ void ARoguePlayerCharacter::Tick(float DeltaSeconds)
 	float Health = ActionSystemComp->GetAttributeValue(RogueGameplayTag::Attribute_Health);
 	
 	DEBUG_ONSCREEN_FMT(0, 0.f, FColor::White, 
-		TEXT("[PlayerCharacter::Tick] %s Health: %f Replicates: %d"),
-		*NetUtil::GetNetName(this), Health, bReplicates);
+		TEXT("[PlayerCharacter::Tick] %s Health: %f"),
+		*NetUtil::GetNetName(this), Health);
 }
 
 // For Debugging 
@@ -30,8 +29,8 @@ void ARoguePlayerCharacter::BeginPlay()
 {
 	Super::BeginPlay();
 	
-	DEBUG_ONSCREEN_FMT(0, 3.f, FColor::White,
-		TEXT("[PlayerCharacter::Begin] %s Replicates: %d"), *NetUtil::GetNetName(this), bReplicates);
+	DEBUG_ONSCREEN_FMT(0, 5.f, FColor::White,
+		TEXT("[PlayerCharacter::Begin] %s"), *NetUtil::GetNetName(this));
 }
 
 // For Debugging 
@@ -39,8 +38,8 @@ void ARoguePlayerCharacter::PossessedBy(AController* NewController)
 {
 	Super::PossessedBy(NewController);
 	
-	DEBUG_ONSCREEN_FMT(0, 3.f, FColor::White, 
-		TEXT("[PlayerCharacter::PossessedBy] %s Replicates: %d"), *NetUtil::GetNetName(this), bReplicates);
+	DEBUG_ONSCREEN_FMT(0, 5.f, FColor::White, 
+		TEXT("[PlayerCharacter::PossessedBy] %s"), *NetUtil::GetNetName(this));
 }
 
 ARoguePlayerCharacter::ARoguePlayerCharacter()

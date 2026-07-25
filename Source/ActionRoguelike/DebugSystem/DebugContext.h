@@ -1,7 +1,7 @@
 ﻿#pragma once
 
 #include "CoreMinimal.h"
-#include "Network/Type.h"
+#include "Network/NetType.h"
 
 struct FOnScreenDebugContext
 {
@@ -45,12 +45,15 @@ struct FNetDebugContext
 {
 public:
 	TOptional<FNetContext> NetContext;
-	int32 PIEIndex;
+	int32 PlayInEditorID;
 	ENetMode NetMode;
-	bool bIsNetModeServer;
 	
 public:
-	FNetDebugContext(TOptional<FNetContext> NetContext, int32 PIEIndex, ENetMode NetMode);
+	FNetDebugContext(TOptional<FNetContext> NetContext, int32 PlayInEditorID, ENetMode NetMode): 
+		NetContext(MoveTemp(NetContext)), PlayInEditorID(PlayInEditorID), NetMode(NetMode)
+	{
+	}
+	
 	FString ToString() const;
 	static FNetDebugContext Make(const UWorld* World, const TOptional<FNetContext>& NetContext = {});
 };

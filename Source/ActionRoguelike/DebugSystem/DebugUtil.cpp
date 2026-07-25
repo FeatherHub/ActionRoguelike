@@ -5,24 +5,38 @@
 #include "RogueDebugSubsystem.h"
 #include "Network/NetUtil.h"
 
-static TAutoConsoleVariable<bool> CVarDebugToggleAll(TEXT("rogue.debug.onscreen.ToggleAll"), true,
-    TEXT("Toggle all on-screen debug message. 1=ON, 0=OFF"), ECVF_Cheat);
-
-static TAutoConsoleVariable<int> CVarDebugNetFilter{TEXT("rogue.debug.onscreen.NetFilter"), 0,
-	TEXT("Filter net debug messages. 0=Client and Server, 1=Client Only, 2=Server Only"), ECVF_Cheat};
-
 static TAutoConsoleVariable<bool> CVarDebugShowNetContext{TEXT("rogue.debug.onscreen.ShowNetContext"), false,
 	TEXT("Show net context for on-screen debug message. 1=Show, 0=Hide"), ECVF_Cheat};
 
+static TAutoConsoleVariable<bool> CVarDebugToggleAll{TEXT("rogue.debug.onscreen.ToggleAll"), true,
+    TEXT("Toggle all on-screen debug message. 1=ON, 0=OFF"), ECVF_Cheat};
+
+static TAutoConsoleVariable<int32> CVarDebugPIEFilter{TEXT("rogue.debug.onscreen.PIEFilter"), -1,
+    TEXT("Show messages from specific PIE Instance only. -1=Show All PIE Instances, or PIE ID"), ECVF_Cheat};
+
+static TAutoConsoleVariable<int32> CVarDebugNetFilter{TEXT("rogue.debug.onscreen.NetModeFilter"), 0,
+	TEXT("Show messages from specific NetMode Instance only. 0=Client and Server, 1=Client Only, 2=Server Only"), ECVF_Cheat};
+
 // CVarDebugNetFilter의 옵션들과 짝을 맞춰야 합니다.
-enum class ENetDebugFilter: int 
+enum class ENetDebugFilter: int32
 {
 	ClientAndServer = 0,
 	ClientOnly = 1,
 	ServerOnly = 2,
 };
 
-static bool ShouldShowDebugMessage(bool bIsNetModeServer)
+static bool PassesPIEFilter()
+{
+	int32 PIEFilterOption = CVarDebugPIEFilter.GetValueOnGameThread();
+	if(PIEFilterOption == -1)
+	{
+		return true;
+	}
+	
+	return PIEFilterOption == UE::GetPlayInEditorID();
+}
+
+static bool PassesNetModeFilter(bool bIsNetModeServer)
 {
 	ENetDebugFilter DebugFilter = static_cast<ENetDebugFilter>(CVarDebugNetFilter.GetValueOnGameThread());
 
@@ -34,16 +48,15 @@ static bool ShouldShowDebugMessage(bool bIsNetModeServer)
 		return !bIsNetModeServer;
 	case ENetDebugFilter::ServerOnly:
 		return bIsNetModeServer;
-	default:
-		return false;
 	}
+	
+	return false;
 }
-
 
 static FString GetDebugString(const FString& Msg, const FNetDebugContext& NetDebugContext)
 {
 	return CVarDebugShowNetContext.GetValueOnGameThread() 
-		? FString::Printf(TEXT("%s %s"), *NetDebugContext.ToString().LeftPad(80), *Msg)
+		? FString::Printf(TEXT("%s %s"), *NetDebugContext.ToString().RightPad(100), *Msg)
 		: FString::Printf(TEXT("%s"), *Msg);
 }
 
@@ -76,6 +89,11 @@ void SubmitDebugContext(UObject* ContextObject, uint64 DebugKey, const FString& 
 		return;
 	}
 
+	if(!PassesPIEFilter())
+	{
+		return;
+	}
+	
 	if(!IsValid(ContextObject) || !IsValid(ContextObject->GetWorld()))
 	{
 		return;
@@ -83,7 +101,7 @@ void SubmitDebugContext(UObject* ContextObject, uint64 DebugKey, const FString& 
 
 	UWorld* World = ContextObject->GetWorld();
 	
-	if(!ShouldShowDebugMessage(NetUtil::IsNetModeServer(World->GetNetMode())))
+	if(!PassesNetModeFilter(NetUtil::IsNetModeServer(World->GetNetMode())))
 	{
 		return;
 	}

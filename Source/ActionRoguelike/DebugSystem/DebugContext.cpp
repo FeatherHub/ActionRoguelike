@@ -22,7 +22,7 @@ FNetContext FNetContext::Make(const AActor* Actor)
 FString FNetContext::ToString() const
 {
 	return FString::Printf(
-		TEXT("%s | %s | Control %s"),
+		TEXT("Role %s | %s | %s"),
 		*NetUtil::GetNetRoleString(NetLocalRole),
 		bHasAuthority ? TEXT("Auth") : TEXT("No Auth"),
 		*NetUtil::GetNetControlStatusString(ControlStatus)
@@ -32,13 +32,6 @@ FString FNetContext::ToString() const
 ///////////////////////
 // FNetDebugContext
 ///////////////////////
-
-FNetDebugContext::FNetDebugContext(TOptional<FNetContext> NetContext, int32 PIEIndex, ENetMode NetMode): 
-	NetContext(MoveTemp(NetContext)), PIEIndex(PIEIndex), NetMode(NetMode)
-{
-	bIsNetModeServer = NetUtil::IsNetModeServer(NetMode); 
-}
-
 
 FNetDebugContext FNetDebugContext::Make(const UWorld* World, const TOptional<FNetContext>& NetContext)
 {
@@ -53,8 +46,8 @@ FNetDebugContext FNetDebugContext::Make(const UWorld* World, const TOptional<FNe
 
 FString FNetDebugContext::ToString() const
 {
-	FString WorldContextString = FString::Printf(TEXT("PIE: %d | NetMode: %s"), PIEIndex, *NetUtil::GetNetModeString(NetMode));
-	FString ActorContextString = NetContext ? NetContext.GetValue().ToString() : TEXT("[Net Context Not Available]");
+	FString WorldContextString = FString::Printf(TEXT("PIE %d %s"), PlayInEditorID, *NetUtil::GetNetModeString(NetMode));
+	FString ActorContextString = NetContext ? NetContext.GetValue().ToString() : TEXT("[No Net Context]");
 		
-	return WorldContextString + TEXT(" || ") + ActorContextString;
+	return WorldContextString + TEXT(" | ") + ActorContextString;
 }

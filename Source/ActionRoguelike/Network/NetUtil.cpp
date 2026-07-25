@@ -23,11 +23,11 @@ namespace NetUtil
 		switch (NetControlStatus)
 		{
 		case ENetControlStatus::Local:
-			return TEXT("Local");
+			return TEXT("Locally Controlled");
 		case ENetControlStatus::NotLocal:
-			return TEXT("NotLocal");
+			return TEXT("Not Locally Controlled");
 		case ENetControlStatus::NA:
-			return TEXT("NotAvailable");
+			return TEXT("Not Available");
 		}
 		
 		return TEXT("UNKNOWN");
@@ -73,7 +73,7 @@ namespace NetUtil
 		return TEXT("UNKNOWN");
 	}
 
-	FString NetUtil::GetNetName(const UObject* Object)
+	FString GetNetName(const UObject* Object)
 	{
 		if(!Object)
 		{
