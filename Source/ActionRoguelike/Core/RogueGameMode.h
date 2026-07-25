@@ -66,7 +66,7 @@ protected:
 	void LoadSavedActors();
 	
 public:
-#if !UE_BUILD_SHIPPING
+#if WITH_EDITOR
 	virtual EDataValidationResult IsDataValid(class FDataValidationContext& Context) const override;
 #endif
 };

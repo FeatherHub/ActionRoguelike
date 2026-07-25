@@ -220,7 +220,7 @@ void ARogueGameMode::LoadSaveGameObject()
 	}
 }
 
-#if !UE_BUILD_SHIPPING
+#if WITH_EDITOR
 EDataValidationResult ARogueGameMode::IsDataValid(class FDataValidationContext& Context) const
 {
 	EDataValidationResult Result = Super::IsDataValid(Context);

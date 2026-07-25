@@ -14,8 +14,7 @@ void URogueWorldWidget::NativeTick(const FGeometry& MyGeometry, float InDeltaTim
 {
 	Super::NativeTick(MyGeometry, InDeltaTime);
 	
-#if !UE_BUILD_SHIPPING
-	if (CVarWorldWidgetDrawDebug.GetValueOnGameThread())
+	DEBUG_IF_CVAR(CVarWorldWidgetDrawDebug)
 	{
 		FColor DebugColor = AttachedActor ? FColor::Green : FColor::Red;
 		FString AttachedActorMsg = AttachedActor ? FString::Printf(TEXT("[World Widget] Attached Actor: %s"), *GetNameSafe(AttachedActor)) : "[World Widget] No Attached Actor";
@@ -23,7 +22,6 @@ void URogueWorldWidget::NativeTick(const FGeometry& MyGeometry, float InDeltaTim
 		DrawDebugSphere(GetWorld(), AttachedActor->GetActorLocation(), 32.f, 24, FColor::Blue);
 		DEBUG_ONSCREEN(0, 0.f, DebugColor, AttachedActorMsg);
 	}
-#endif
 	
 	if (!IsValid(AttachedActor))
 	{
@@ -49,8 +47,7 @@ void URogueWorldWidget::SyncToAttachedActorPosition()
 		ParentSizeBox->SetRenderTranslation(ScreenPosition);
 	}
 	
-#if !UE_BUILD_SHIPPING
-	if (CVarWorldWidgetDrawDebug.GetValueOnGameThread())
+	DEBUG_IF_CVAR(CVarWorldWidgetDrawDebug)
 	{
 		FColor DebugColor = bIsInFrontOfCamera ? FColor::Blue : FColor::Red;
 		FString ProjectionMsg = TEXT("[WorldWiget] Is not in front of camera");
@@ -62,5 +59,4 @@ void URogueWorldWidget::SyncToAttachedActorPosition()
 		
 		DEBUG_ONSCREEN(0, 1.f, DebugColor, ProjectionMsg);
 	}
-#endif
 }

@@ -6,6 +6,7 @@
 #include "Components/AudioComponent.h"
 #include "Components/SphereComponent.h"
 #include "Core/RogueGameType.h"
+#include "DebugSystem/DebugUtil.h"
 #include "GameFramework/ProjectileMovementComponent.h"
 #include "Kismet/GameplayStatics.h"
 
@@ -49,15 +50,13 @@ void ARogueProjectileBase::BeginPlay()
 
 void ARogueProjectileBase::OnHit(UPrimitiveComponent* HitComponent, AActor* OtherActor, UPrimitiveComponent* OtherComp, FVector NormalImpulse, const FHitResult& Hit)
 {
-#if !UE_BUILD_SHIPPING
-	float DebugDrawDuration = CVarProjectileDrawDebug.GetValueOnGameThread();
-	
-	if (DebugDrawDuration > 0.f)
+	DEBUG_IF(CVarProjectileDrawDebug.GetValueOnGameThread() > 0.f)
 	{
+		float DebugDrawDuration = CVarProjectileDrawDebug.GetValueOnGameThread();
+		
 		DrawDebugSphere(GetWorld(), Hit.Location, SphereComp->GetScaledSphereRadius(), 16.f, FColor::Red, false, DebugDrawDuration);
 		DrawDebugSphere(GetWorld(), Hit.ImpactPoint, SphereComp->GetScaledSphereRadius(), 18.f, FColor::Orange, false, DebugDrawDuration);
 	}
-#endif
 }
 
 void ARogueProjectileBase::Explode()

@@ -27,13 +27,13 @@ enum class ENetDebugFilter: int32
 
 static bool PassesPIEFilter()
 {
-	int32 PIEFilterOption = CVarDebugPIEFilter.GetValueOnGameThread();
-	if(PIEFilterOption == -1)
+	int32 PIEFilterValue = CVarDebugPIEFilter.GetValueOnGameThread();
+	if(PIEFilterValue == -1)
 	{
 		return true;
 	}
 	
-	return PIEFilterOption == UE::GetPlayInEditorID();
+	return PIEFilterValue == UE::GetPlayInEditorID();
 }
 
 static bool PassesNetModeFilter(bool bIsNetModeServer)

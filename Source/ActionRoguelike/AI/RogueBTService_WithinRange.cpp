@@ -3,6 +3,7 @@
 #include "AIController.h"
 #include "RogueAIConsoleVariable.h"
 #include "BehaviorTree/BlackboardComponent.h"
+#include "DebugSystem/DebugUtil.h"
 
 void URogueBTService_WithinRange::TickNode(UBehaviorTreeComponent& OwnerComp, uint8* NodeMemory, float DeltaSeconds)
 {
@@ -25,7 +26,7 @@ void URogueBTService_WithinRange::TickNode(UBehaviorTreeComponent& OwnerComp, ui
 		BBComp->SetValueAsBool(WithinRangeKey.SelectedKeyName, bIsWithinRange && bHasLOS);
 	}
 
-	if (CVarMinionRangedDrawDebug.GetValueOnGameThread())
+	DEBUG_IF_CVAR(CVarMinionRangedDrawDebug)
 	{
 		FVector ActorLocation = AIActor->GetActorLocation();
 		FVector CircleLocation {ActorLocation.X, ActorLocation.Y, 10.f};

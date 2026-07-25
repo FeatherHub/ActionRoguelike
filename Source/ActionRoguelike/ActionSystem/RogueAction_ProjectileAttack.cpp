@@ -2,6 +2,7 @@
 
 #include "NiagaraFunctionLibrary.h"
 #include "Core/RogueGameType.h"
+#include "DebugSystem/DebugUtil.h"
 #include "GameFramework/Character.h"
 #include "Kismet/GameplayStatics.h"
 #include "Projectile/RogueProjectileBase.h"
@@ -70,10 +71,10 @@ void URogueAction_ProjectileAttack::SpawnProjectile()
 	
 	StopAction();
 	
-#if !UE_BUILD_SHIPPING
-	const float DebugDrawTime = CVarProjectileDrawDebug.GetValueOnGameThread();
-	if (DebugDrawTime > 0.0f)
+	DEBUG_IF(CVarProjectileDrawDebug.GetValueOnGameThread() > 0.0f)
 	{
+		float DebugDrawTime = CVarProjectileDrawDebug.GetValueOnGameThread();
+		
 		// line trace 
 		DrawDebugDirectionalArrow(GetWorld(), EyeLocation, TraceEnd, 48, FColor::Green, false, DebugDrawTime);
 
@@ -85,5 +86,4 @@ void URogueAction_ProjectileAttack::SpawnProjectile()
 
 		DrawDebugBox(GetWorld(), TraceEnd, FVector{20.f}, FColor::Green, false, DebugDrawTime);
 	}
-#endif
 }

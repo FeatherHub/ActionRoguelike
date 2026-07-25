@@ -3,6 +3,7 @@
 #include "AIController.h"
 #include "RogueAIConsoleVariable.h"
 #include "BehaviorTree/BlackboardComponent.h"
+#include "DebugSystem/DebugUtil.h"
 #include "GameFramework/Character.h"
 #include "Projectile/RogueProjectileBase.h"
 
@@ -30,7 +31,7 @@ EBTNodeResult::Type URogueBTTask_RangedAttack::ExecuteTask(UBehaviorTreeComponen
 
 	AActor* NewProjectile = GetWorld()->SpawnActor<AActor>(ProjectileClass, SpawnLocation, SpawnRotation, SpawnParams);
 
-	if (CVarMinionRangedDrawDebug.GetValueOnGameThread())
+	DEBUG_IF_CVAR(CVarMinionRangedDrawDebug)
 	{
 		DrawDebugDirectionalArrow(GetWorld(), SpawnLocation, TargetActor->GetActorLocation(), 48, FColor::Black, false, 3.0f, 2.f);
 	}

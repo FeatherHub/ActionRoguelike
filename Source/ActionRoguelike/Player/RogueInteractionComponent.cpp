@@ -85,8 +85,7 @@ void URogueInteractionComponent::TickComponent(float DeltaTime, ELevelTick TickT
 		}
 	}
 	
-#if !UE_BUILD_SHIPPING
-	if (CVarInteractionDebugDraw.GetValueOnGameThread())
+	DEBUG_IF_CVAR(CVarInteractionDebugDraw)
 	{
 		FString InteractableActorMsg = InteractableActor  
 			? FString::Printf(TEXT("[InteractComp::Tick] Interactable Actor: %s"), *GetNameSafe(InteractableActor))  
@@ -100,7 +99,6 @@ void URogueInteractionComponent::TickComponent(float DeltaTime, ELevelTick TickT
 
 		DEBUG_ONSCREEN(0, 0.f, FColor::White, PromptWidgetMsg);
 	}
-#endif
 }
 
 AActor* URogueInteractionComponent::FindInteractableActor()
@@ -111,9 +109,7 @@ AActor* URogueInteractionComponent::FindInteractableActor()
 	{
 		return nullptr;
 	}
-
-	const bool bDebugEnabled = CVarInteractionDebugDraw.GetValueOnGameThread();
-
+	
 	FVector ControllerDirection = PC->GetControlRotation().Vector();
 	FVector EyeLocation = PC->PlayerCameraManager->GetCameraLocation();
 	float MaxDistanceSqrd = InteractionRadius * InteractionRadius;
@@ -152,19 +148,16 @@ AActor* URogueInteractionComponent::FindInteractableActor()
 			BestCandidate = Overlap.GetActor();
 		}
 		
-#if !UE_BUILD_SHIPPING
-		if (bDebugEnabled)
+		DEBUG_IF_CVAR (CVarInteractionDebugDraw)
 		{
 			DrawDebugBox(GetWorld(), OverlapLocation, FVector{DEBUG_BOX_EXTENT}, FColor::Red, false);
 			
 			DrawDebugString(GetWorld(), OverlapLocation, FString::Printf(TEXT("Weight: %f Dot: %f Dist: %f"), Weight, NormalizedDot, NormalizedDistance), 
 				nullptr, FColor::White, 0, true);
 		}
-#endif
 	}
 
-#if !UE_BUILD_SHIPPING
-	if (bDebugEnabled)
+	DEBUG_IF_CVAR (CVarInteractionDebugDraw)
 	{
 		if (InteractableActor)
 		{
@@ -176,7 +169,6 @@ AActor* URogueInteractionComponent::FindInteractableActor()
 
 		DrawDebugSphere(GetWorld(), EyeLocation, InteractionRadius, 16.f, FColor::White, false);
 	}
-#endif
 	
 	return BestCandidate;
 }

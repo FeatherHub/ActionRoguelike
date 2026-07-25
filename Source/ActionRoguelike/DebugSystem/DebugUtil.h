@@ -32,3 +32,15 @@ void SubmitDebugContext(UObject* ContextObject, uint64 DebugKey, const FString& 
 			SubmitDebugContext(this, Hash2, Msg, Color, Duration); \
 		} while(false)
 #endif
+
+
+
+// 주의: else 절을 붙이면 안 된다
+// 주의: 조건문 내에 변수를 선언하면 안 된다 (shipping에서 선언이 사라져 컴파일 에러 발생)
+#if UE_BUILD_SHIPPING || UE_BUILD_TEST
+	#define DEBUG_IF(Cond) if constexpr(false)
+	#define DEBUG_IF_CVAR(CVar) if constexpr(false)
+#else 
+	#define DEBUG_IF(Cond) if(Cond)
+	#define DEBUG_IF_CVAR(CVar) if((CVar).GetValueOnGameThread())
+#endif
