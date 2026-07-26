@@ -12,11 +12,13 @@ void ARogueGameplayHUD::BeginPlay()
 	GameplayLayoutWidget->AddToViewport();
 
 	PlayerOwner->OnPossessedPawnChanged.AddDynamic(this, &ThisClass::HandlePossessedPawnChanged);
+	
+	BindActionSystem(); // Standalone 경로
 }
 
 void ARogueGameplayHUD::HandlePossessedPawnChanged(APawn* OldPawn, APawn* NewPawn)
 {
-	BindActionSystem();
+	BindActionSystem(); // Multiplayer Client 경로 or Pawn 변경 시 경로
 }
 
 void ARogueGameplayHUD::BindActionSystem()

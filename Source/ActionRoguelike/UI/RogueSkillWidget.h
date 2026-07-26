@@ -25,6 +25,15 @@ protected:
 	UPROPERTY(Transient)
 	TObjectPtr<UMaterialInstanceDynamic> ActionIconMID;
 	
+	UPROPERTY(Transient)
+	TWeakObjectPtr<URogueActionBase> BoundAction;
+	
+	UPROPERTY(Transient)
+	TWeakObjectPtr<URogueActionSystemComponent> BoundASC;
+	
+	UPROPERTY(Transient)
+	float LastCooldownProgress = -1.f;
+	
 public:
 	void BindActionSystem(URogueActionSystemComponent* ASC);
 	virtual void NativeOnInitialized() override;
