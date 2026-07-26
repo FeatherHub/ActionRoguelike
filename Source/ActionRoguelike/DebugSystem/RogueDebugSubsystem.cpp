@@ -14,7 +14,7 @@ void URogueDebugSubsystem::OnWorldBeginPlay(UWorld& InWorld)
 	WorldTickEndDelegateHandle = FWorldDelegates::OnWorldTickEnd.AddUObject(this, &ThisClass::FlushDebugContextQueue);
 
 	FString NetModeName = NetUtil::GetNetModeString(GetWorld()->GetNetMode());
-	DEBUG_ONSCREEN_FMT(0, 3.f, FColor::Green, TEXT("[%s] WorldSubsystem %s Initialized"), *NetModeName, TEXT(__FILE__));
+	DEBUG_ONSCREEN(0, 3.f, FColor::Green, TEXT("URogueDebugSubsystem Initialized"));
 }
 
 void URogueDebugSubsystem::Deinitialize()

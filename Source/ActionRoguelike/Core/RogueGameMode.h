@@ -9,7 +9,7 @@ class URogueSaveGame;
 class ARogueAICharacter;
 class UEnvQueryInstanceBlueprintWrapper;
 
-UCLASS()
+UCLASS(Abstract)
 class ACTIONROGUELIKE_API ARogueGameMode : public AGameModeBase
 {
 	GENERATED_BODY()
