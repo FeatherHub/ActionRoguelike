@@ -26,8 +26,8 @@ enum EAttributeChangeType
 DECLARE_MULTICAST_DELEGATE_TwoParams(FOnAttributeChanged, float /*NewValue*/, float /*OldValue*/);
 DECLARE_DYNAMIC_DELEGATE_TwoParams(FOnAttributeChanged_Dynamic, float, NewValue, float, OldValue);
 DECLARE_DYNAMIC_MULTICAST_DELEGATE_TwoParams(FOnGameplayTagUpdated, FGameplayTag, UpdatedTag, int32, NewCount);
-
 DECLARE_DYNAMIC_MULTICAST_DELEGATE_OneParam(FOnActionEffectUpdated, URogueActionEffect*, UpdatedActionEffect);
+DECLARE_DYNAMIC_MULTICAST_DELEGATE(FOnGrantedActionChanged);
 
 UCLASS(ClassGroup=(Custom), meta=(BlueprintSpawnableComponent))
 class ACTIONROGUELIKE_API URogueActionSystemComponent : public UActorComponent
@@ -58,21 +58,27 @@ public:
 	
 	UFUNCTION(BlueprintCallable)
 	void GrantAction(TSubclassOf<URogueActionBase> ActionClass);
-
 	void RemoveAction(URogueActionBase* Action);
-
+	URogueActionBase* FindActionByName(FGameplayTag ActionName);
+	
 	UPROPERTY(BlueprintAssignable)
 	FOnActionEffectUpdated OnActionEffectAdded;
+	
 	UPROPERTY(BlueprintAssignable)
 	FOnActionEffectUpdated OnActionEffectRemoved;
-
+	
+	UPROPERTY(BlueprintAssignable)
+	FOnGrantedActionChanged OnGrantedActionChanged;
+	
 protected:
 	UPROPERTY(EditDefaultsOnly, Category=Action)
 	TArray<TSubclassOf<URogueActionBase>> DefaultGrantActions;
 
-	UPROPERTY(Replicated, EditAnywhere, Category=Action)
+	UPROPERTY(ReplicatedUsing=OnRep_GrantedAction, EditAnywhere, Category=Action)
 	TArray<TObjectPtr<URogueActionBase>> GrantedActions;
 
+	UFUNCTION()
+	void OnRep_GrantedAction();
 	
 	//////////////
 	// Attribute

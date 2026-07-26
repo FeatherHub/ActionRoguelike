@@ -7,7 +7,7 @@
 
 class USizeBox;
 
-UCLASS()
+UCLASS(Abstract)
 class ACTIONROGUELIKE_API URogueWorldWidget : public UUserWidget
 {
 	GENERATED_BODY()

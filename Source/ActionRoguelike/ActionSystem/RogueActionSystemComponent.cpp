@@ -118,6 +118,13 @@ void URogueActionSystemComponent::GrantAction(TSubclassOf<URogueActionBase> Acti
 		ActionEffect->StartAction();
 		OnActionEffectAdded.Broadcast(ActionEffect);
 	}
+	
+	OnGrantedActionChanged.Broadcast();
+}
+
+void URogueActionSystemComponent::OnRep_GrantedAction()
+{
+	OnGrantedActionChanged.Broadcast();
 }
 
 void URogueActionSystemComponent::RemoveAction(URogueActionBase* Action)
@@ -131,6 +138,20 @@ void URogueActionSystemComponent::RemoveAction(URogueActionBase* Action)
 	// @Todo: Refactor to StackedTagContainer
 	// ensureAlways(RemoveCount == 1);
 	Action->MarkAsGarbage();
+	
+	OnGrantedActionChanged.Broadcast();
+}
+
+URogueActionBase* URogueActionSystemComponent::FindActionByName(FGameplayTag ActionName)
+{
+	for (URogueActionBase* Action : GrantedActions)
+	{
+		if(Action && Action->GetActionName() == ActionName)
+		{
+			return Action;
+		}
+	}
+	return nullptr;
 }
 
 void URogueActionSystemComponent::ServerStartAction_Implementation(FGameplayTag ActionName)

@@ -38,6 +38,15 @@ protected:
 	UFUNCTION()
 	void OnRep_IsRunning();
 	
+	UPROPERTY(EditDefaultsOnly, Category=UI)
+	TObjectPtr<UTexture2D> ActionIcon;
+	
+	UPROPERTY(EditDefaultsOnly, Category=UI)
+	FText DisplayName;
+	
+	UPROPERTY(EditDefaultsOnly, Category=UI)
+	FText Description;
+	
 protected:
 	UFUNCTION(BlueprintCallable)
 	URogueActionSystemComponent* GetOwningComponent() const;
@@ -61,11 +70,15 @@ public:
 	bool CanStop() const;
 	bool IsRunning() const { return bIsRunning; }
 	
-	const FGameplayTagContainer& GetBlockedTags() const
-	{
-		return ActivationBlockedTags;
-	}
-	
 	float GetCooldownRemaining() const;
+	/**
+	 *	- [0, 1] 범위의 값을 반환   
+	 *	- 0 = 사용 가능. 1 = 액션 시작 직후     
+	 */
+	float GetCooldownProgress() const;
+	const FGameplayTagContainer& GetBlockedTags() const { return ActivationBlockedTags; }
 	FGameplayTag GetActionName() const { return ActionName; }
+	UTexture2D* GetActionIcon() const { return ActionIcon; }
+	FText GetDisplayName() const { return DisplayName; }
+	FText GetDescription() const { return Description; }
 };

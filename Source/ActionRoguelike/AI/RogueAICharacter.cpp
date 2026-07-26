@@ -2,8 +2,9 @@
 
 #include "ActionSystem/RogueActionSystemComponent.h"
 #include "ActionSystem/RogueAttributeSet.h"
+#include "Blueprint/UserWidget.h"
 #include "Core/RogueGameplayTag.h"
-#include "Widget/RogueWorldWidget.h"
+#include "UI/RogueWorldWidget.h"
 
 
 ARogueAICharacter::ARogueAICharacter()

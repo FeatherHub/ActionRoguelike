@@ -104,6 +104,16 @@ float URogueActionBase::GetCooldownRemaining() const
 	return FMath::Max(0.f, CooldownEndTime - GetWorld()->TimeSeconds);
 }
 
+float URogueActionBase::GetCooldownProgress() const
+{
+	if(CooldownTime <= 0.f)
+	{
+		return 0.f;
+	}
+	
+	return FMath::Clamp(GetCooldownRemaining() / CooldownTime, 0.f, 1.f);
+}
+
 URogueActionSystemComponent* URogueActionBase::GetOwningComponent() const
 {
 	return Cast<URogueActionSystemComponent>(GetOuter());

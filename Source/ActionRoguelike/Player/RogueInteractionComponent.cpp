@@ -3,10 +3,10 @@
 #include "Core/RogueGameType.h"
 #include "Core/RogueInteractionInterface.h"
 #include "Engine/OverlapResult.h"
-#include "Widget/RogueWorldWidget.h"
 #include "Components/PanelWidget.h"
 #include "DebugSystem/DebugUtil.h"
 #include "Network/NetUtil.h"
+#include "UI/RogueWorldWidget.h"
 
 static TAutoConsoleVariable<bool> CVarInteractionDebugDraw{
 	TEXT("rogue.interaction.Debugdraw"), false,
