@@ -1,0 +1,22 @@
+UImage                           ← 위젯. "화면의 액자"
+ └ FSlateBrush Brush             ← "무엇을 어떻게 그릴지"의 명세
+    ├ ResourceObject : UObject* ← UTexture2D  또는  UMaterialInterface
+    ├ ImageSize      : FVector2D
+    ├ DrawAs         : Image / Box / Border / RoundedBox
+    ├ TintColor
+    └ Tiling
+
+---
+
+Texture = 정적 이미지 데이터
+Material = 픽셀당 계산 프로그램 (Texture를 입력으로 받을 수 있음)
+
+---
+
+ ├ CreateWidget(Layout)
+ ├ Layout->AddToViewport()
+ │   └ TakeWidget → RebuildWidget → 자식 트리 빌드
+ │        └ SkillWidget::NativePreConstruct   
+ └ BindActionSystem()                         
+
+---

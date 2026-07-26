@@ -15,27 +15,34 @@ class ACTIONROGUELIKE_API URogueSkillWidget : public UUserWidget
 	GENERATED_BODY()
 	
 protected:
-	UPROPERTY(EditAnywhere, Category=Action)
-	TSubclassOf<URogueActionBase> ActionClass;
-	FGameplayTag ActionName;
-
 	UPROPERTY(meta=(BindWidget))
 	TObjectPtr<UImage> ActionIconImage;
+
+	UPROPERTY(EditAnywhere, Category=Action)
+	TSubclassOf<URogueActionBase> ActionClass;
+
+	UPROPERTY(VisibleDefaultsOnly, Category="Material Contract")
+	FName ActionIconTextureParamName = TEXT("ActionIconTexture");
+
+	UPROPERTY(VisibleDefaultsOnly, Category="Material Contract")
+	FName CooldownProgressParamName = TEXT("CooldownProgress");
 	
-	UPROPERTY(Transient)
+	UPROPERTY()
 	TObjectPtr<UMaterialInstanceDynamic> ActionIconMID;
 	
-	UPROPERTY(Transient)
 	TWeakObjectPtr<URogueActionBase> BoundAction;
-	
-	UPROPERTY(Transient)
 	TWeakObjectPtr<URogueActionSystemComponent> BoundASC;
-	
-	UPROPERTY(Transient)
+	FGameplayTag ActionName;
 	float LastCooldownProgress = -1.f;
 	
 public:
+	virtual void NativePreConstruct() override;
+	virtual void NativeTick(const FGeometry& MyGeometry, float InDeltaTime) override;
 	void BindActionSystem(URogueActionSystemComponent* ASC);
-	virtual void NativeOnInitialized() override;
-	virtual void NativeTick(const FGeometry& MyGeometry, float InDeltaTime) override;	
+	
+protected:
+	void ApplyStaticActionData();
+#if WITH_EDITOR
+	void ValidateAssetSetup() const;
+#endif
 };
