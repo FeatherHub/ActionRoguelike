@@ -17,13 +17,15 @@ void URogueActionBase::StartAction_Implementation()
 		*ActionName.ToString(), *NetUtil::GetNetName(this), *NetUtil::GetNetName(Character), *NetUtil::GetNetName(Character->GetController()));
 	
 	
-	float CurrentTime = GetWorld()->TimeSeconds;
-	CooldownEndTime = CurrentTime + CooldownTime;
-
+	if(CooldownStartPolicy == ECooldownStartPolicy::OnStart)
+	{
+		StartCooldown();
+	}
+	
 	URogueActionSystemComponent* ASC = GetOwningComponent();
 	ASC->AppendActiveTags(ActivationGrantTags);
 
-	UE_LOGFMT(LogGame, Log, "Start Action '{ActionName}' at {GameTime}", ActionName.GetTagName(), CurrentTime);
+	UE_LOGFMT(LogGame, Log, "Start Action '{ActionName}' at {GameTime}", ActionName.GetTagName(), GetWorld()->TimeSeconds);
 
 	for (const TPair<FGameplayTag, float>& CostEntry : ActivationCostMap)
 	{
@@ -33,9 +35,15 @@ void URogueActionBase::StartAction_Implementation()
 	bIsRunning = true;
 }
 
+
 void URogueActionBase::StopAction_Implementation()
 {
 	bIsRunning = false;
+	
+	if(CooldownStartPolicy == ECooldownStartPolicy::OnStop)
+	{
+		StartCooldown();
+	}
 	
 	URogueActionSystemComponent* ASC = GetOwningComponent();
 	ASC->RemoveActiveTags(ActivationGrantTags);
@@ -43,6 +51,7 @@ void URogueActionBase::StopAction_Implementation()
 	UE_LOGFMT(LogGame, Log, 
 		"Stop Action '{ActionName}' at {GameTime}", ActionName.GetTagName(), GetWorld()->TimeSeconds);
 }
+
 
 bool URogueActionBase::CanStart() const
 {
@@ -99,31 +108,6 @@ bool URogueActionBase::CanStop() const
 }
 
 
-float URogueActionBase::GetCooldownRemaining() const
-{
-	return FMath::Max(0.f, CooldownEndTime - GetWorld()->TimeSeconds);
-}
-
-float URogueActionBase::GetCooldownProgress() const
-{
-	if(CooldownTime <= 0.f)
-	{
-		return 0.f;
-	}
-	
-	return FMath::Clamp(GetCooldownRemaining() / CooldownTime, 0.f, 1.f);
-}
-
-URogueActionSystemComponent* URogueActionBase::GetOwningComponent() const
-{
-	return Cast<URogueActionSystemComponent>(GetOuter());
-}
-
-ACharacter* URogueActionBase::GetOwningCharacter() const
-{
-	return Cast<ACharacter>(GetOuter()->GetOuter());
-}
-
 void URogueActionBase::OnRep_IsRunning()
 {
 	if(bIsRunning)
@@ -135,6 +119,53 @@ void URogueActionBase::OnRep_IsRunning()
 		StopAction();
 	}
 }
+
+/////////////
+// Cooldown
+/////////////
+
+void URogueActionBase::StartCooldown()
+{
+	if(CooldownTime <= 0.f)
+	{
+		return;
+	}
+	
+	CooldownEndTime = GetWorld()->TimeSeconds + CooldownTime;
+}
+
+
+float URogueActionBase::GetCooldownRemaining() const
+{
+	return FMath::Max(0.f, CooldownEndTime - GetWorld()->TimeSeconds);
+}
+
+
+float URogueActionBase::GetCooldownProgress() const
+{
+	if(CooldownTime <= 0.f)
+	{
+		return 0.f;
+	}
+	
+	return FMath::Clamp(GetCooldownRemaining() / CooldownTime, 0.f, 1.f);
+}
+
+/////////////////////////////////
+// 변수 연결 & Replication 설정
+/////////////////////////////////
+
+URogueActionSystemComponent* URogueActionBase::GetOwningComponent() const
+{
+	return Cast<URogueActionSystemComponent>(GetOuter());
+}
+
+
+ACharacter* URogueActionBase::GetOwningCharacter() const
+{
+	return Cast<ACharacter>(GetOuter()->GetOuter());
+}
+
 
 void URogueActionBase::GetLifetimeReplicatedProps(TArray<class FLifetimeProperty>& OutLifetimeProps) const
 {
