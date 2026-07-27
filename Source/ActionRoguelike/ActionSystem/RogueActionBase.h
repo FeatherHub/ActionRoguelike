@@ -29,7 +29,7 @@ protected:
 	UPROPERTY(EditDefaultsOnly, Category=Action)
 	FGameplayTagContainer ActivationGrantTags;
 	
-	UPROPERTY(EditDefaultsOnly, Category=Action)
+	UPROPERTY(EditDefaultsOnly, BlueprintReadOnly, Category=Action)
 	FGameplayTag ActionName;
 	
 	UPROPERTY(EditDefaultsOnly, Category=Action)
@@ -85,7 +85,7 @@ protected:
 	UPROPERTY(EditDefaultsOnly, Category=UI)
 	TObjectPtr<UTexture2D> ActionIcon;
 	
-	UPROPERTY(EditDefaultsOnly, Category=UI)
+	UPROPERTY(EditDefaultsOnly, BlueprintReadOnly, Category=UI)
 	FText DisplayName;
 	
 	UPROPERTY(EditDefaultsOnly, Category=UI)

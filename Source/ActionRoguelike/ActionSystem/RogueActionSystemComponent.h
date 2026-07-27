@@ -58,7 +58,11 @@ public:
 	
 	UFUNCTION(BlueprintCallable)
 	void GrantAction(TSubclassOf<URogueActionBase> ActionClass);
+	
+	UFUNCTION(BlueprintCallable)
 	void RemoveAction(URogueActionBase* Action);
+	
+	UFUNCTION(BlueprintCallable)
 	URogueActionBase* FindActionByName(FGameplayTag ActionName);
 	
 	UPROPERTY(BlueprintAssignable)
