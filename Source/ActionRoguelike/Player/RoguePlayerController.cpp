@@ -1,7 +1,4 @@
-﻿// Fill out your copyright notice in the Description page of Project Settings.
-
-
-#include "RoguePlayerController.h"
+﻿#include "RoguePlayerController.h"
 
 #include "EnhancedInputComponent.h"
 #include "RogueInteractionComponent.h"
@@ -25,7 +22,11 @@ void ARoguePlayerController::SetupInputComponent()
 
 void ARoguePlayerController::Interact()
 {
-	InteractionComp->Interact();
+	APawn* PossessedPawn = GetPawn();
+	if(IsValid(PossessedPawn))
+	{
+		InteractionComp->Interact(PossessedPawn);
+	}
 }
 
 void ARoguePlayerController::ToggleInGameMenu()

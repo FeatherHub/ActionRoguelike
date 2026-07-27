@@ -17,5 +17,5 @@ class ACTIONROGUELIKE_API IRogueInteractionInterface
 
 public:
 	UFUNCTION(BlueprintNativeEvent)
-	void Interact();
+	void Interact(APawn* InstigatorPawn);
 };

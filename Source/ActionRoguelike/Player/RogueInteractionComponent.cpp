@@ -24,22 +24,22 @@ URogueInteractionComponent::URogueInteractionComponent()
 	DirectionWeightScale = 1.f;
 }
 
-void URogueInteractionComponent::Interact()
+void URogueInteractionComponent::Interact(APawn* InstigatorPawn)
 {
-	DEBUG_ONSCREEN_FMT(0, 3.f, FColor::White, 
+	DEBUG_ONSCREEN_CVARFMT(CVarInteractionDebugDraw, 0, 3.f, FColor::Blue, 
 		TEXT("[Interact] InteractableActor: %s"), *GetNameSafe(InteractableActor));
 	
-	Interact_Server(InteractableActor);
+	Interact_Server(InteractableActor, InstigatorPawn);
 }
 
-void URogueInteractionComponent::Interact_Server_Implementation(AActor* ActorToInteract)
+void URogueInteractionComponent::Interact_Server_Implementation(AActor* ActorToInteract, APawn* InstigatorPawn)
 {
-	DEBUG_ONSCREEN_FMT(0, 3.f, FColor::Blue,
+	DEBUG_ONSCREEN_CVARFMT(CVarInteractionDebugDraw, 0, 3.f, FColor::Green,
 		TEXT("[InteractServer] ActorToInteract: %s"), *GetNameSafe(ActorToInteract));
 
 	if (ActorToInteract && ActorToInteract->Implements<URogueInteractionInterface>())
 	{
-		IRogueInteractionInterface::Execute_Interact(ActorToInteract);
+		IRogueInteractionInterface::Execute_Interact(ActorToInteract, InstigatorPawn);
 	}
 }
 

@@ -38,5 +38,5 @@ protected:
 public:
 	ARogueItemChest();
 	virtual void BeginPlay() override;
-	virtual void Interact_Implementation() override;
+	virtual void Interact_Implementation(APawn* InstigatorPawn) override;
 };

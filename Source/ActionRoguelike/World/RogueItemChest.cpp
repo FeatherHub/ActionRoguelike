@@ -31,7 +31,7 @@ void ARogueItemChest::OnSaveLoaded()
 	OnIsLidOpenChanged(bIsLidOpen);
 }
 
-void ARogueItemChest::Interact_Implementation()
+void ARogueItemChest::Interact_Implementation(APawn* InstigatorPawn)
 {
 	bIsLidOpen = !bIsLidOpen;
 	OnIsLidOpenChanged(bIsLidOpen);

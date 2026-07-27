@@ -35,11 +35,11 @@ protected:
 
 protected:
 	UFUNCTION(Server, Reliable)
-	void Interact_Server(AActor* ActorToInteract);
+	void Interact_Server(AActor* ActorToInteract, APawn* InstigatorPawn);
 	
 public:
 	URogueInteractionComponent();
 	virtual void TickComponent(float DeltaTime, ELevelTick TickType, FActorComponentTickFunction* ThisTickFunction) override;
 	
-	void Interact();
+	void Interact(APawn* InstigatorPawn);
 };
