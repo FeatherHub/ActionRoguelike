@@ -51,12 +51,12 @@ public:
 	///////////////
 public:
 	UFUNCTION(Server, Reliable)
-	void ServerStartAction(FGameplayTag ActionName);
-	void StartAction(FGameplayTag ActionName);
+	void ServerStartAction(FGameplayTag ActionTag);
+	void StartAction(FGameplayTag ActionTag);
 	
 	UFUNCTION(Server, Reliable)
-	void ServerStopAction(FGameplayTag ActionName);
-	void StopAction(FGameplayTag ActionName);
+	void ServerStopAction(FGameplayTag ActionTag);
+	void StopAction(FGameplayTag ActionTag);
 	
 	UFUNCTION(BlueprintCallable)
 	void GrantAction(TSubclassOf<URogueActionBase> ActionClass);
@@ -65,7 +65,7 @@ public:
 	void RemoveAction(URogueActionBase* Action);
 	
 	UFUNCTION(BlueprintCallable)
-	URogueActionBase* FindActionByName(FGameplayTag ActionName);
+	URogueActionBase* FindActionByTag(FGameplayTag ActionTag);
 	
 	UPROPERTY(BlueprintAssignable)
 	FOnActionEffectUpdated OnActionEffectAdded;

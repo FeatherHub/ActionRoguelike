@@ -4,7 +4,7 @@ FString FRogueCanStartResult::ToDebugString() const
 {
 	if (Failure != ERogueCanStartFailure::None)
 	{
-		FString Title = FString::Printf(TEXT("Cannot Start Action %s. "), *ActionName.GetTagName().ToString());
+		FString Title = FString::Printf(TEXT("Cannot Start Action %s. "), *ActionTag.GetTagName().ToString());
 		FString Reason = TEXT("Because of some reason");
 		
 		if(Failure == ERogueCanStartFailure::Running)
@@ -31,5 +31,5 @@ FString FRogueCanStartResult::ToDebugString() const
 		return Title + Reason;
 	}
 	
-	return FString::Printf(TEXT("Can Start Action %s"), *ActionName.ToString()); 
+	return FString::Printf(TEXT("Can Start Action %s"), *ActionTag.ToString()); 
 }

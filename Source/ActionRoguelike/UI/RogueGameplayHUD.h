@@ -22,7 +22,7 @@ protected:
 	UFUNCTION()
 	void HandlePossessedPawnChanged(APawn* OldPawn, APawn* NewPawn);
 	
-	void BindActionSystem();
+	void RefreshActionSystemBinding();
 	
 public:
 	virtual void BeginPlay() override;

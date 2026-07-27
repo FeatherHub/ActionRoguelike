@@ -113,14 +113,14 @@ void ARoguePlayerCharacter::Look(const FInputActionInstance& InInstance)
 	AddControllerPitchInput(Value.Y);
 }
 
-void ARoguePlayerCharacter::StartAction(FGameplayTag ActionName)
+void ARoguePlayerCharacter::StartAction(FGameplayTag ActionTag)
 {
-	ActionSystemComp->StartAction(ActionName);
+	ActionSystemComp->StartAction(ActionTag);
 }
 
-void ARoguePlayerCharacter::StopAction(FGameplayTag ActionName)
+void ARoguePlayerCharacter::StopAction(FGameplayTag ActionTag)
 {
-	ActionSystemComp->StopAction(ActionName);
+	ActionSystemComp->StopAction(ActionTag);
 }
 
 void ARoguePlayerCharacter::OnHealthChanged(float NewHealth, float OldHealth)

@@ -23,7 +23,7 @@ struct FRogueCanStartResult
 	
 public:
 	UPROPERTY()
-	FGameplayTag ActionName;
+	FGameplayTag ActionTag;
 
 	UPROPERTY()
 	TSubclassOf<URogueActionBase> ActionClass;

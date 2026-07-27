@@ -15,7 +15,7 @@ void URogueActionBase::StartAction_Implementation()
 	
 	DEBUG_ONSCREEN_FMT(0, 3.f, FColor::Orange, 
 		TEXT("[ActionBase::StartAction] Action(%s, %s). Character(%s)'s Controller(%s)"),
-		*ActionName.ToString(), *NetUtil::GetNetName(this), *NetUtil::GetNetName(Character), *NetUtil::GetNetName(Character->GetController()));
+		*ActionTag.ToString(), *NetUtil::GetNetName(this), *NetUtil::GetNetName(Character), *NetUtil::GetNetName(Character->GetController()));
 	
 	
 	if(CooldownStartPolicy == ERogueCooldownPolicy::OnStart)
@@ -26,7 +26,7 @@ void URogueActionBase::StartAction_Implementation()
 	URogueActionSystemComponent* ASC = GetOwningComponent();
 	ASC->AppendActiveTags(ActivationGrantTags);
 
-	UE_LOGFMT(LogGame, Log, "Start Action '{ActionName}' at {GameTime}", ActionName.GetTagName(), GetWorld()->TimeSeconds);
+	UE_LOGFMT(LogGame, Log, "Start Action '{ActionTag}' at {GameTime}", ActionTag.GetTagName(), GetWorld()->TimeSeconds);
 
 	for (const TPair<FGameplayTag, float>& CostEntry : ActivationCostMap)
 	{
@@ -50,7 +50,7 @@ void URogueActionBase::StopAction_Implementation()
 	ASC->RemoveActiveTags(ActivationGrantTags);
 	
 	UE_LOGFMT(LogGame, Log, 
-		"Stop Action '{ActionName}' at {GameTime}", ActionName.GetTagName(), GetWorld()->TimeSeconds);
+		"Stop Action '{ActionTag}' at {GameTime}", ActionTag.GetTagName(), GetWorld()->TimeSeconds);
 }
 
 
@@ -63,7 +63,7 @@ bool URogueActionBase::CanStart() const
 bool URogueActionBase::CanStart(FRogueCanStartResult& OutResult) const
 {
 	OutResult = FRogueCanStartResult{};
-	OutResult.ActionName = ActionName;
+	OutResult.ActionTag = ActionTag;
 	OutResult.ActionClass = GetClass();
 	
 	if(IsRunning())
@@ -112,7 +112,7 @@ bool URogueActionBase::CanStop() const
 {
 	if (!IsRunning())
 	{
-		UE_LOGFMT(LogGame, Error, "Cannot Stop Action {ActionName}. Becuase it is not in running.", ActionName.GetTagName());
+		UE_LOGFMT(LogGame, Error, "Cannot Stop Action {ActionTag}. Becuase it is not in running.", ActionTag.GetTagName());
 		return false;	
 	}
 	

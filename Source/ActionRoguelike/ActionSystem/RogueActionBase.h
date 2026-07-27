@@ -31,7 +31,7 @@ protected:
 	FGameplayTagContainer ActivationGrantTags;
 	
 	UPROPERTY(EditDefaultsOnly, BlueprintReadOnly, Category=Action)
-	FGameplayTag ActionName;
+	FGameplayTag ActionTag;
 	
 	UPROPERTY(EditDefaultsOnly, Category=Action)
 	TMap<FGameplayTag, float> ActivationCostMap;
@@ -55,7 +55,7 @@ public:
 	bool IsRunning() const { return bIsRunning; }
 	
 	const FGameplayTagContainer& GetBlockedTags() const { return ActivationBlockingTags; }
-	FGameplayTag GetActionName() const { return ActionName; }
+	FGameplayTag GetActionTag() const { return ActionTag; }
 	
 /////////////
 // Cooldown

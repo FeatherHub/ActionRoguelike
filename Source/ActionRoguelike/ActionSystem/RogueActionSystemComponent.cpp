@@ -37,7 +37,7 @@ void URogueActionSystemComponent::TickComponent(float DeltaTime, enum ELevelTick
 			FString OwningActionsMsg = FString::Printf(TEXT("Character(%s) has Actions: "), *NetUtil::GetNetName(PlayerCharacter));
 			for (URogueActionBase* Action : GrantedActions)
 			{
-				OwningActionsMsg += FString::Printf(TEXT("%s | "), *Action->GetActionName().GetTagLeafName().ToString());
+				OwningActionsMsg += FString::Printf(TEXT("%s | "), *Action->GetActionTag().GetTagLeafName().ToString());
 			}
 			DEBUG_ONSCREEN(0, 0.f, FColor::White, OwningActionsMsg);
 		}
@@ -145,11 +145,11 @@ void URogueActionSystemComponent::RemoveAction(URogueActionBase* Action)
 	OnGrantedActionChanged.Broadcast();
 }
 
-URogueActionBase* URogueActionSystemComponent::FindActionByName(FGameplayTag ActionName)
+URogueActionBase* URogueActionSystemComponent::FindActionByTag(FGameplayTag ActionTag)
 {
 	for (URogueActionBase* Action : GrantedActions)
 	{
-		if(Action && Action->GetActionName() == ActionName)
+		if(Action && Action->GetActionTag() == ActionTag)
 		{
 			return Action;
 		}
@@ -157,16 +157,16 @@ URogueActionBase* URogueActionSystemComponent::FindActionByName(FGameplayTag Act
 	return nullptr;
 }
 
-void URogueActionSystemComponent::ServerStartAction_Implementation(FGameplayTag ActionName)
+void URogueActionSystemComponent::ServerStartAction_Implementation(FGameplayTag ActionTag)
 {
-	StartAction(ActionName);
+	StartAction(ActionTag);
 }
 
-void URogueActionSystemComponent::StartAction(FGameplayTag ActionName)
+void URogueActionSystemComponent::StartAction(FGameplayTag ActionTag)
 {
 	for (URogueActionBase* Action : GrantedActions)
 	{
-		if (ActionName != Action->GetActionName())
+		if (ActionTag != Action->GetActionTag())
 		{
 			continue;
 		}
@@ -181,31 +181,31 @@ void URogueActionSystemComponent::StartAction(FGameplayTag ActionName)
 
 		if(!GetOwner()->HasAuthority())
 		{
-			ServerStartAction(ActionName);					
+			ServerStartAction(ActionTag);					
 		}
 		Action->StartAction();
 		return;
 	}
 	
-	UE_LOGFMT(LogGame, Warning, "'{ActionName}' is not granted action", ActionName.GetTagName());
+	UE_LOGFMT(LogGame, Warning, "[StartAction] 보유하지 않은 Action({ActionTag})을 Start하려고 함.", ActionTag.GetTagName());
 }
 
-void URogueActionSystemComponent::ServerStopAction_Implementation(FGameplayTag ActionName)
+void URogueActionSystemComponent::ServerStopAction_Implementation(FGameplayTag ActionTag)
 {
-	StopAction(ActionName);
+	StopAction(ActionTag);
 }
 
-void URogueActionSystemComponent::StopAction(FGameplayTag ActionName)
+void URogueActionSystemComponent::StopAction(FGameplayTag ActionTag)
 {
 	for (URogueActionBase* Action : GrantedActions)
 	{
-		if (ActionName == Action->GetActionName())
+		if (ActionTag == Action->GetActionTag())
 		{
 			if (Action->CanStop())
 			{
 				if(!GetOwner()->HasAuthority())
 				{
-					ServerStopAction(ActionName);	
+					ServerStopAction(ActionTag);	
 				}
 				Action->StopAction();
 			}
@@ -213,7 +213,7 @@ void URogueActionSystemComponent::StopAction(FGameplayTag ActionName)
 		}
 	}
 	
-	UE_LOGFMT(LogGame, Warning, "Failed to Stop Action '{ActionName}'", ActionName.GetTagName());
+	UE_LOGFMT(LogGame, Warning, "[StopAction] 보유하지 않는 Action({ActionTag})을 Stop하려고 함. ", ActionTag.GetTagName());
 }
 
 

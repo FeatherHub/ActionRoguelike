@@ -72,8 +72,8 @@ protected:
 	void Move(const FInputActionValue& InValue);
 	void Look(const FInputActionInstance& InInstance);
 	
-	void StartAction(FGameplayTag ActionName);
-	void StopAction(FGameplayTag ActionName);
+	void StartAction(FGameplayTag ActionTag);
+	void StopAction(FGameplayTag ActionTag);
 
 	UFUNCTION()
 	void OnHealthChanged(float NewHealth, float OldHealth);

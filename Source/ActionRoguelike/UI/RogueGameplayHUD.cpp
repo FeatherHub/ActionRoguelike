@@ -13,15 +13,15 @@ void ARogueGameplayHUD::BeginPlay()
 
 	PlayerOwner->OnPossessedPawnChanged.AddDynamic(this, &ThisClass::HandlePossessedPawnChanged);
 	
-	BindActionSystem(); // Standalone 경로
+	RefreshActionSystemBinding(); // Standalone 경로
 }
 
 void ARogueGameplayHUD::HandlePossessedPawnChanged(APawn* OldPawn, APawn* NewPawn)
 {
-	BindActionSystem(); // Multiplayer Client 경로 or Pawn 변경 시 경로
+	RefreshActionSystemBinding(); // Multiplayer Client 시작 경로 or Pawn 변경 시 경로
 }
 
-void ARogueGameplayHUD::BindActionSystem()
+void ARogueGameplayHUD::RefreshActionSystemBinding()
 {
 	APawn* PlayerPawn = PlayerOwner->GetPawn();
 	if(!IsValid(PlayerPawn))
@@ -35,5 +35,5 @@ void ARogueGameplayHUD::BindActionSystem()
 		return;
 	}
 
-	GameplayLayoutWidget->BindActionSystem(ASC);
+	GameplayLayoutWidget->RebindActionSystem(ASC);
 }

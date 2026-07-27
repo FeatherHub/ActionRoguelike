@@ -17,5 +17,5 @@ protected:
 	TObjectPtr<UUserWidget> SkillWidgetContainer;
 	
 public:
-	void BindActionSystem(URogueActionSystemComponent* ASC);
+	void RebindActionSystem(URogueActionSystemComponent* ASC);
 };

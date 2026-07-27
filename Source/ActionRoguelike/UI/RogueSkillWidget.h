@@ -30,29 +30,32 @@ protected:
 
 	UPROPERTY(VisibleDefaultsOnly, Category="Material Contract")
 	FName CooldownProgressScalarParamName = TEXT("CooldownProgress");
-	float LastCooldownProgress = -1.f;
+	float LastCooldownProgress;
 	
 	UPROPERTY(VisibleDefaultsOnly, Category="Material Contract")
 	FName SkillAvailableScalarParamName = TEXT("SkillAvailable");
-	float LastSkillAvailable = -1.f;
+	float LastSkillAvailable;
 	
 	UPROPERTY(VisibleDefaultsOnly, Category="Material Contract")
 	FName RunningHighlightScalarParamName = TEXT("RunningHighlight");
-	float LastSkillRunning = -1.f;
+	float LastSkillRunning;
 	
 	UPROPERTY()
 	TObjectPtr<UMaterialInstanceDynamic> ActionIconMID;
 	
 	TWeakObjectPtr<URogueActionBase> BoundAction;
 	TWeakObjectPtr<URogueActionSystemComponent> BoundASC;
-	FGameplayTag ActionName;
+	FGameplayTag ActionTag;
 	
 public:
 	virtual void NativePreConstruct() override;
 	virtual void NativeTick(const FGeometry& MyGeometry, float InDeltaTime) override;
-	void BindActionSystem(URogueActionSystemComponent* ASC);
+	void RebindActionSystem(URogueActionSystemComponent* ASC);
+	void UnbindActionSystem();
 	
 protected:
+	virtual void NativeDestruct() override;
+	
 	void ApplyStaticActionData();
 	
 	UFUNCTION()

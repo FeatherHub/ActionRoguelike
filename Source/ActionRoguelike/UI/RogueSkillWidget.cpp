@@ -17,6 +17,11 @@ void URogueSkillWidget::NativePreConstruct()
 	Super::NativePreConstruct();
 	
 	ApplyStaticActionData();
+	
+	LastCooldownProgress = -1.f;
+	LastSkillAvailable = -1.f;
+	LastSkillRunning = -1.f;
+	
 #if WITH_EDITOR
 	ValidateAssetSetup();
 #endif
@@ -31,7 +36,7 @@ void URogueSkillWidget::ApplyStaticActionData()
 	}
 	
 	const URogueActionBase* ActionCDO = GetDefault<URogueActionBase>(ActionClass);
-	ActionName = ActionCDO->GetActionName();
+	ActionTag = ActionCDO->GetActionTag();
 	
 	ActionIconMID = ActionIconImage->GetDynamicMaterial();
 	if(ActionIconMID)
@@ -41,35 +46,48 @@ void URogueSkillWidget::ApplyStaticActionData()
 }
 
 
-void URogueSkillWidget::BindActionSystem(URogueActionSystemComponent* ASC)
+void URogueSkillWidget::RebindActionSystem(URogueActionSystemComponent* ASC)
 {
-	// BindActionSystem이 중복으로 호출된 경우 방어
+	// RebindActionSystem이 중복으로 호출된 경우 방어
 	if(BoundASC == ASC)
 	{
 		return;
 	}
 	
-	// 컨트롤 중인 Pawn이 변경된 경우, 이전에 구독한 Delegate 해제
-	if(URogueActionSystemComponent* OldASC = BoundASC.Get())
-	{
-		OldASC->OnGrantedActionChanged.RemoveAll(this);
-		OldASC->OnStartActionFailed.RemoveAll(this);
-	}
-	
-	BoundASC = ASC;
-	BoundAction = nullptr;
+	UnbindActionSystem();
 
 	if(!IsValid(ASC))
 	{
-		DEBUG_ONSCREEN_CVAR(CVarSkillWidgetShowMessage, 0, 5.f, FColor::Red, TEXT("[URogueSkillWidget] Invalid ASC is passed to BindActionSystem"));
+		DEBUG_ONSCREEN_CVAR(CVarSkillWidgetShowMessage, 0, 5.f, FColor::Red, TEXT("[URogueSkillWidget] Invalid ASC is passed to RebindActionSystem"));
 		return;
 	}
+
+	BoundASC = ASC;
 
 	BoundASC->OnGrantedActionChanged.AddDynamic(this, &ThisClass::OnGrantedActionChanged);
 	BoundASC->OnStartActionFailed.AddUObject(this, &ThisClass::OnStartActionFailed);
 	
-	URogueActionBase* FoundAction = BoundASC->FindActionByName(ActionName);
+	URogueActionBase* FoundAction = BoundASC->FindActionByTag(ActionTag);
 	BoundAction = FoundAction;
+}
+
+
+void URogueSkillWidget::UnbindActionSystem()
+{
+	if(URogueActionSystemComponent* ASC = BoundASC.Get())
+	{
+		ASC->OnGrantedActionChanged.RemoveAll(this);
+		ASC->OnStartActionFailed.RemoveAll(this);
+	}
+	BoundASC.Reset();
+	BoundAction.Reset();
+}
+
+
+void URogueSkillWidget::NativeDestruct()
+{
+	UnbindActionSystem();
+	Super::NativeDestruct();
 }
 
 
@@ -95,14 +113,14 @@ void URogueSkillWidget::NativeTick(const FGeometry& MyGeometry, float InDeltaTim
 
 void URogueSkillWidget::OnGrantedActionChanged()
 {
-	URogueActionBase* FoundAction = BoundASC->FindActionByName(ActionName);
+	URogueActionBase* FoundAction = BoundASC->FindActionByTag(ActionTag);
 	BoundAction = FoundAction;
 }
 
 
 void URogueSkillWidget::OnStartActionFailed(const FRogueCanStartResult& Result)
 {
-	if(Result.ActionName != ActionName)
+	if(Result.ActionTag != ActionTag)
 	{
 		return;
 	}
