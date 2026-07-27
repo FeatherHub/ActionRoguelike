@@ -4,6 +4,7 @@
 #include "RogueActionBase.h"
 #include "GameplayTagContainer.h"
 #include "RogueActionEffect.h"
+#include "RogueActionType.h"
 #include "RogueAttributeSet.h"
 #include "DebugSystem/DebugUtil.h"
 #include "Engine/ActorChannel.h"
@@ -25,19 +26,21 @@ URogueActionSystemComponent::URogueActionSystemComponent()
 	PrimaryComponentTick.bStartWithTickEnabled = true;
 }
 
-// debugging purpose
 void URogueActionSystemComponent::TickComponent(float DeltaTime, enum ELevelTick TickType, FActorComponentTickFunction* ThisTickFunction)
 {
 	Super::TickComponent(DeltaTime, TickType, ThisTickFunction);
 
-	if(GetOwner()->IsA(ARoguePlayerCharacter::StaticClass()))
+	DEBUG_IF_CVAR(CVarAttributeDebugMsg)
 	{
-		FString OwningActionMsg = FString::Printf(TEXT("Character(%s) has Actions: "), *NetUtil::GetNetName(GetOwner()));
-		for (URogueActionBase* Action : GrantedActions)
+		if(ARoguePlayerCharacter* PlayerCharacter = Cast<ARoguePlayerCharacter>(GetOwner()))
 		{
-			OwningActionMsg += FString::Printf(TEXT("%s | "), *Action->GetActionName().GetTagLeafName().ToString());
+			FString OwningActionsMsg = FString::Printf(TEXT("Character(%s) has Actions: "), *NetUtil::GetNetName(PlayerCharacter));
+			for (URogueActionBase* Action : GrantedActions)
+			{
+				OwningActionsMsg += FString::Printf(TEXT("%s | "), *Action->GetActionName().GetTagLeafName().ToString());
+			}
+			DEBUG_ONSCREEN(0, 0.f, FColor::White, OwningActionsMsg);
 		}
-		DEBUG_ONSCREEN(0, 0.f, FColor::White, OwningActionMsg);
 	}
 }
 
@@ -163,21 +166,28 @@ void URogueActionSystemComponent::StartAction(FGameplayTag ActionName)
 {
 	for (URogueActionBase* Action : GrantedActions)
 	{
-		if (ActionName == Action->GetActionName())
+		if (ActionName != Action->GetActionName())
 		{
-			if (Action->CanStart())
-			{
-				if(!GetOwner()->HasAuthority())
-				{
-					ServerStartAction(ActionName);					
-				}
-				Action->StartAction();
-			}
-			return;
+			continue;
 		}
+		
+		FRogueCanStartResult Result;
+		if (!Action->CanStart(Result))
+		{
+			OnStartActionFailed.Broadcast(Result);
+			DEBUG_ONSCREEN(0, 5.f, FColor::Red, Result.ToDebugString());
+			return;	
+		}
+
+		if(!GetOwner()->HasAuthority())
+		{
+			ServerStartAction(ActionName);					
+		}
+		Action->StartAction();
+		return;
 	}
 	
-	UE_LOGFMT(LogGame, Warning, "Failed to Start Action '{ActionName}'", ActionName.GetTagName());
+	UE_LOGFMT(LogGame, Warning, "'{ActionName}' is not granted action", ActionName.GetTagName());
 }
 
 void URogueActionSystemComponent::ServerStopAction_Implementation(FGameplayTag ActionName)
@@ -211,7 +221,7 @@ void URogueActionSystemComponent::StopAction(FGameplayTag ActionName)
 // Attribute
 ///////////////
 
-bool URogueActionSystemComponent::ApplyAttributeChange(FGameplayTag AttributeTag, float InValue, EAttributeChangeType ChangeType)
+bool URogueActionSystemComponent::ApplyAttributeChange(FGameplayTag AttributeTag, float InValue, ERogueAttributeModType ChangeType)
 {
 	FRogueAttribute* Attribute = GetAttribute(AttributeTag);
 	if (!Attribute)

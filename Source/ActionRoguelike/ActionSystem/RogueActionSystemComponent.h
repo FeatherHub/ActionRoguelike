@@ -2,6 +2,7 @@
 
 #include "CoreMinimal.h"
 #include "GameplayTagContainer.h"
+#include "RogueActionType.h"
 #include "Components/ActorComponent.h"
 #include "RogueActionSystemComponent.generated.h"
 
@@ -14,7 +15,7 @@ class URogueActionSystemComponent;
 struct FGameplayTag;
 
 UENUM()
-enum EAttributeChangeType
+enum ERogueAttributeModType
 {
 	BaseDelta,
 	ModifierDelta,
@@ -28,6 +29,7 @@ DECLARE_DYNAMIC_DELEGATE_TwoParams(FOnAttributeChanged_Dynamic, float, NewValue,
 DECLARE_DYNAMIC_MULTICAST_DELEGATE_TwoParams(FOnGameplayTagUpdated, FGameplayTag, UpdatedTag, int32, NewCount);
 DECLARE_DYNAMIC_MULTICAST_DELEGATE_OneParam(FOnActionEffectUpdated, URogueActionEffect*, UpdatedActionEffect);
 DECLARE_DYNAMIC_MULTICAST_DELEGATE(FOnGrantedActionChanged);
+DECLARE_DYNAMIC_MULTICAST_DELEGATE_OneParam(FOnStartActionFailed, FRogueCanStartResult, Result);
 
 UCLASS(ClassGroup=(Custom), meta=(BlueprintSpawnableComponent))
 class ACTIONROGUELIKE_API URogueActionSystemComponent : public UActorComponent
@@ -74,6 +76,9 @@ public:
 	UPROPERTY(BlueprintAssignable)
 	FOnGrantedActionChanged OnGrantedActionChanged;
 	
+	UPROPERTY(BlueprintAssignable)
+	FOnStartActionFailed OnStartActionFailed;
+	
 protected:
 	UPROPERTY(EditDefaultsOnly, Category=Action)
 	TArray<TSubclassOf<URogueActionBase>> DefaultGrantActions;
@@ -96,7 +101,7 @@ public:
 	float GetAttributeValue(FGameplayTag AttributeTag) const;
 	
 	UFUNCTION(BlueprintCallable)
-	bool ApplyAttributeChange(FGameplayTag AttributeTag, float InValue, EAttributeChangeType ChangeType);
+	bool ApplyAttributeChange(FGameplayTag AttributeTag, float InValue, ERogueAttributeModType ChangeType);
 	
 	UFUNCTION(BlueprintCallable, DisplayName="Add Attribute Changed Listener", meta=(Keywords="Event, Delegate"))
 	void AddOnAttributeChangedListener_Dynamic(FGameplayTag AttributeTag, FOnAttributeChanged_Dynamic OnAttributeChanged);

@@ -5,11 +5,12 @@
 #include "UObject/Object.h"
 #include "RogueActionBase.generated.h"
 
+struct FRogueCanStartResult;
 class URogueActionSystemComponent;
 class ACharacter;
 
 UENUM()
-enum class ECooldownStartPolicy : uint8
+enum class ERogueCooldownPolicy : uint8
 {
 	/** StartAction 시점부터 쿨다운 계산 시작. e.g. 공격 발사 등 순간형 액션 */
 	OnStart,
@@ -24,7 +25,7 @@ class ACTIONROGUELIKE_API URogueActionBase : public UObject
 
 protected:
 	UPROPERTY(EditDefaultsOnly, Category=Action)
-	FGameplayTagContainer ActivationBlockedTags;
+	FGameplayTagContainer ActivationBlockingTags;
 
 	UPROPERTY(EditDefaultsOnly, Category=Action)
 	FGameplayTagContainer ActivationGrantTags;
@@ -49,12 +50,12 @@ public:
 	void StopAction();
 	
 	bool CanStart() const;
+	bool CanStart(FRogueCanStartResult& OutResult) const;
 	bool CanStop() const;
 	bool IsRunning() const { return bIsRunning; }
 	
-	const FGameplayTagContainer& GetBlockedTags() const { return ActivationBlockedTags; }
+	const FGameplayTagContainer& GetBlockedTags() const { return ActivationBlockingTags; }
 	FGameplayTag GetActionName() const { return ActionName; }
-
 	
 /////////////
 // Cooldown
@@ -63,7 +64,7 @@ protected:
 	float CooldownTime = 0.f;
 	
 	UPROPERTY(EditDefaultsOnly, Category=Action)
-	ECooldownStartPolicy CooldownStartPolicy = ECooldownStartPolicy::OnStart;
+	ERogueCooldownPolicy CooldownStartPolicy = ERogueCooldownPolicy::OnStart;
 	
 	UPROPERTY(Transient)
 	float CooldownEndTime = 0.f;
@@ -76,7 +77,7 @@ public:
 	 *	- 0 = 사용 가능. 1 = 액션 시작 직후     
 	 */
 	float GetCooldownProgress() const;
-	bool IsDurationAction() const { return CooldownStartPolicy == ECooldownStartPolicy::OnStop; }
+	bool IsDurationAction() const { return CooldownStartPolicy == ERogueCooldownPolicy::OnStop; }
 	
 	
 /////////

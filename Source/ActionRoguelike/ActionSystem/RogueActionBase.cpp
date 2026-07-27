@@ -2,6 +2,7 @@
 
 #include "ActionRoguelike.h"
 #include "RogueActionSystemComponent.h"
+#include "RogueActionType.h"
 #include "RogueAttributeSet.h"
 #include "DebugSystem/DebugUtil.h"
 #include "GameFramework/Character.h"
@@ -17,7 +18,7 @@ void URogueActionBase::StartAction_Implementation()
 		*ActionName.ToString(), *NetUtil::GetNetName(this), *NetUtil::GetNetName(Character), *NetUtil::GetNetName(Character->GetController()));
 	
 	
-	if(CooldownStartPolicy == ECooldownStartPolicy::OnStart)
+	if(CooldownStartPolicy == ERogueCooldownPolicy::OnStart)
 	{
 		StartCooldown();
 	}
@@ -40,7 +41,7 @@ void URogueActionBase::StopAction_Implementation()
 {
 	bIsRunning = false;
 	
-	if(CooldownStartPolicy == ECooldownStartPolicy::OnStop)
+	if(CooldownStartPolicy == ERogueCooldownPolicy::OnStop)
 	{
 		StartCooldown();
 	}
@@ -55,39 +56,49 @@ void URogueActionBase::StopAction_Implementation()
 
 bool URogueActionBase::CanStart() const
 {
-	if (IsRunning())
+	FRogueCanStartResult Dummy;
+	return CanStart(Dummy);
+}
+
+bool URogueActionBase::CanStart(FRogueCanStartResult& OutResult) const
+{
+	OutResult = FRogueCanStartResult{};
+	OutResult.ActionName = ActionName;
+	OutResult.ActionClass = GetClass();
+	
+	if(IsRunning())
 	{
-		UE_LOGFMT(LogGame, Warning, "Cannot Start Action {ActionName}. Because it is in running", ActionName.GetTagName());
+		OutResult.Failure = ERogueCanStartFailure::Running;
 		return false;
 	}
 	
-	float CooldownRemaining = GetCooldownRemaining();
-	if (CooldownRemaining > 0.f)
+	float CooldownRemaining = GetCooldownRemaining(); 
+	if(CooldownRemaining > 0.f)
 	{
-		UE_LOGFMT(LogGame, Warning, "Cannot Start Action {ActionName}. Because Cooldown remains: {CooldownRemaining}"
-			, ActionName.GetTagName(), CooldownRemaining);
+		OutResult.Failure = ERogueCanStartFailure::Cooldown;
+		OutResult.CooldownRemaining = CooldownRemaining;
 		return false;
 	}
-
+	
 	URogueActionSystemComponent* ASC = GetOwningComponent();
-	if (ASC->GetActiveTags().HasAny(ActivationBlockedTags))
+	if(ASC->GetActiveTags().HasAny(ActivationBlockingTags))
 	{
-		UE_LOGFMT(LogGame, Warning, "Cannot Start Action {ActionName}. Because it blocks {BlockedTags}"
-			, ActionName.GetTagName(), ActivationBlockedTags.ToString());
+		OutResult.Failure = ERogueCanStartFailure::Blocked;
+		OutResult.BlockedByTags = ASC->GetActiveTags().Filter(ActivationBlockingTags);
 		return false;
 	}
 
 	for (const TPair<FGameplayTag, float>& CostEntry : ActivationCostMap)
 	{
-		if (FRogueAttribute* Attribute = GetOwningComponent()->GetAttribute(CostEntry.Key))
+		if(FRogueAttribute* Attribute = ASC->GetAttribute(CostEntry.Key))
 		{
 			float CurrentAmount = Attribute->GetValue();
-			if (CurrentAmount < CostEntry.Value)
+			if(CurrentAmount < CostEntry.Value)
 			{
-				UE_LOGFMT(LogGame, Warning
-				, "Cannot Start Action {ActionName}. Because {CostName} is not enough. Needs: {NeedsAmount} Has: {HasAmount}"
-				, ActionName.GetTagName(), *CostEntry.Key.ToString(), CostEntry.Value, CurrentAmount);
-				
+				OutResult.Failure = ERogueCanStartFailure::Cost;
+				OutResult.CostAttribute = CostEntry.Key;
+				OutResult.CostRequired = CostEntry.Value;
+				OutResult.CostCurrent = CurrentAmount;
 				return false;
 			}
 		}
@@ -95,6 +106,7 @@ bool URogueActionBase::CanStart() const
 	
 	return true;
 }
+
 
 bool URogueActionBase::CanStop() const
 {

@@ -82,7 +82,7 @@ static FNetDebugContext ResolveNetDebugContext(const UObject* Object)
 	return FNetDebugContext::Make(Object ? Object->GetWorld() : nullptr);
 }
 
-void SubmitDebugContext(UObject* ContextObject, uint64 DebugKey, const FString& Msg, const FColor& Color, float Duration)
+void SubmitDebugContext(const UObject* ContextObject, uint64 DebugKey, const FString& Msg, const FColor& Color, float Duration)
 {
 	if(!CVarDebugToggleAll.GetValueOnGameThread())
 	{

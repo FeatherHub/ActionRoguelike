@@ -2,7 +2,7 @@
 
 #include "CoreMinimal.h"
 
-void SubmitDebugContext(UObject* ContextObject, uint64 DebugKey, const FString& Msg, const FColor& Color, float Duration);
+void SubmitDebugContext(const UObject* ContextObject, uint64 DebugKey, const FString& Msg, const FColor& Color, float Duration);
 
 #if UE_BUILD_SHIPPING || UE_BUILD_TEST
 	#define DEBUG_ONSCREEN(DebugSubkey, Duration, Color, Msg)
