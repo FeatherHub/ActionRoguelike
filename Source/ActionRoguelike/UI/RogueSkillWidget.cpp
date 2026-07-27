@@ -4,6 +4,7 @@
 #include "ActionSystem/RogueActionBase.h"
 #include "ActionSystem/RogueActionSystemComponent.h"
 #include "Components/Image.h"
+#include "Development/RogueLibrary.h"
 
 
 void URogueSkillWidget::NativePreConstruct()
@@ -43,6 +44,8 @@ void URogueSkillWidget::BindActionSystem(URogueActionSystemComponent* ASC)
 	}
 	BoundASC = ASC;
 	
+	BoundASC->OnGrantedActionChanged.AddDynamic(this, &ThisClass::OnGrantedActionChanged);
+	
 	URogueActionBase* FoundAction = BoundASC->FindActionByName(ActionName);
 	BoundAction = FoundAction;
 }
@@ -59,14 +62,19 @@ void URogueSkillWidget::NativeTick(const FGeometry& MyGeometry, float InDeltaTim
 	
 	URogueActionBase* Action = BoundAction.Get();
 	const float CooldownProgress = Action ? Action->GetCooldownProgress() : 0.f;
+	const float SkillAvailable = Action ? 1.f : 0.f;
+	const float SkillRunning = (Action && Action->IsDurationAction() && Action->IsRunning()) ? 1.f : 0.f;
 	
-	if(FMath::IsNearlyEqual(CooldownProgress, LastCooldownProgress))
-	{
-		return;
-	}
-	
-	ActionIconMID->SetScalarParameterValue(CooldownProgressParamName, CooldownProgress);
-	LastCooldownProgress = CooldownProgress;
+	RogueLibrary::ApplyScalarParamter(ActionIconMID, CooldownProgressScalarParamName, CooldownProgress, LastCooldownProgress);
+	RogueLibrary::ApplyScalarParamter(ActionIconMID, SkillAvailableScalarParamName, SkillAvailable, LastSkillAvailable);
+	RogueLibrary::ApplyScalarParamter(ActionIconMID, RunningHighlightScalarParamName, SkillRunning, LastSkillRunning);
+}
+
+
+void URogueSkillWidget::OnGrantedActionChanged()
+{
+	URogueActionBase* FoundAction = BoundASC->FindActionByName(ActionName);
+	BoundAction = FoundAction;
 }
 
 
@@ -104,10 +112,14 @@ void URogueSkillWidget::ValidateAssetSetup() const
 	}
 
 	float DummyScalar = 0.f;
-	if (!BaseMaterial->GetScalarParameterValue(FMaterialParameterInfo{CooldownProgressParamName}, DummyScalar))
+	TArray<FName> ScalarParamNames = {CooldownProgressScalarParamName, RunningHighlightScalarParamName, SkillAvailableScalarParamName};
+	for (const FName& ScalarParamName : ScalarParamNames)
 	{
-		UE_LOGFMT(LogGame, Error, "[{Widget}] Material '{Material}' 에 Scalar Parameter '{Param}' 이 없습니다.",
-			GetName(), BaseMaterial->GetName(), CooldownProgressParamName);
+		if (!BaseMaterial->GetScalarParameterValue(FMaterialParameterInfo{ScalarParamName}, DummyScalar))
+		{
+			UE_LOGFMT(LogGame, Error, "[{Widget}] Material '{Material}' 에 Scalar Parameter '{Param}' 이 없습니다.",
+				GetName(), BaseMaterial->GetName(), ScalarParamName);
+		}
 	}
 }
 

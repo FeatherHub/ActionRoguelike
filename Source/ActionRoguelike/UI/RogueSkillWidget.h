@@ -25,7 +25,16 @@ protected:
 	FName ActionIconTextureParamName = TEXT("ActionIconTexture");
 
 	UPROPERTY(VisibleDefaultsOnly, Category="Material Contract")
-	FName CooldownProgressParamName = TEXT("CooldownProgress");
+	FName CooldownProgressScalarParamName = TEXT("CooldownProgress");
+	float LastCooldownProgress = -1.f;
+	
+	UPROPERTY(VisibleDefaultsOnly, Category="Material Contract")
+	FName SkillAvailableScalarParamName = TEXT("SkillAvailable");
+	float LastSkillAvailable = -1.f;
+	
+	UPROPERTY(VisibleDefaultsOnly, Category="Material Contract")
+	FName RunningHighlightScalarParamName = TEXT("RunningHighlight");
+	float LastSkillRunning = -1.f;
 	
 	UPROPERTY()
 	TObjectPtr<UMaterialInstanceDynamic> ActionIconMID;
@@ -33,7 +42,6 @@ protected:
 	TWeakObjectPtr<URogueActionBase> BoundAction;
 	TWeakObjectPtr<URogueActionSystemComponent> BoundASC;
 	FGameplayTag ActionName;
-	float LastCooldownProgress = -1.f;
 	
 public:
 	virtual void NativePreConstruct() override;
@@ -42,6 +50,9 @@ public:
 	
 protected:
 	void ApplyStaticActionData();
+	UFUNCTION()
+	void OnGrantedActionChanged();
+	
 #if WITH_EDITOR
 	void ValidateAssetSetup() const;
 #endif

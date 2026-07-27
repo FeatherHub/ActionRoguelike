@@ -2,7 +2,7 @@
 
 #include "DebugContext.h"
 #include "DebugUtil.h"
-#include "Development/TimeUtil.h"
+#include "Development/RogueLibrary.h"
 #include "Network/NetUtil.h"
 #include "Containers/HashTable.h"
 
@@ -44,7 +44,7 @@ void URogueDebugSubsystem::FlushDebugContextQueue(UWorld* World, ELevelTick Leve
 	
 	for (const FOnScreenDebugContext& DebugContext : DebugContextQueue)
 	{
-		FString DateTimeStamp = FString::Printf(TEXT("[%s] "), *TimeUtil::ToMMSSMMM(DebugContext.DateTime)); 
+		FString DateTimeStamp = FString::Printf(TEXT("[%s] "), *RogueLibrary::ToMMSSMMM(DebugContext.DateTime)); 
 		
 		GEngine->AddOnScreenDebugMessage(
 			DebugContext.DebugKey,
