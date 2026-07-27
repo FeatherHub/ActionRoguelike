@@ -29,7 +29,7 @@ DECLARE_DYNAMIC_DELEGATE_TwoParams(FOnAttributeChanged_Dynamic, float, NewValue,
 DECLARE_DYNAMIC_MULTICAST_DELEGATE_TwoParams(FOnGameplayTagUpdated, FGameplayTag, UpdatedTag, int32, NewCount);
 DECLARE_DYNAMIC_MULTICAST_DELEGATE_OneParam(FOnActionEffectUpdated, URogueActionEffect*, UpdatedActionEffect);
 DECLARE_DYNAMIC_MULTICAST_DELEGATE(FOnGrantedActionChanged);
-DECLARE_DYNAMIC_MULTICAST_DELEGATE_OneParam(FOnStartActionFailed, FRogueCanStartResult, Result);
+DECLARE_MULTICAST_DELEGATE_OneParam(FOnStartActionFailed, const FRogueCanStartResult&);
 
 UCLASS(ClassGroup=(Custom), meta=(BlueprintSpawnableComponent))
 class ACTIONROGUELIKE_API URogueActionSystemComponent : public UActorComponent
@@ -76,7 +76,6 @@ public:
 	UPROPERTY(BlueprintAssignable)
 	FOnGrantedActionChanged OnGrantedActionChanged;
 	
-	UPROPERTY(BlueprintAssignable)
 	FOnStartActionFailed OnStartActionFailed;
 	
 protected:

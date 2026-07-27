@@ -4,7 +4,12 @@
 #include "ActionSystem/RogueActionBase.h"
 #include "ActionSystem/RogueActionSystemComponent.h"
 #include "Components/Image.h"
+#include "DebugSystem/DebugUtil.h"
 #include "Development/RogueLibrary.h"
+
+static TAutoConsoleVariable<bool> CVarSkillWidgetShowMessage { TEXT("rogue.ui.skillwidget.ShowMessage"), false,
+	TEXT("Display Skill Widget debug messages on screen. 0=off, 1=on"), ECVF_Default
+};
 
 
 void URogueSkillWidget::NativePreConstruct()
@@ -38,13 +43,30 @@ void URogueSkillWidget::ApplyStaticActionData()
 
 void URogueSkillWidget::BindActionSystem(URogueActionSystemComponent* ASC)
 {
+	// BindActionSystem이 중복으로 호출된 경우 방어
 	if(BoundASC == ASC)
 	{
 		return;
 	}
-	BoundASC = ASC;
 	
+	// 컨트롤 중인 Pawn이 변경된 경우, 이전에 구독한 Delegate 해제
+	if(URogueActionSystemComponent* OldASC = BoundASC.Get())
+	{
+		OldASC->OnGrantedActionChanged.RemoveAll(this);
+		OldASC->OnStartActionFailed.RemoveAll(this);
+	}
+	
+	BoundASC = ASC;
+	BoundAction = nullptr;
+
+	if(!IsValid(ASC))
+	{
+		DEBUG_ONSCREEN_CVAR(CVarSkillWidgetShowMessage, 0, 5.f, FColor::Red, TEXT("[URogueSkillWidget] Invalid ASC is passed to BindActionSystem"));
+		return;
+	}
+
 	BoundASC->OnGrantedActionChanged.AddDynamic(this, &ThisClass::OnGrantedActionChanged);
+	BoundASC->OnStartActionFailed.AddUObject(this, &ThisClass::OnStartActionFailed);
 	
 	URogueActionBase* FoundAction = BoundASC->FindActionByName(ActionName);
 	BoundAction = FoundAction;
@@ -75,6 +97,28 @@ void URogueSkillWidget::OnGrantedActionChanged()
 {
 	URogueActionBase* FoundAction = BoundASC->FindActionByName(ActionName);
 	BoundAction = FoundAction;
+}
+
+
+void URogueSkillWidget::OnStartActionFailed(const FRogueCanStartResult& Result)
+{
+	if(Result.ActionName != ActionName)
+	{
+		return;
+	}
+	
+	// 미보유 스킬의 경우 스킵
+	if(!BoundAction.IsValid())
+	{
+		return;
+	}
+	
+	if(!ActivationFailedAnim)
+	{
+		return;
+	}
+	
+	PlayAnimation(ActivationFailedAnim);
 }
 
 

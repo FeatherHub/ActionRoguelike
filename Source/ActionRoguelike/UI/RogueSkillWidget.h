@@ -2,6 +2,7 @@
 
 #include "CoreMinimal.h"
 #include "GameplayTagContainer.h"
+#include "ActionSystem/RogueActionType.h"
 #include "Blueprint/UserWidget.h"
 #include "RogueSkillWidget.generated.h"
 
@@ -18,6 +19,9 @@ protected:
 	UPROPERTY(meta=(BindWidget))
 	TObjectPtr<UImage> ActionIconImage;
 
+	UPROPERTY(Transient, meta=(BindWidgetAnimOptional))
+	TObjectPtr<UWidgetAnimation> ActivationFailedAnim;
+	
 	UPROPERTY(EditAnywhere, Category=Action)
 	TSubclassOf<URogueActionBase> ActionClass;
 
@@ -50,8 +54,11 @@ public:
 	
 protected:
 	void ApplyStaticActionData();
+	
 	UFUNCTION()
 	void OnGrantedActionChanged();
+	
+	void OnStartActionFailed(const FRogueCanStartResult& Result);
 	
 #if WITH_EDITOR
 	void ValidateAssetSetup() const;
