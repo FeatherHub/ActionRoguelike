@@ -29,35 +29,30 @@ DECLARE_DYNAMIC_DELEGATE_TwoParams(FOnAttributeChanged_Dynamic, float, NewValue,
 DECLARE_DYNAMIC_MULTICAST_DELEGATE_TwoParams(FOnGameplayTagUpdated, FGameplayTag, UpdatedTag, int32, NewCount);
 DECLARE_DYNAMIC_MULTICAST_DELEGATE_OneParam(FOnActionEffectUpdated, URogueActionEffect*, UpdatedActionEffect);
 DECLARE_DYNAMIC_MULTICAST_DELEGATE(FOnGrantedActionChanged);
+
 DECLARE_MULTICAST_DELEGATE_OneParam(FOnStartActionFailed, const FRogueCanStartResult&);
+DECLARE_MULTICAST_DELEGATE_OneParam(FOnActionStopped, const FRogueStopActionInfo&);
+
 
 UCLASS(ClassGroup=(Custom), meta=(BlueprintSpawnableComponent))
 class ACTIONROGUELIKE_API URogueActionSystemComponent : public UActorComponent
 {
 	GENERATED_BODY()
-	
-	////////////////
-	// Life Cycle
-	////////////////
+
+////////////////
+// Life Cycle
+////////////////
 public:
 	URogueActionSystemComponent();
 	virtual void InitializeComponent() override;
 	virtual void BeginPlay() override;
 	virtual void TickComponent(float DeltaTime, enum ELevelTick TickType, FActorComponentTickFunction* ThisTickFunction) override;
 	
-	
-	///////////////
-	// Action
-	///////////////
+
+////////////////////
+// 소유한 Action 관리
+////////////////////
 public:
-	UFUNCTION(Server, Reliable)
-	void ServerStartAction(FGameplayTag ActionTag);
-	void StartAction(FGameplayTag ActionTag);
-	
-	UFUNCTION(Server, Reliable)
-	void ServerStopAction(FGameplayTag ActionTag);
-	void StopAction(FGameplayTag ActionTag);
-	
 	UFUNCTION(BlueprintCallable)
 	void GrantAction(TSubclassOf<URogueActionBase> ActionClass);
 	
@@ -75,9 +70,7 @@ public:
 	
 	UPROPERTY(BlueprintAssignable)
 	FOnGrantedActionChanged OnGrantedActionChanged;
-	
-	FOnStartActionFailed OnStartActionFailed;
-	
+
 protected:
 	UPROPERTY(EditDefaultsOnly, Category=Action)
 	TArray<TSubclassOf<URogueActionBase>> DefaultGrantActions;
@@ -88,9 +81,36 @@ protected:
 	UFUNCTION()
 	void OnRep_GrantedAction();
 	
-	//////////////
-	// Attribute
-	//////////////
+
+///////////////////////
+// Start & Stop Action
+///////////////////////
+public:
+	void StartAction(FGameplayTag ActionTag);
+
+	UFUNCTION(Server, Reliable)
+	void StartAction_Server(FGameplayTag ActionTag);
+	
+	FOnStartActionFailed OnStartActionFailed;
+	
+	// 플레이어 입력 경로. 클라이언트에서 호출하면 서버로 전파된다
+	void StopAction(FGameplayTag ActionTag);
+
+	UFUNCTION(Server, Reliable)
+	void StopAction_Server(FGameplayTag ActionTag);
+	
+	// 게임 플레이 로직에 의한 중지. 각 머신에서 독립적으로 일어나므로 전파하지 않는다
+	UFUNCTION(BlueprintCallable)
+	void InterruptAction(URogueActionBase* Action, const FRogueStopActionCause& Cause);
+	
+	FOnActionStopped OnActionStopped;
+	
+protected:
+	void StopActionInternal(URogueActionBase* Action, const FRogueStopActionCause& Cause);
+	
+//////////////
+// Attribute
+//////////////
 public:
 	void SetDefaultAttributeSet(TSubclassOf<URogueAttributeSet> AttributeSetClass);
 	FRogueAttribute* GetAttribute(FGameplayTag AttributeTag) const;
@@ -121,9 +141,10 @@ protected:
 
 	TMap<FGameplayTag, TArray<FOnAttributeChanged_Dynamic>> OnAttributeChangedListeners_Dynamic;
 	
-	//////////////////
-	// Gameplay Tags
-	//////////////////
+	
+//////////////////
+// Gameplay Tags
+//////////////////
 public:
 	UPROPERTY(BlueprintAssignable)
 	FOnGameplayTagUpdated OnGameplayTagUpdated;

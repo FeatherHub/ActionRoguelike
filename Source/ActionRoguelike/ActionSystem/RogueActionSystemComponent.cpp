@@ -15,6 +15,7 @@
 static TAutoConsoleVariable<bool> CVarAttributeDebugMsg { TEXT("rogue.asc.attribute.ShowMsg"), false,
 	TEXT("Show ActionSystemComponent's Attribute related on-screen messages. 0=off, 1=on"), ECVF_Default };
 
+
 URogueActionSystemComponent::URogueActionSystemComponent()
 {
 	SetIsReplicatedByDefault(true);
@@ -25,6 +26,7 @@ URogueActionSystemComponent::URogueActionSystemComponent()
 	PrimaryComponentTick.bCanEverTick = true;
 	PrimaryComponentTick.bStartWithTickEnabled = true;
 }
+
 
 void URogueActionSystemComponent::TickComponent(float DeltaTime, enum ELevelTick TickType, FActorComponentTickFunction* ThisTickFunction)
 {
@@ -43,6 +45,7 @@ void URogueActionSystemComponent::TickComponent(float DeltaTime, enum ELevelTick
 		}
 	}
 }
+
 
 void URogueActionSystemComponent::InitializeComponent()
 {
@@ -78,12 +81,14 @@ void URogueActionSystemComponent::InitializeComponent()
 	}
 }
 
+
 void URogueActionSystemComponent::SetDefaultAttributeSet(TSubclassOf<URogueAttributeSet> AttributeSetClass)
 {
 	FObjectInitializer& ObjectInitializer = FObjectInitializer::Get();
 	
 	AttributeSet = Cast<URogueAttributeSet>(ObjectInitializer.CreateDefaultSubobject(this, TEXT("AttributeSet"), AttributeSetClass, AttributeSetClass));
 }
+
 
 void URogueActionSystemComponent::BeginPlay()
 {
@@ -125,10 +130,12 @@ void URogueActionSystemComponent::GrantAction(TSubclassOf<URogueActionBase> Acti
 	OnGrantedActionChanged.Broadcast();
 }
 
+
 void URogueActionSystemComponent::OnRep_GrantedAction()
 {
 	OnGrantedActionChanged.Broadcast();
 }
+
 
 void URogueActionSystemComponent::RemoveAction(URogueActionBase* Action)
 {
@@ -145,6 +152,7 @@ void URogueActionSystemComponent::RemoveAction(URogueActionBase* Action)
 	OnGrantedActionChanged.Broadcast();
 }
 
+
 URogueActionBase* URogueActionSystemComponent::FindActionByTag(FGameplayTag ActionTag)
 {
 	for (URogueActionBase* Action : GrantedActions)
@@ -157,10 +165,12 @@ URogueActionBase* URogueActionSystemComponent::FindActionByTag(FGameplayTag Acti
 	return nullptr;
 }
 
-void URogueActionSystemComponent::ServerStartAction_Implementation(FGameplayTag ActionTag)
+
+void URogueActionSystemComponent::StartAction_Server_Implementation(FGameplayTag ActionTag)
 {
 	StartAction(ActionTag);
 }
+
 
 void URogueActionSystemComponent::StartAction(FGameplayTag ActionTag)
 {
@@ -181,7 +191,7 @@ void URogueActionSystemComponent::StartAction(FGameplayTag ActionTag)
 
 		if(!GetOwner()->HasAuthority())
 		{
-			ServerStartAction(ActionTag);					
+			StartAction_Server(ActionTag);					
 		}
 		Action->StartAction();
 		return;
@@ -190,30 +200,64 @@ void URogueActionSystemComponent::StartAction(FGameplayTag ActionTag)
 	UE_LOGFMT(LogGame, Warning, "[StartAction] 보유하지 않은 Action({ActionTag})을 Start하려고 함.", ActionTag.GetTagName());
 }
 
-void URogueActionSystemComponent::ServerStopAction_Implementation(FGameplayTag ActionTag)
-{
-	StopAction(ActionTag);
-}
 
 void URogueActionSystemComponent::StopAction(FGameplayTag ActionTag)
 {
 	for (URogueActionBase* Action : GrantedActions)
 	{
-		if (ActionTag == Action->GetActionTag())
+		if(ActionTag != Action->GetActionTag())
 		{
-			if (Action->CanStop())
-			{
-				if(!GetOwner()->HasAuthority())
-				{
-					ServerStopAction(ActionTag);	
-				}
-				Action->StopAction();
-			}
-			return;
+			continue;
 		}
+		
+		// 클라이언트인 경우 서버에 StopAction RPC을 요청하는 동시에
+		if(!GetOwner()->HasAuthority())
+		{
+			StopAction_Server(ActionTag);
+		}
+
+		// 로컬에서도 즉시 실행해서 반응성을 얻는다
+		FRogueStopActionCause Cause;
+		Cause.Reason = ERogueStopActionReason::Input;
+		StopActionInternal(Action, Cause);
+		
+		return; // 가정: GrantedActions에 Action은 종류 마다 1개만 있어야 한다. 
 	}
 	
 	UE_LOGFMT(LogGame, Warning, "[StopAction] 보유하지 않는 Action({ActionTag})을 Stop하려고 함. ", ActionTag.GetTagName());
+}
+
+
+void URogueActionSystemComponent::StopAction_Server_Implementation(FGameplayTag ActionTag)
+{
+	StopAction(ActionTag);
+}
+
+
+void URogueActionSystemComponent::InterruptAction(URogueActionBase* Action, const FRogueStopActionCause& Cause)
+{
+	if(!ensure(Action))
+	{
+		return;
+	}
+	StopActionInternal(Action, Cause);
+}
+
+
+void URogueActionSystemComponent::StopActionInternal(URogueActionBase* Action, const FRogueStopActionCause& Cause)
+{
+	if (!Action->CanStop())
+	{
+		return;
+	}
+	
+	Action->StopAction();
+	
+	FRogueStopActionInfo Info;
+	Info.ActionTag = Action->GetActionTag();
+	Info.ActionClass = Action->GetClass();
+	Info.Cause = Cause;
+	OnActionStopped.Broadcast(Info);
 }
 
 
@@ -275,6 +319,7 @@ bool URogueActionSystemComponent::ApplyAttributeChange(FGameplayTag AttributeTag
 	return bHasChanged;
 }
 
+
 void URogueActionSystemComponent::MulticastAttributeChanged_Implementation(FGameplayTag AttributeTag, float NewValue, float OldValue)
 {
 	DEBUG_ONSCREEN_CVARFMT(CVarAttributeDebugMsg, AttributeTag, 5.f, FColor::Orange,
@@ -306,10 +351,12 @@ void URogueActionSystemComponent::MulticastAttributeChanged_Implementation(FGame
 	}
 }
 
+
 FOnAttributeChanged& URogueActionSystemComponent::GetOnAttributeChangedListener(FGameplayTag AttributeTag)
 {
 	return OnAttributeChangedListeners.FindOrAdd(AttributeTag);
 }
+
 
 FRogueAttribute* URogueActionSystemComponent::GetAttribute(FGameplayTag AttributeTag) const
 {
@@ -326,6 +373,7 @@ FRogueAttribute* URogueActionSystemComponent::GetAttribute(FGameplayTag Attribut
 	return nullptr;
 }
 
+
 float URogueActionSystemComponent::GetAttributeValue(FGameplayTag AttributeTag) const
 {
 	FRogueAttribute* Attribute = GetAttribute(AttributeTag);
@@ -338,11 +386,13 @@ float URogueActionSystemComponent::GetAttributeValue(FGameplayTag AttributeTag) 
 	return 0.f;
 }
 
+
 void URogueActionSystemComponent::AddOnAttributeChangedListener_Dynamic(FGameplayTag AttributeTag, FOnAttributeChanged_Dynamic OnAttributeChanged)
 {
 	TArray<FOnAttributeChanged_Dynamic>& Listeners = OnAttributeChangedListeners_Dynamic.FindOrAdd(AttributeTag);
 	Listeners.Add(OnAttributeChanged);
 }
+
 
 void URogueActionSystemComponent::RemoveOnAttributeChangedListener_Dynamic(FOnAttributeChanged_Dynamic ListenerToRemove)
 {
@@ -357,6 +407,7 @@ void URogueActionSystemComponent::RemoveOnAttributeChangedListener_Dynamic(FOnAt
 		}
 	}
 }
+
 
 ///////////////
 // Active Tags
@@ -374,6 +425,7 @@ void URogueActionSystemComponent::AppendActiveTags(const FGameplayTagContainer& 
 	}
 }
 
+
 void URogueActionSystemComponent::RemoveActiveTags(const FGameplayTagContainer& TagsToRemove)
 {
 	int32 OldCount = ActiveTags.Num();
@@ -388,17 +440,27 @@ void URogueActionSystemComponent::RemoveActiveTags(const FGameplayTagContainer& 
 	}
 }
 
+
 void URogueActionSystemComponent::CheckAgainstBlockedTags(const FGameplayTagContainer& NewTags)
 {
 	for (URogueActionBase* Action : GrantedActions)
 	{
-		if(Action->GetBlockedTags().HasAny(NewTags))
+		if(!IsValid(Action) || !Action->IsRunning())
 		{
-			if(Action->IsRunning())
-			{
-				Action->StopAction();
-			}
+			continue;
 		}
+		
+		const FGameplayTagContainer& BlockingTags = Action->GetBlockingTags();
+		if(!BlockingTags.HasAny(NewTags))
+		{
+			continue;
+		}
+		
+		FRogueStopActionCause Cause;
+		Cause.Reason = ERogueStopActionReason::BlockedByTag;
+		Cause.CausingTags = NewTags.Filter(BlockingTags);
+		
+		InterruptAction(Action, Cause);
 	}
 }
 

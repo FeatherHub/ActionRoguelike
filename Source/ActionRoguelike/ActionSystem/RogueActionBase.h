@@ -54,7 +54,7 @@ public:
 	bool CanStop() const;
 	bool IsRunning() const { return bIsRunning; }
 	
-	const FGameplayTagContainer& GetBlockedTags() const { return ActivationBlockingTags; }
+	const FGameplayTagContainer& GetBlockingTags() const { return ActivationBlockingTags; }
 	FGameplayTag GetActionTag() const { return ActionTag; }
 	
 /////////////
