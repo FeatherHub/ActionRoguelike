@@ -11,6 +11,8 @@
 #include "Net/UnrealNetwork.h"
 #include "Network/NetUtil.h"
 #include "Player/RoguePlayerCharacter.h"
+#include "ToastMessageSystem/RogueToastMessageFactory.h"
+#include "ToastMessageSystem/RogueToastMessageStatics.h"
 
 
 static TAutoConsoleVariable<bool> CVarAttributeDebugMsg { TEXT("rogue.asc.attribute.ShowMsg"), false,
@@ -221,6 +223,9 @@ void URogueActionSystemComponent::StartAction(FGameplayTag ActionTag)
 		if (!Action->CanStart(Result))
 		{
 			OnStartActionFailed.Broadcast(Result);
+			
+			URogueToastMessageStatics::PushMessage(GetOwningPC(), RogueToastMessageFactory::ActionCooldown(Action->GetDisplayName(), Result.CooldownRemaining));
+			
 			DEBUG_ONSCREEN(0, 5.f, FColor::Red, Result.ToDebugString());
 			return;	
 		}
@@ -505,4 +510,17 @@ void URogueActionSystemComponent::RemoveStatusTags(const FGameplayTagContainer& 
 	{
 		OnStatusTagUpdated.Broadcast(TagToRemove, 0);
 	}
+}
+
+APlayerController* URogueActionSystemComponent::GetOwningPC() const
+{
+	if(APawn* OwningPawn = Cast<APawn>(GetOwner()))
+	{
+		if(APlayerController* PC = Cast<APlayerController>(OwningPawn->GetController()))
+		{
+			return PC;
+		}
+	}
+	
+	return nullptr;
 }

@@ -1,6 +1,6 @@
 ﻿#include "RogueToastMessageStatics.h"
 
-#include "RogueToastMessageSystem.h"
+#include "RogueToastMessageSubsystem.h"
 
 void URogueToastMessageStatics::PushMessage(APlayerController* PC, const FRogueToastMessage& Message)
 {
@@ -15,7 +15,7 @@ void URogueToastMessageStatics::PushMessage(APlayerController* PC, const FRogueT
 		return;
 	}
 
-	URogueToastMessageSystem* RogueToastMessageSystem = ULocalPlayer::GetSubsystem<URogueToastMessageSystem>(LocalPlayer);
+	URogueToastMessageSubsystem* RogueToastMessageSystem = ULocalPlayer::GetSubsystem<URogueToastMessageSubsystem>(LocalPlayer);
 	if(!IsValid(RogueToastMessageSystem))
 	{
 		return;

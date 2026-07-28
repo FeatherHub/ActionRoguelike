@@ -166,4 +166,11 @@ public:
 protected:
 	UPROPERTY(VisibleAnywhere, Category=Status)
 	FGameplayTagContainer StatusTags;
+	
+///////////////
+// 클래스 연결
+///////////////
+public:
+	APlayerController* GetOwningPC() const;
+
 };
