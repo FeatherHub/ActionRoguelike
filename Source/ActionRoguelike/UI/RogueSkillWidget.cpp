@@ -7,6 +7,7 @@
 #include "DebugSystem/DebugUtil.h"
 #include "Development/RogueLibrary.h"
 
+
 static TAutoConsoleVariable<bool> CVarSkillWidgetShowMessage { TEXT("rogue.ui.skillwidget.ShowMessage"), false,
 	TEXT("Display Skill Widget debug messages on screen. 0=off, 1=on"), ECVF_Default
 };
@@ -20,7 +21,7 @@ void URogueSkillWidget::NativePreConstruct()
 	
 	LastCooldownProgress = -1.f;
 	LastSkillAvailable = -1.f;
-	LastSkillRunning = -1.f;
+	LastRunningHighlight = -1.f;
 	
 #if WITH_EDITOR
 	ValidateAssetSetup();
@@ -66,6 +67,7 @@ void URogueSkillWidget::RebindActionSystem(URogueActionSystemComponent* ASC)
 
 	BoundASC->OnGrantedActionChanged.AddDynamic(this, &ThisClass::OnGrantedActionChanged);
 	BoundASC->OnStartActionFailed.AddUObject(this, &ThisClass::OnStartActionFailed);
+	BoundASC->OnActionStopped.AddUObject(this, &ThisClass::OnActionStopped);
 	
 	URogueActionBase* FoundAction = BoundASC->FindActionByTag(ActionTag);
 	BoundAction = FoundAction;
@@ -78,6 +80,7 @@ void URogueSkillWidget::UnbindActionSystem()
 	{
 		ASC->OnGrantedActionChanged.RemoveAll(this);
 		ASC->OnStartActionFailed.RemoveAll(this);
+		ASC->OnActionStopped.RemoveAll(this);
 	}
 	BoundASC.Reset();
 	BoundAction.Reset();
@@ -103,11 +106,11 @@ void URogueSkillWidget::NativeTick(const FGeometry& MyGeometry, float InDeltaTim
 	URogueActionBase* Action = BoundAction.Get();
 	const float CooldownProgress = Action ? Action->GetCooldownProgress() : 0.f;
 	const float SkillAvailable = Action ? 1.f : 0.f;
-	const float SkillRunning = (Action && Action->IsDurationAction() && Action->IsRunning()) ? 1.f : 0.f;
+	const float RunningHighlight = (Action && Action->IsDurationAction() && Action->IsRunning()) ? 1.f : 0.f;
 	
-	RogueLibrary::ApplyScalarParamter(ActionIconMID, CooldownProgressScalarParamName, CooldownProgress, LastCooldownProgress);
-	RogueLibrary::ApplyScalarParamter(ActionIconMID, SkillAvailableScalarParamName, SkillAvailable, LastSkillAvailable);
-	RogueLibrary::ApplyScalarParamter(ActionIconMID, RunningHighlightScalarParamName, SkillRunning, LastSkillRunning);
+	RogueLibrary::ApplyScalarParameter(ActionIconMID, CooldownProgressScalarParamName, CooldownProgress, LastCooldownProgress);
+	RogueLibrary::ApplyScalarParameter(ActionIconMID, SkillAvailableScalarParamName, SkillAvailable, LastSkillAvailable);
+	RogueLibrary::ApplyScalarParameter(ActionIconMID, RunningHighlightScalarParamName, RunningHighlight, LastRunningHighlight);
 }
 
 
@@ -125,18 +128,38 @@ void URogueSkillWidget::OnStartActionFailed(const FRogueCanStartResult& Result)
 		return;
 	}
 	
-	// 미보유 스킬의 경우 스킵
+	// 미보유 스킬의 경우
 	if(!BoundAction.IsValid())
 	{
 		return;
 	}
 	
-	if(!ActivationFailedAnim)
+	PlayShakeAnim();
+}
+
+
+void URogueSkillWidget::OnActionStopped(const FRogueStopActionInfo& Info)
+{
+	if(Info.StoppedActionTag != ActionTag)
 	{
 		return;
 	}
 	
-	PlayAnimation(ActivationFailedAnim);
+	if(Info.Cause.Reason == ERogueStopActionReason::BlockedByTag)
+	{
+		PlayShakeAnim();
+	}
+}
+
+
+void URogueSkillWidget::PlayShakeAnim()
+{
+	if(!ShakeAnim)
+	{
+		return;
+	}
+	
+	PlayAnimation(ShakeAnim);
 }
 
 

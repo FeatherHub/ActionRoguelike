@@ -282,8 +282,8 @@ void URogueActionSystemComponent::InterruptAction(URogueActionBase* Action, cons
 
 void URogueActionSystemComponent::InterruptActionsBlockedBy(const FGameplayTagContainer& NewTags)
 {
-	// 액션이 Interrupt되는 경우 
-	// InterruptAction -> StopAction 경로를 타게 되고 
+	// 액션이 Interrupt되는 경우
+	// InterruptAction -> StopActionInternal 경로를 타게 되고 
 	// 이때 Action이 Effect Action 인 경우 GrantedActions 배열이 수정되므로
 	// Snapshot을 순회해야 한다.
 	TArray<URogueActionBase*> GrantedActionsSnapshot = GrantedActions;
@@ -320,9 +320,10 @@ void URogueActionSystemComponent::StopActionInternal(URogueActionBase* Action, c
 	Action->StopAction();
 	
 	FRogueStopActionInfo Info;
-	Info.ActionTag = Action->GetActionTag();
-	Info.ActionClass = Action->GetClass();
+	Info.StoppedActionTag = Action->GetActionTag();
+	Info.StoppedActionClass = Action->GetClass();
 	Info.Cause = Cause;
+	
 	OnActionStopped.Broadcast(Info);
 }
 

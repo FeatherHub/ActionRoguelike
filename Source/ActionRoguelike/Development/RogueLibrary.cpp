@@ -8,7 +8,7 @@ namespace RogueLibrary
 			DateTime.GetMinute(), DateTime.GetSecond(), DateTime.GetMillisecond());
 	}
 
-	void ApplyScalarParamter(UMaterialInstanceDynamic* MID, FName ParamName, float NewValue, float& OutLastValue)
+	void ApplyScalarParameter(UMaterialInstanceDynamic* MID, FName ParamName, float NewValue, float& OutLastValue)
 	{
 		if(FMath::IsNearlyEqual(NewValue, OutLastValue))
 		{

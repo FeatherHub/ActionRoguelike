@@ -86,10 +86,10 @@ struct FRogueStopActionInfo
 	GENERATED_BODY()
 	
 	UPROPERTY()
-	FGameplayTag ActionTag;
+	FGameplayTag StoppedActionTag;
 	
 	UPROPERTY()
-	TSubclassOf<URogueActionBase> ActionClass;
+	TSubclassOf<URogueActionBase> StoppedActionClass;
 	
 	UPROPERTY()
 	FRogueStopActionCause Cause;

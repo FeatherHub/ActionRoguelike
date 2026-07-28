@@ -20,7 +20,7 @@ protected:
 	TObjectPtr<UImage> ActionIconImage;
 
 	UPROPERTY(Transient, meta=(BindWidgetAnimOptional))
-	TObjectPtr<UWidgetAnimation> ActivationFailedAnim;
+	TObjectPtr<UWidgetAnimation> ShakeAnim;
 	
 	UPROPERTY(EditAnywhere, Category=Action)
 	TSubclassOf<URogueActionBase> ActionClass;
@@ -38,7 +38,7 @@ protected:
 	
 	UPROPERTY(VisibleDefaultsOnly, Category="Material Contract")
 	FName RunningHighlightScalarParamName = TEXT("RunningHighlight");
-	float LastSkillRunning;
+	float LastRunningHighlight;
 	
 	UPROPERTY()
 	TObjectPtr<UMaterialInstanceDynamic> ActionIconMID;
@@ -47,11 +47,13 @@ protected:
 	TWeakObjectPtr<URogueActionSystemComponent> BoundASC;
 	FGameplayTag ActionTag;
 	
+	
 public:
 	virtual void NativePreConstruct() override;
 	virtual void NativeTick(const FGeometry& MyGeometry, float InDeltaTime) override;
 	void RebindActionSystem(URogueActionSystemComponent* ASC);
 	void UnbindActionSystem();
+	
 	
 protected:
 	virtual void NativeDestruct() override;
@@ -62,6 +64,10 @@ protected:
 	void OnGrantedActionChanged();
 	
 	void OnStartActionFailed(const FRogueCanStartResult& Result);
+	
+	void OnActionStopped(const FRogueStopActionInfo& Info);
+
+	void PlayShakeAnim();
 	
 #if WITH_EDITOR
 	void ValidateAssetSetup() const;
