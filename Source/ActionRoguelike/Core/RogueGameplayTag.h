@@ -15,4 +15,12 @@ namespace RogueGameplayTag
 	
 	UE_DECLARE_GAMEPLAY_TAG_EXTERN(Status_Sprinting);
 	UE_DECLARE_GAMEPLAY_TAG_EXTERN(Status_Stunned);
+	
+	UE_DECLARE_GAMEPLAY_TAG_EXTERN(Toast_Channel_Feedback);
+	UE_DECLARE_GAMEPLAY_TAG_EXTERN(Toast_Channel_Notice);
+	UE_DECLARE_GAMEPLAY_TAG_EXTERN(Toast_Channel_Headline);
+
+	UE_DECLARE_GAMEPLAY_TAG_EXTERN(Toast_Sound_Reject);
+	UE_DECLARE_GAMEPLAY_TAG_EXTERN(Toast_Sound_Positive);
+	UE_DECLARE_GAMEPLAY_TAG_EXTERN(Toast_Sound_Alarm);
 }

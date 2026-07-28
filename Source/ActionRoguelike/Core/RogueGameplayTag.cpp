@@ -14,4 +14,12 @@ namespace RogueGameplayTag
 	
 	UE_DEFINE_GAMEPLAY_TAG(Status_Sprinting, TEXT("Status.Sprinting"));
 	UE_DEFINE_GAMEPLAY_TAG(Status_Stunned, TEXT("Status.Stunned"));
+	
+	UE_DEFINE_GAMEPLAY_TAG(Toast_Channel_Feedback, "Toast.Channel.Feedback");
+	UE_DEFINE_GAMEPLAY_TAG(Toast_Channel_Notice,   "Toast.Channel.Notice");
+	UE_DEFINE_GAMEPLAY_TAG(Toast_Channel_Headline, "Toast.Channel.Headline");
+
+	UE_DEFINE_GAMEPLAY_TAG(Toast_Sound_Reject,   "Toast.Sound.Reject");
+	UE_DEFINE_GAMEPLAY_TAG(Toast_Sound_Positive, "Toast.Sound.Positive");
+	UE_DEFINE_GAMEPLAY_TAG(Toast_Sound_Alarm,    "Toast.Sound.Alarm");
 }

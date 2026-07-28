@@ -18,10 +18,8 @@ void URogueActionWidget::NativePreConstruct()
 	Super::NativePreConstruct();
 	
 	ApplyStaticActionData();
-	
-	LastCooldownProgress = -1.f;
-	LastActionAvailable = -1.f;
-	LastRunningHighlight = -1.f;
+
+	RunningHighlight_SelectedFadeSpeed = RunningHighlight_NormalFadeSpeed;
 	
 #if WITH_EDITOR
 	ValidateAssetSetup();
@@ -49,7 +47,7 @@ void URogueActionWidget::ApplyStaticActionData()
 
 void URogueActionWidget::RebindActionSystem(URogueActionSystemComponent* ASC)
 {
-	// RebindActionSystem이 중복으로 호출된 경우 방어
+	// RebindActionSystem이 중복 호출된 경우 방어
 	if(BoundASC == ASC)
 	{
 		return;
@@ -106,11 +104,25 @@ void URogueActionWidget::NativeTick(const FGeometry& MyGeometry, float InDeltaTi
 	URogueActionBase* Action = BoundAction.Get();
 	const float CooldownProgress = Action ? Action->GetCooldownProgress() : 0.f;
 	const float ActionAvailable = Action ? 1.f : 0.f;
-	const float RunningHighlight = (Action && Action->IsDurationAction() && Action->IsRunning()) ? 1.f : 0.f;
+	const float RunningHighlight_TargetVal = (Action && Action->IsDurationAction() && Action->IsRunning()) ? 1.f : 0.f;
 	
-	RogueLibrary::ApplyScalarParameter(ActionIconMID, CooldownProgressScalarParamName, CooldownProgress, LastCooldownProgress);
-	RogueLibrary::ApplyScalarParameter(ActionIconMID, ActionAvailableScalarParamName, ActionAvailable, LastActionAvailable);
-	RogueLibrary::ApplyScalarParameter(ActionIconMID, RunningHighlightScalarParamName, RunningHighlight, LastRunningHighlight);
+	if(RunningHighlight_TargetVal > RunningHighlight_CurrentInterpVal)
+	{
+		RunningHighlight_CurrentInterpVal = RunningHighlight_TargetVal;
+	}
+	else
+	{
+		RunningHighlight_CurrentInterpVal = FMath::FInterpTo(
+			RunningHighlight_CurrentInterpVal, RunningHighlight_TargetVal, 
+			InDeltaTime, RunningHighlight_SelectedFadeSpeed);		
+	}
+	
+	DEBUG_ONSCREEN_CVARFMT(CVarActionWidgetShowMessage, 0, 0.f, FColor::Green, TEXT("[ActionWidget][%s] Selected Fade Speed: %f Current InterpVal: %f Last InterpVal: %f"), 
+		*GetNameSafe(this), RunningHighlight_SelectedFadeSpeed, RunningHighlight_CurrentInterpVal, RunningHighlight_LastInterpVal);
+	
+	RogueLibrary::ApplyScalarParameter(ActionIconMID, CooldownProgress_ScalarParamName, CooldownProgress, CooldownProgress_LastVal);
+	RogueLibrary::ApplyScalarParameter(ActionIconMID, ActionAvailable_ScalarParamName, ActionAvailable, ActionAvailable_LastVal);
+	RogueLibrary::ApplyScalarParameter(ActionIconMID, RunningHighlight_ScalarParamName, RunningHighlight_CurrentInterpVal, RunningHighlight_LastInterpVal);
 }
 
 
@@ -128,7 +140,7 @@ void URogueActionWidget::OnStartActionFailed(const FRogueCanStartResult& Result)
 		return;
 	}
 	
-	// 미보유 스킬의 경우
+	// 미보유 액션의 경우
 	if(!BoundAction.IsValid())
 	{
 		return;
@@ -145,7 +157,13 @@ void URogueActionWidget::OnActionStopped(const FRogueStopActionInfo& Info)
 		return;
 	}
 	
-	if(Info.Cause.Reason == ERogueStopActionReason::BlockedByTag)
+	const bool bStoppedByPlayer = Info.Cause.Reason == ERogueStopActionReason::Input;
+	
+	RunningHighlight_SelectedFadeSpeed = bStoppedByPlayer 
+		? RunningHighlight_NormalFadeSpeed
+		: RunningHighlight_CancelFadeSpeed;
+	
+	if(!bStoppedByPlayer)
 	{
 		PlayShakeAnim();
 	}
@@ -197,7 +215,7 @@ void URogueActionWidget::ValidateAssetSetup() const
 	}
 
 	float DummyScalar = 0.f;
-	TArray<FName> ScalarParamNames = {CooldownProgressScalarParamName, RunningHighlightScalarParamName, ActionAvailableScalarParamName};
+	TArray<FName> ScalarParamNames = {CooldownProgress_ScalarParamName, RunningHighlight_ScalarParamName, ActionAvailable_ScalarParamName};
 	for (const FName& ScalarParamName : ScalarParamNames)
 	{
 		if (!BaseMaterial->GetScalarParameterValue(FMaterialParameterInfo{ScalarParamName}, DummyScalar))
