@@ -1,4 +1,4 @@
-﻿#include "RogueSkillWidget.h"
+﻿#include "RogueActionWidget.h"
 
 #include "ActionRoguelike.h"
 #include "ActionSystem/RogueActionBase.h"
@@ -8,19 +8,19 @@
 #include "Development/RogueLibrary.h"
 
 
-static TAutoConsoleVariable<bool> CVarSkillWidgetShowMessage { TEXT("rogue.ui.skillwidget.ShowMessage"), false,
-	TEXT("Display Skill Widget debug messages on screen. 0=off, 1=on"), ECVF_Default
+static TAutoConsoleVariable<bool> CVarActionWidgetShowMessage { TEXT("rogue.ui.actionwidget.ShowMessage"), false,
+	TEXT("Display Action Widget debug messages on screen. 0=off, 1=on"), ECVF_Default
 };
 
 
-void URogueSkillWidget::NativePreConstruct()
+void URogueActionWidget::NativePreConstruct()
 {
 	Super::NativePreConstruct();
 	
 	ApplyStaticActionData();
 	
 	LastCooldownProgress = -1.f;
-	LastSkillAvailable = -1.f;
+	LastActionAvailable = -1.f;
 	LastRunningHighlight = -1.f;
 	
 #if WITH_EDITOR
@@ -29,7 +29,7 @@ void URogueSkillWidget::NativePreConstruct()
 }
 
 
-void URogueSkillWidget::ApplyStaticActionData()
+void URogueActionWidget::ApplyStaticActionData()
 {
 	if(!ActionClass || !ActionIconImage)
 	{
@@ -47,7 +47,7 @@ void URogueSkillWidget::ApplyStaticActionData()
 }
 
 
-void URogueSkillWidget::RebindActionSystem(URogueActionSystemComponent* ASC)
+void URogueActionWidget::RebindActionSystem(URogueActionSystemComponent* ASC)
 {
 	// RebindActionSystem이 중복으로 호출된 경우 방어
 	if(BoundASC == ASC)
@@ -59,7 +59,7 @@ void URogueSkillWidget::RebindActionSystem(URogueActionSystemComponent* ASC)
 
 	if(!IsValid(ASC))
 	{
-		DEBUG_ONSCREEN_CVAR(CVarSkillWidgetShowMessage, 0, 5.f, FColor::Red, TEXT("[URogueSkillWidget] Invalid ASC is passed to RebindActionSystem"));
+		DEBUG_ONSCREEN_CVAR(CVarActionWidgetShowMessage, 0, 5.f, FColor::Red, TEXT("[URogueActionWidget] Invalid ASC is passed to RebindActionSystem"));
 		return;
 	}
 
@@ -74,7 +74,7 @@ void URogueSkillWidget::RebindActionSystem(URogueActionSystemComponent* ASC)
 }
 
 
-void URogueSkillWidget::UnbindActionSystem()
+void URogueActionWidget::UnbindActionSystem()
 {
 	if(URogueActionSystemComponent* ASC = BoundASC.Get())
 	{
@@ -87,14 +87,14 @@ void URogueSkillWidget::UnbindActionSystem()
 }
 
 
-void URogueSkillWidget::NativeDestruct()
+void URogueActionWidget::NativeDestruct()
 {
 	UnbindActionSystem();
 	Super::NativeDestruct();
 }
 
 
-void URogueSkillWidget::NativeTick(const FGeometry& MyGeometry, float InDeltaTime)
+void URogueActionWidget::NativeTick(const FGeometry& MyGeometry, float InDeltaTime)
 {
 	Super::NativeTick(MyGeometry, InDeltaTime);
 	
@@ -105,23 +105,23 @@ void URogueSkillWidget::NativeTick(const FGeometry& MyGeometry, float InDeltaTim
 	
 	URogueActionBase* Action = BoundAction.Get();
 	const float CooldownProgress = Action ? Action->GetCooldownProgress() : 0.f;
-	const float SkillAvailable = Action ? 1.f : 0.f;
+	const float ActionAvailable = Action ? 1.f : 0.f;
 	const float RunningHighlight = (Action && Action->IsDurationAction() && Action->IsRunning()) ? 1.f : 0.f;
 	
 	RogueLibrary::ApplyScalarParameter(ActionIconMID, CooldownProgressScalarParamName, CooldownProgress, LastCooldownProgress);
-	RogueLibrary::ApplyScalarParameter(ActionIconMID, SkillAvailableScalarParamName, SkillAvailable, LastSkillAvailable);
+	RogueLibrary::ApplyScalarParameter(ActionIconMID, ActionAvailableScalarParamName, ActionAvailable, LastActionAvailable);
 	RogueLibrary::ApplyScalarParameter(ActionIconMID, RunningHighlightScalarParamName, RunningHighlight, LastRunningHighlight);
 }
 
 
-void URogueSkillWidget::OnGrantedActionChanged()
+void URogueActionWidget::OnGrantedActionChanged()
 {
 	URogueActionBase* FoundAction = BoundASC->FindActionByTag(ActionTag);
 	BoundAction = FoundAction;
 }
 
 
-void URogueSkillWidget::OnStartActionFailed(const FRogueCanStartResult& Result)
+void URogueActionWidget::OnStartActionFailed(const FRogueCanStartResult& Result)
 {
 	if(Result.ActionTag != ActionTag)
 	{
@@ -138,7 +138,7 @@ void URogueSkillWidget::OnStartActionFailed(const FRogueCanStartResult& Result)
 }
 
 
-void URogueSkillWidget::OnActionStopped(const FRogueStopActionInfo& Info)
+void URogueActionWidget::OnActionStopped(const FRogueStopActionInfo& Info)
 {
 	if(Info.StoppedActionTag != ActionTag)
 	{
@@ -152,7 +152,7 @@ void URogueSkillWidget::OnActionStopped(const FRogueStopActionInfo& Info)
 }
 
 
-void URogueSkillWidget::PlayShakeAnim()
+void URogueActionWidget::PlayShakeAnim()
 {
 	if(!ShakeAnim)
 	{
@@ -165,7 +165,7 @@ void URogueSkillWidget::PlayShakeAnim()
 
 #if WITH_EDITOR
 
-void URogueSkillWidget::ValidateAssetSetup() const
+void URogueActionWidget::ValidateAssetSetup() const
 {
 	if (!ActionClass)
 	{
@@ -197,7 +197,7 @@ void URogueSkillWidget::ValidateAssetSetup() const
 	}
 
 	float DummyScalar = 0.f;
-	TArray<FName> ScalarParamNames = {CooldownProgressScalarParamName, RunningHighlightScalarParamName, SkillAvailableScalarParamName};
+	TArray<FName> ScalarParamNames = {CooldownProgressScalarParamName, RunningHighlightScalarParamName, ActionAvailableScalarParamName};
 	for (const FName& ScalarParamName : ScalarParamNames)
 	{
 		if (!BaseMaterial->GetScalarParameterValue(FMaterialParameterInfo{ScalarParamName}, DummyScalar))

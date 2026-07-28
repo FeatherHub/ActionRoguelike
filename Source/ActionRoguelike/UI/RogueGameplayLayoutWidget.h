@@ -14,7 +14,7 @@ class ACTIONROGUELIKE_API URogueGameplayLayoutWidget : public UUserWidget
 	
 protected:
 	UPROPERTY(meta=(BindWidget))
-	TObjectPtr<UUserWidget> SkillWidgetContainer;
+	TObjectPtr<UUserWidget> ActionWidgetContainer;
 	
 public:
 	void RebindActionSystem(URogueActionSystemComponent* ASC);

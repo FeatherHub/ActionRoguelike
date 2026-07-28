@@ -1,15 +1,15 @@
 ﻿#include "RogueGameplayLayoutWidget.h"
 
-#include "RogueSkillWidget.h"
+#include "RogueActionWidget.h"
 #include "Blueprint/WidgetTree.h"
 
 void URogueGameplayLayoutWidget::RebindActionSystem(URogueActionSystemComponent* ASC)
 {
-	SkillWidgetContainer->WidgetTree->ForEachWidget([ASC](UWidget* Widget)
+	ActionWidgetContainer->WidgetTree->ForEachWidget([ASC](UWidget* Widget)
 	{
-		if(URogueSkillWidget* SkillWidget = Cast<URogueSkillWidget>(Widget))
+		if(URogueActionWidget* ActionWidget = Cast<URogueActionWidget>(Widget))
 		{
-			SkillWidget->RebindActionSystem(ASC);
+			ActionWidget->RebindActionSystem(ASC);
 		}
 	});
 }

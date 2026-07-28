@@ -4,14 +4,14 @@
 #include "GameplayTagContainer.h"
 #include "ActionSystem/RogueActionType.h"
 #include "Blueprint/UserWidget.h"
-#include "RogueSkillWidget.generated.h"
+#include "RogueActionWidget.generated.h"
 
 class URogueActionSystemComponent;
 class URogueActionBase;
 class UImage;
 
 UCLASS(Abstract)
-class ACTIONROGUELIKE_API URogueSkillWidget : public UUserWidget
+class ACTIONROGUELIKE_API URogueActionWidget : public UUserWidget
 {
 	GENERATED_BODY()
 	
@@ -25,20 +25,27 @@ protected:
 	UPROPERTY(EditAnywhere, Category=Action)
 	TSubclassOf<URogueActionBase> ActionClass;
 
+	// ActionIconImage 에 적용할 Action Texture 
 	UPROPERTY(VisibleDefaultsOnly, Category="Material Contract")
 	FName ActionIconTextureParamName = TEXT("ActionIconTexture");
 
+	// 액션의 쿨다운 시간에 따른 위젯 효과
 	UPROPERTY(VisibleDefaultsOnly, Category="Material Contract")
 	FName CooldownProgressScalarParamName = TEXT("CooldownProgress");
 	float LastCooldownProgress;
 	
+	// 위젯에 바인드된 액션을 ASC가 보유했는지 여부에 따른 위젯 효과
 	UPROPERTY(VisibleDefaultsOnly, Category="Material Contract")
-	FName SkillAvailableScalarParamName = TEXT("SkillAvailable");
-	float LastSkillAvailable;
+	FName ActionAvailableScalarParamName = TEXT("ActionAvailable");
+	float LastActionAvailable;
 	
+////////////////////
+// 지속형 액션의 효과
+////////////////////
 	UPROPERTY(VisibleDefaultsOnly, Category="Material Contract")
 	FName RunningHighlightScalarParamName = TEXT("RunningHighlight");
-	float LastRunningHighlight;
+	
+	float LastRunningHighlight; // MID 에 마지막으로 적용한 값
 	
 	UPROPERTY()
 	TObjectPtr<UMaterialInstanceDynamic> ActionIconMID;
