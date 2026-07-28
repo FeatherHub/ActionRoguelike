@@ -14,6 +14,7 @@ class URogueActionEffect;
 class URogueActionSystemComponent;
 struct FGameplayTag;
 
+
 UENUM()
 enum ERogueAttributeModType
 {
@@ -24,14 +25,16 @@ enum ERogueAttributeModType
 	MultiplierOverride,
 };
 
+
 DECLARE_MULTICAST_DELEGATE_TwoParams(FOnAttributeChanged, float /*NewValue*/, float /*OldValue*/);
 DECLARE_DYNAMIC_DELEGATE_TwoParams(FOnAttributeChanged_Dynamic, float, NewValue, float, OldValue);
-DECLARE_DYNAMIC_MULTICAST_DELEGATE_TwoParams(FOnGameplayTagUpdated, FGameplayTag, UpdatedTag, int32, NewCount);
 DECLARE_DYNAMIC_MULTICAST_DELEGATE_OneParam(FOnActionEffectUpdated, URogueActionEffect*, UpdatedActionEffect);
 DECLARE_DYNAMIC_MULTICAST_DELEGATE(FOnGrantedActionChanged);
 
 DECLARE_MULTICAST_DELEGATE_OneParam(FOnStartActionFailed, const FRogueCanStartResult&);
 DECLARE_MULTICAST_DELEGATE_OneParam(FOnActionStopped, const FRogueStopActionInfo&);
+
+DECLARE_DYNAMIC_MULTICAST_DELEGATE_TwoParams(FOnStatusTagUpdated, FGameplayTag, UpdatedTag, int32, NewCount);
 
 
 UCLASS(ClassGroup=(Custom), meta=(BlueprintSpawnableComponent))
@@ -39,20 +42,31 @@ class ACTIONROGUELIKE_API URogueActionSystemComponent : public UActorComponent
 {
 	GENERATED_BODY()
 
-////////////////
-// Life Cycle
-////////////////
+///////////
+// Setup
+///////////
 public:
 	URogueActionSystemComponent();
 	virtual void InitializeComponent() override;
+	virtual bool ReplicateSubobjects(class UActorChannel* Channel, class FOutBunch* Bunch, FReplicationFlags* RepFlags) override;
+	
 	virtual void BeginPlay() override;
 	virtual void TickComponent(float DeltaTime, enum ELevelTick TickType, FActorComponentTickFunction* ThisTickFunction) override;
-	
+
 
 ////////////////////
 // 소유한 Action 관리
 ////////////////////
 public:
+	UPROPERTY(BlueprintAssignable)
+	FOnActionEffectUpdated OnActionEffectAdded;
+	
+	UPROPERTY(BlueprintAssignable)
+	FOnActionEffectUpdated OnActionEffectRemoved;
+	
+	UPROPERTY(BlueprintAssignable)
+	FOnGrantedActionChanged OnGrantedActionChanged;
+
 	UFUNCTION(BlueprintCallable)
 	void GrantAction(TSubclassOf<URogueActionBase> ActionClass);
 	
@@ -62,14 +76,6 @@ public:
 	UFUNCTION(BlueprintCallable)
 	URogueActionBase* FindActionByTag(FGameplayTag ActionTag);
 	
-	UPROPERTY(BlueprintAssignable)
-	FOnActionEffectUpdated OnActionEffectAdded;
-	
-	UPROPERTY(BlueprintAssignable)
-	FOnActionEffectUpdated OnActionEffectRemoved;
-	
-	UPROPERTY(BlueprintAssignable)
-	FOnGrantedActionChanged OnGrantedActionChanged;
 
 protected:
 	UPROPERTY(EditDefaultsOnly, Category=Action)
@@ -86,27 +92,28 @@ protected:
 // Start & Stop Action
 ///////////////////////
 public:
+	FOnStartActionFailed OnStartActionFailed;
+	FOnActionStopped OnActionStopped;
+
 	void StartAction(FGameplayTag ActionTag);
 
 	UFUNCTION(Server, Reliable)
 	void StartAction_Server(FGameplayTag ActionTag);
 	
-	FOnStartActionFailed OnStartActionFailed;
-	
-	// 플레이어 입력 경로. 클라이언트에서 호출하면 서버로 전파된다
+	// 플레이어 입력 경로. 클라이언트에서 호출하면 서버를 호출하지 않는다.
 	void StopAction(FGameplayTag ActionTag);
 
 	UFUNCTION(Server, Reliable)
 	void StopAction_Server(FGameplayTag ActionTag);
 	
-	// 게임 플레이 로직에 의한 중지. 각 머신에서 독립적으로 일어나므로 전파하지 않는다
+	// 게임 플레이 로직에 의한 중지. 각 머신에서 독립적으로 일어나므로 서버를 호출하지 않는다.
 	UFUNCTION(BlueprintCallable)
 	void InterruptAction(URogueActionBase* Action, const FRogueStopActionCause& Cause);
 	
-	FOnActionStopped OnActionStopped;
-	
-protected:
+private:
 	void StopActionInternal(URogueActionBase* Action, const FRogueStopActionCause& Cause);
+	void InterruptActionsBlockedBy(const FGameplayTagContainer& NewTags);
+	
 	
 //////////////
 // Attribute
@@ -143,26 +150,20 @@ protected:
 	
 	
 //////////////////
-// Gameplay Tags
+// Status Tags
 //////////////////
 public:
 	UPROPERTY(BlueprintAssignable)
-	FOnGameplayTagUpdated OnGameplayTagUpdated;
+	FOnStatusTagUpdated OnStatusTagUpdated;
 	
-	void AppendActiveTags(const FGameplayTagContainer& NewTags);
-	void RemoveActiveTags(const FGameplayTagContainer& TagsToRemove);
-	const FGameplayTagContainer& GetActiveTags() const
+	void AddStatusTags(const FGameplayTagContainer& TagsToAdd);
+	void RemoveStatusTags(const FGameplayTagContainer& TagsToRemove);
+	const FGameplayTagContainer& GetStatusTags() const
 	{
-		return ActiveTags;
+		return StatusTags;
 	}
 	
 protected:
-	void CheckAgainstBlockedTags(const FGameplayTagContainer& NewTags);
-	
-	UPROPERTY(VisibleAnywhere, Category=Action)
-	FGameplayTagContainer ActiveTags;
-	
-	
-public:
-	virtual bool ReplicateSubobjects(class UActorChannel* Channel, class FOutBunch* Bunch, FReplicationFlags* RepFlags) override;
+	UPROPERTY(VisibleAnywhere, Category=Status)
+	FGameplayTagContainer StatusTags;
 };

@@ -12,9 +12,14 @@
 #include "Network/NetUtil.h"
 #include "Player/RoguePlayerCharacter.h"
 
+
 static TAutoConsoleVariable<bool> CVarAttributeDebugMsg { TEXT("rogue.asc.attribute.ShowMsg"), false,
 	TEXT("Show ActionSystemComponent's Attribute related on-screen messages. 0=off, 1=on"), ECVF_Default };
 
+
+////////////
+// Setup
+////////////
 
 URogueActionSystemComponent::URogueActionSystemComponent()
 {
@@ -97,9 +102,36 @@ void URogueActionSystemComponent::BeginPlay()
 	AttributeSet->PostInitializeComponents();
 }
 
-///////////
-// Action
-///////////
+
+bool URogueActionSystemComponent::ReplicateSubobjects(class UActorChannel* Channel, class FOutBunch* Bunch, FReplicationFlags* RepFlags)
+{
+	bool bWrote = Super::ReplicateSubobjects(Channel, Bunch, RepFlags);
+	
+	bWrote |= Channel->ReplicateSubobject(AttributeSet, *Bunch, *RepFlags);
+	ensure(AttributeSet);
+
+	for (URogueActionBase* Action : GrantedActions)
+	{
+		bWrote |= Channel->ReplicateSubobject(Action, *Bunch, *RepFlags);
+		ensure(Action);
+	}
+	
+	return bWrote;
+}
+
+
+void URogueActionSystemComponent::GetLifetimeReplicatedProps(TArray<class FLifetimeProperty>& OutLifetimeProps) const
+{
+	Super::GetLifetimeReplicatedProps(OutLifetimeProps);
+	
+	DOREPLIFETIME(URogueActionSystemComponent, AttributeSet);
+	DOREPLIFETIME(URogueActionSystemComponent, GrantedActions);
+}
+
+
+//////////////////
+// 소유 Action 관리
+//////////////////
 
 void URogueActionSystemComponent::GrantAction(TSubclassOf<URogueActionBase> ActionClass)
 {
@@ -165,6 +197,10 @@ URogueActionBase* URogueActionSystemComponent::FindActionByTag(FGameplayTag Acti
 	return nullptr;
 }
 
+
+///////////////////////
+// Start & Stop Action
+///////////////////////
 
 void URogueActionSystemComponent::StartAction_Server_Implementation(FGameplayTag ActionTag)
 {
@@ -241,6 +277,36 @@ void URogueActionSystemComponent::InterruptAction(URogueActionBase* Action, cons
 		return;
 	}
 	StopActionInternal(Action, Cause);
+}
+
+
+void URogueActionSystemComponent::InterruptActionsBlockedBy(const FGameplayTagContainer& NewTags)
+{
+	// 액션이 Interrupt되는 경우 
+	// InterruptAction -> StopAction 경로를 타게 되고 
+	// 이때 Action이 Effect Action 인 경우 GrantedActions 배열이 수정되므로
+	// Snapshot을 순회해야 한다.
+	TArray<URogueActionBase*> GrantedActionsSnapshot = GrantedActions;
+	
+	for (URogueActionBase* Action : GrantedActionsSnapshot)
+	{
+		if(!IsValid(Action) || !Action->IsRunning())
+		{
+			continue;
+		}
+		
+		const FGameplayTagContainer& BlockedByTags = Action->GetBlockedByTags();
+		if(!BlockedByTags.HasAny(NewTags))
+		{
+			continue;
+		}
+		
+		FRogueStopActionCause Cause;
+		Cause.Reason = ERogueStopActionReason::BlockedByTag;
+		Cause.CausingTags = NewTags.Filter(BlockedByTags);
+		
+		InterruptAction(Action, Cause);
+	}
 }
 
 
@@ -410,83 +476,32 @@ void URogueActionSystemComponent::RemoveOnAttributeChangedListener_Dynamic(FOnAt
 
 
 ///////////////
-// Active Tags
+// Status Tags
 ///////////////
 
-void URogueActionSystemComponent::AppendActiveTags(const FGameplayTagContainer& NewTags)
+void URogueActionSystemComponent::AddStatusTags(const FGameplayTagContainer& TagsToAdd)
 {
-	ActiveTags.AppendTags(NewTags);
+	StatusTags.AppendTags(TagsToAdd);
 
-	CheckAgainstBlockedTags(NewTags);
+	InterruptActionsBlockedBy(TagsToAdd);
 	
-	for (const FGameplayTag& NewTag : NewTags)
+	for (const FGameplayTag& NewTag : TagsToAdd)
 	{
-		OnGameplayTagUpdated.Broadcast(NewTag, 1);
+		OnStatusTagUpdated.Broadcast(NewTag, 1);
 	}
 }
 
 
-void URogueActionSystemComponent::RemoveActiveTags(const FGameplayTagContainer& TagsToRemove)
+void URogueActionSystemComponent::RemoveStatusTags(const FGameplayTagContainer& TagsToRemove)
 {
-	int32 OldCount = ActiveTags.Num();
-	ActiveTags.RemoveTags(TagsToRemove);
+	int32 OldCount = StatusTags.Num();
+	StatusTags.RemoveTags(TagsToRemove);
 	
 	// @Todo: Refactor to StackedTagContainer
-	// ensureAlways((OldCount - ActiveTags.Num()) == TagsToRemove.Num());
+	// ensureAlways((OldCount - StatusTags.Num()) == TagsToRemove.Num());
 
 	for (const FGameplayTag& TagToRemove : TagsToRemove)
 	{
-		OnGameplayTagUpdated.Broadcast(TagToRemove, 0);
+		OnStatusTagUpdated.Broadcast(TagToRemove, 0);
 	}
-}
-
-
-void URogueActionSystemComponent::CheckAgainstBlockedTags(const FGameplayTagContainer& NewTags)
-{
-	for (URogueActionBase* Action : GrantedActions)
-	{
-		if(!IsValid(Action) || !Action->IsRunning())
-		{
-			continue;
-		}
-		
-		const FGameplayTagContainer& BlockingTags = Action->GetBlockingTags();
-		if(!BlockingTags.HasAny(NewTags))
-		{
-			continue;
-		}
-		
-		FRogueStopActionCause Cause;
-		Cause.Reason = ERogueStopActionReason::BlockedByTag;
-		Cause.CausingTags = NewTags.Filter(BlockingTags);
-		
-		InterruptAction(Action, Cause);
-	}
-}
-
-////////////////
-// Replication
-////////////////
-bool URogueActionSystemComponent::ReplicateSubobjects(class UActorChannel* Channel, class FOutBunch* Bunch, FReplicationFlags* RepFlags)
-{
-	bool bWrote = Super::ReplicateSubobjects(Channel, Bunch, RepFlags);
-	
-	bWrote |= Channel->ReplicateSubobject(AttributeSet, *Bunch, *RepFlags);
-	ensure(AttributeSet);
-
-	for (URogueActionBase* Action : GrantedActions)
-	{
-		bWrote |= Channel->ReplicateSubobject(Action, *Bunch, *RepFlags);
-		ensure(Action);
-	}
-	
-	return bWrote;
-}
-
-void URogueActionSystemComponent::GetLifetimeReplicatedProps(TArray<class FLifetimeProperty>& OutLifetimeProps) const
-{
-	Super::GetLifetimeReplicatedProps(OutLifetimeProps);
-	
-	DOREPLIFETIME(URogueActionSystemComponent, AttributeSet);
-	DOREPLIFETIME(URogueActionSystemComponent, GrantedActions);
 }

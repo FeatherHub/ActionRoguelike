@@ -24,11 +24,13 @@ class ACTIONROGUELIKE_API URogueActionBase : public UObject
 	GENERATED_BODY()
 
 protected:
+	/** 이 태그 중 하나라도 ASC에 있으면 이 액션을 시작할 수 없고, 실행 중이면 중단된다. */
 	UPROPERTY(EditDefaultsOnly, Category=Action)
-	FGameplayTagContainer ActivationBlockingTags;
+	FGameplayTagContainer BlockedByTags;
 
+	/** 이 액션을 실행 중에 ASC에 부여하는 태그 */
 	UPROPERTY(EditDefaultsOnly, Category=Action)
-	FGameplayTagContainer ActivationGrantTags;
+	FGameplayTagContainer GrantTags;
 	
 	UPROPERTY(EditDefaultsOnly, BlueprintReadOnly, Category=Action)
 	FGameplayTag ActionTag;
@@ -54,7 +56,7 @@ public:
 	bool CanStop() const;
 	bool IsRunning() const { return bIsRunning; }
 	
-	const FGameplayTagContainer& GetBlockingTags() const { return ActivationBlockingTags; }
+	const FGameplayTagContainer& GetBlockedByTags() const { return BlockedByTags; }
 	FGameplayTag GetActionTag() const { return ActionTag; }
 	
 /////////////
@@ -99,7 +101,7 @@ public:
 	
 	
 /////////////////////////////////
-// 변수 연결 & Replication 설정
+// 소유 계층 연결 & Replication 설정
 protected:
 	UFUNCTION(BlueprintCallable)
 	URogueActionSystemComponent* GetOwningComponent() const;

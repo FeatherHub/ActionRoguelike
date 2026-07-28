@@ -19,7 +19,7 @@ void UURogueCharacterAnimInstance::NativeBeginPlay()
 	
 	if(ActionSystemComp)
 	{
-		ActionSystemComp->OnGameplayTagUpdated.AddDynamic(this, &ThisClass::OnGameplayTagUpdated);
+		ActionSystemComp->OnStatusTagUpdated.AddDynamic(this, &ThisClass::OnGameplayTagUpdated);
 	}
 }
 

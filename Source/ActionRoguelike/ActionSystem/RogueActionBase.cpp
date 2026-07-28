@@ -24,7 +24,7 @@ void URogueActionBase::StartAction_Implementation()
 	}
 	
 	URogueActionSystemComponent* ASC = GetOwningComponent();
-	ASC->AppendActiveTags(ActivationGrantTags);
+	ASC->AddStatusTags(GrantTags);
 
 	UE_LOGFMT(LogGame, Log, "Start Action '{ActionTag}' at {GameTime}", ActionTag.GetTagName(), GetWorld()->TimeSeconds);
 
@@ -47,7 +47,7 @@ void URogueActionBase::StopAction_Implementation()
 	}
 	
 	URogueActionSystemComponent* ASC = GetOwningComponent();
-	ASC->RemoveActiveTags(ActivationGrantTags);
+	ASC->RemoveStatusTags(GrantTags);
 	
 	UE_LOGFMT(LogGame, Log, 
 		"Stop Action '{ActionTag}' at {GameTime}", ActionTag.GetTagName(), GetWorld()->TimeSeconds);
@@ -81,10 +81,10 @@ bool URogueActionBase::CanStart(FRogueCanStartResult& OutResult) const
 	}
 	
 	URogueActionSystemComponent* ASC = GetOwningComponent();
-	if(ASC->GetActiveTags().HasAny(ActivationBlockingTags))
+	if(ASC->GetStatusTags().HasAny(BlockedByTags))
 	{
 		OutResult.Failure = ERogueCanStartFailure::Blocked;
-		OutResult.BlockedByTags = ASC->GetActiveTags().Filter(ActivationBlockingTags);
+		OutResult.BlockedByTags = ASC->GetStatusTags().Filter(BlockedByTags);
 		return false;
 	}
 
